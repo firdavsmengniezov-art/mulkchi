@@ -5,8 +5,12 @@ namespace Mulkchi.Api.Models.Foundations.Announcements;
 public class Announcement
 {
     public Guid Id { get; set; }
-    public string Title { get; set; }
-    public string Content { get; set; }
+    public string TitleUz { get; set; }
+    public string TitleRu { get; set; }
+    public string TitleEn { get; set; }
+    public string ContentUz { get; set; }
+    public string ContentRu { get; set; }
+    public string ContentEn { get; set; }
     public AnnouncementType Type { get; set; }
     public AnnouncementTarget Target { get; set; }
     public bool IsActive { get; set; }

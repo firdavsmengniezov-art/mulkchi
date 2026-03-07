@@ -11,8 +11,8 @@ public partial class AnnouncementService
         ValidateAnnouncementIsNotNull(announcement);
         Validate(
         (Rule: IsInvalid(announcement.Id), Parameter: nameof(Announcement.Id)),
-        (Rule: IsInvalid(announcement.Title), Parameter: nameof(Announcement.Title)),
-        (Rule: IsInvalid(announcement.Content), Parameter: nameof(Announcement.Content)));
+        (Rule: IsInvalid(announcement.TitleUz), Parameter: nameof(Announcement.TitleUz)),
+        (Rule: IsInvalid(announcement.ContentUz), Parameter: nameof(Announcement.ContentUz)));
     }
 
     private void ValidateAnnouncementOnModify(Announcement announcement)
@@ -20,8 +20,8 @@ public partial class AnnouncementService
         ValidateAnnouncementIsNotNull(announcement);
         Validate(
         (Rule: IsInvalid(announcement.Id), Parameter: nameof(Announcement.Id)),
-        (Rule: IsInvalid(announcement.Title), Parameter: nameof(Announcement.Title)),
-        (Rule: IsInvalid(announcement.Content), Parameter: nameof(Announcement.Content)));
+        (Rule: IsInvalid(announcement.TitleUz), Parameter: nameof(Announcement.TitleUz)),
+        (Rule: IsInvalid(announcement.ContentUz), Parameter: nameof(Announcement.ContentUz)));
     }
 
     private static void ValidateAnnouncementId(Guid announcementId)
