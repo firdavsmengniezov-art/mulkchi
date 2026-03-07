@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Mulkchi.Api.Brokers.DateTimes;
+using Mulkchi.Api.Brokers.Loggings;
 using Mulkchi.Api.Brokers.Storages;
 using Mulkchi.Api.Hubs;
 using Mulkchi.Api.Services.Foundations.Users;
@@ -39,6 +41,7 @@ public class Startup
         AddSwagger(services);
         AddJwtAuthentication(services);
         AddDbContext(services);
+        AddBrokers(services);
         AddFoundationServices(services);
         services.AddSignalR();
         AddCors(services);
@@ -130,6 +133,12 @@ public class Startup
         });
 
         services.AddAuthorization();
+    }
+
+    private void AddBrokers(IServiceCollection services)
+    {
+        services.AddTransient<ILoggingBroker, LoggingBroker>();
+        services.AddTransient<IDateTimeBroker, DateTimeBroker>();
     }
 
     private void AddFoundationServices(IServiceCollection services)
