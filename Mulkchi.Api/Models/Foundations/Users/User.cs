@@ -24,6 +24,7 @@ public class User
     public int TotalListings { get; set; }
     public int TotalBookings { get; set; }
     public DateTimeOffset? HostSince { get; set; }
+    public string PreferredLanguage { get; set; } // "uz", "ru", "en"
     public DateTimeOffset CreatedDate { get; set; }
     public DateTimeOffset UpdatedDate { get; set; }
     public DateTimeOffset? DeletedDate { get; set; }

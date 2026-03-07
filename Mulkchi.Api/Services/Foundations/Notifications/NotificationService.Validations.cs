@@ -11,8 +11,8 @@ public partial class NotificationService
         ValidateNotificationIsNotNull(notification);
         Validate(
         (Rule: IsInvalid(notification.Id), Parameter: nameof(Notification.Id)),
-        (Rule: IsInvalid(notification.Title), Parameter: nameof(Notification.Title)),
-        (Rule: IsInvalid(notification.Body), Parameter: nameof(Notification.Body)));
+        (Rule: IsInvalid(notification.TitleUz), Parameter: nameof(Notification.TitleUz)),
+        (Rule: IsInvalid(notification.BodyUz), Parameter: nameof(Notification.BodyUz)));
     }
 
     private void ValidateNotificationOnModify(Notification notification)
@@ -20,8 +20,8 @@ public partial class NotificationService
         ValidateNotificationIsNotNull(notification);
         Validate(
         (Rule: IsInvalid(notification.Id), Parameter: nameof(Notification.Id)),
-        (Rule: IsInvalid(notification.Title), Parameter: nameof(Notification.Title)),
-        (Rule: IsInvalid(notification.Body), Parameter: nameof(Notification.Body)));
+        (Rule: IsInvalid(notification.TitleUz), Parameter: nameof(Notification.TitleUz)),
+        (Rule: IsInvalid(notification.BodyUz), Parameter: nameof(Notification.BodyUz)));
     }
 
     private static void ValidateNotificationId(Guid notificationId)
