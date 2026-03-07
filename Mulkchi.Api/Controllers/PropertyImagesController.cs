@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Models.Foundations.PropertyImages;
 using Mulkchi.Api.Models.Foundations.PropertyImages.Exceptions;
 using Mulkchi.Api.Services.Foundations.PropertyImages;
@@ -46,12 +47,27 @@ public class PropertyImagesController : ControllerBase
 
     [HttpGet]
     [Authorize]
-    public ActionResult<IQueryable<PropertyImage>> GetAllPropertyImages()
+    public ActionResult<PagedResult<PropertyImage>> GetAllPropertyImages([FromQuery] PaginationParams pagination)
     {
         try
         {
-            IQueryable<PropertyImage> propertyImages = this.propertyImageService.RetrieveAllPropertyImages();
-            return Ok(propertyImages);
+            IQueryable<PropertyImage> query = this.propertyImageService.RetrieveAllPropertyImages();
+            int totalCount = query.Count();
+
+            var items = query
+                .Skip((pagination.Page - 1) * pagination.PageSize)
+                .Take(pagination.PageSize)
+                .ToList();
+
+            var result = new PagedResult<PropertyImage>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = pagination.Page,
+                PageSize = pagination.PageSize
+            };
+
+            return Ok(result);
         }
         catch (PropertyImageDependencyException propertyImageDependencyException)
         {

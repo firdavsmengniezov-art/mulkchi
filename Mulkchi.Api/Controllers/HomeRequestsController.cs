@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Models.Foundations.HomeRequests;
 using Mulkchi.Api.Models.Foundations.HomeRequests.Exceptions;
 using Mulkchi.Api.Services.Foundations.HomeRequests;
@@ -46,12 +47,27 @@ public class HomeRequestsController : ControllerBase
 
     [HttpGet]
     [Authorize]
-    public ActionResult<IQueryable<HomeRequest>> GetAllHomeRequests()
+    public ActionResult<PagedResult<HomeRequest>> GetAllHomeRequests([FromQuery] PaginationParams pagination)
     {
         try
         {
-            IQueryable<HomeRequest> homeRequests = this.homeRequestService.RetrieveAllHomeRequests();
-            return Ok(homeRequests);
+            IQueryable<HomeRequest> query = this.homeRequestService.RetrieveAllHomeRequests();
+            int totalCount = query.Count();
+
+            var items = query
+                .Skip((pagination.Page - 1) * pagination.PageSize)
+                .Take(pagination.PageSize)
+                .ToList();
+
+            var result = new PagedResult<HomeRequest>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = pagination.Page,
+                PageSize = pagination.PageSize
+            };
+
+            return Ok(result);
         }
         catch (HomeRequestDependencyException homeRequestDependencyException)
         {

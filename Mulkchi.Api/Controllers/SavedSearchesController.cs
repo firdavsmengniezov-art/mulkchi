@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Models.Foundations.SavedSearches;
 using Mulkchi.Api.Models.Foundations.SavedSearches.Exceptions;
 using Mulkchi.Api.Services.Foundations.SavedSearches;
@@ -46,12 +47,27 @@ public class SavedSearchesController : ControllerBase
 
     [HttpGet]
     [Authorize]
-    public ActionResult<IQueryable<SavedSearch>> GetAllSavedSearches()
+    public ActionResult<PagedResult<SavedSearch>> GetAllSavedSearches([FromQuery] PaginationParams pagination)
     {
         try
         {
-            IQueryable<SavedSearch> savedSearchs = this.savedSearchService.RetrieveAllSavedSearches();
-            return Ok(savedSearchs);
+            IQueryable<SavedSearch> query = this.savedSearchService.RetrieveAllSavedSearches();
+            int totalCount = query.Count();
+
+            var items = query
+                .Skip((pagination.Page - 1) * pagination.PageSize)
+                .Take(pagination.PageSize)
+                .ToList();
+
+            var result = new PagedResult<SavedSearch>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = pagination.Page,
+                PageSize = pagination.PageSize
+            };
+
+            return Ok(result);
         }
         catch (SavedSearchDependencyException savedSearchDependencyException)
         {

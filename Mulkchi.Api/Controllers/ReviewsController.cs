@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Models.Foundations.Reviews;
 using Mulkchi.Api.Models.Foundations.Reviews.Exceptions;
 using Mulkchi.Api.Services.Foundations.Reviews;
@@ -46,12 +47,27 @@ public class ReviewsController : ControllerBase
 
     [HttpGet]
     [AllowAnonymous]
-    public ActionResult<IQueryable<Review>> GetAllReviews()
+    public ActionResult<PagedResult<Review>> GetAllReviews([FromQuery] PaginationParams pagination)
     {
         try
         {
-            IQueryable<Review> reviews = this.reviewService.RetrieveAllReviews();
-            return Ok(reviews);
+            IQueryable<Review> query = this.reviewService.RetrieveAllReviews();
+            int totalCount = query.Count();
+
+            var items = query
+                .Skip((pagination.Page - 1) * pagination.PageSize)
+                .Take(pagination.PageSize)
+                .ToList();
+
+            var result = new PagedResult<Review>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = pagination.Page,
+                PageSize = pagination.PageSize
+            };
+
+            return Ok(result);
         }
         catch (ReviewDependencyException reviewDependencyException)
         {

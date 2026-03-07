@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Models.Foundations.Payments;
 using Mulkchi.Api.Models.Foundations.Payments.Exceptions;
 using Mulkchi.Api.Services.Foundations.Payments;
@@ -46,12 +47,27 @@ public class PaymentsController : ControllerBase
 
     [HttpGet]
     [Authorize]
-    public ActionResult<IQueryable<Payment>> GetAllPayments()
+    public ActionResult<PagedResult<Payment>> GetAllPayments([FromQuery] PaginationParams pagination)
     {
         try
         {
-            IQueryable<Payment> payments = this.paymentService.RetrieveAllPayments();
-            return Ok(payments);
+            IQueryable<Payment> query = this.paymentService.RetrieveAllPayments();
+            int totalCount = query.Count();
+
+            var items = query
+                .Skip((pagination.Page - 1) * pagination.PageSize)
+                .Take(pagination.PageSize)
+                .ToList();
+
+            var result = new PagedResult<Payment>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = pagination.Page,
+                PageSize = pagination.PageSize
+            };
+
+            return Ok(result);
         }
         catch (PaymentDependencyException paymentDependencyException)
         {

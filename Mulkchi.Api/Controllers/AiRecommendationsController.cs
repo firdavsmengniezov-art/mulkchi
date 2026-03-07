@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mulkchi.Api.Models.Foundations.AIs;
 using Mulkchi.Api.Models.Foundations.AIs.Exceptions;
+using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Services.Foundations.AiRecommendations;
 
 namespace Mulkchi.Api.Controllers;
@@ -46,12 +47,27 @@ public class AiRecommendationsController : ControllerBase
 
     [HttpGet]
     [Authorize]
-    public ActionResult<IQueryable<AiRecommendation>> GetAllAiRecommendations()
+    public ActionResult<PagedResult<AiRecommendation>> GetAllAiRecommendations([FromQuery] PaginationParams pagination)
     {
         try
         {
-            IQueryable<AiRecommendation> aiRecommendations = this.aiRecommendationService.RetrieveAllAiRecommendations();
-            return Ok(aiRecommendations);
+            IQueryable<AiRecommendation> query = this.aiRecommendationService.RetrieveAllAiRecommendations();
+            int totalCount = query.Count();
+
+            var items = query
+                .Skip((pagination.Page - 1) * pagination.PageSize)
+                .Take(pagination.PageSize)
+                .ToList();
+
+            var result = new PagedResult<AiRecommendation>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = pagination.Page,
+                PageSize = pagination.PageSize
+            };
+
+            return Ok(result);
         }
         catch (AiRecommendationDependencyException aiRecommendationDependencyException)
         {

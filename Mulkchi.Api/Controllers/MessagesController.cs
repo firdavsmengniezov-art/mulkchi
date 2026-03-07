@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Models.Foundations.Messages;
 using Mulkchi.Api.Models.Foundations.Messages.Exceptions;
 using Mulkchi.Api.Services.Foundations.Messages;
@@ -46,12 +47,27 @@ public class MessagesController : ControllerBase
 
     [HttpGet]
     [Authorize]
-    public ActionResult<IQueryable<Message>> GetAllMessages()
+    public ActionResult<PagedResult<Message>> GetAllMessages([FromQuery] PaginationParams pagination)
     {
         try
         {
-            IQueryable<Message> messages = this.messageService.RetrieveAllMessages();
-            return Ok(messages);
+            IQueryable<Message> query = this.messageService.RetrieveAllMessages();
+            int totalCount = query.Count();
+
+            var items = query
+                .Skip((pagination.Page - 1) * pagination.PageSize)
+                .Take(pagination.PageSize)
+                .ToList();
+
+            var result = new PagedResult<Message>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = pagination.Page,
+                PageSize = pagination.PageSize
+            };
+
+            return Ok(result);
         }
         catch (MessageDependencyException messageDependencyException)
         {

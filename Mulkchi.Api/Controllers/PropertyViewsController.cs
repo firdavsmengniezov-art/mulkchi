@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Models.Foundations.PropertyViews;
 using Mulkchi.Api.Models.Foundations.PropertyViews.Exceptions;
 using Mulkchi.Api.Services.Foundations.PropertyViews;
@@ -46,12 +47,27 @@ public class PropertyViewsController : ControllerBase
 
     [HttpGet]
     [Authorize]
-    public ActionResult<IQueryable<PropertyView>> GetAllPropertyViews()
+    public ActionResult<PagedResult<PropertyView>> GetAllPropertyViews([FromQuery] PaginationParams pagination)
     {
         try
         {
-            IQueryable<PropertyView> propertyViews = this.propertyViewService.RetrieveAllPropertyViews();
-            return Ok(propertyViews);
+            IQueryable<PropertyView> query = this.propertyViewService.RetrieveAllPropertyViews();
+            int totalCount = query.Count();
+
+            var items = query
+                .Skip((pagination.Page - 1) * pagination.PageSize)
+                .Take(pagination.PageSize)
+                .ToList();
+
+            var result = new PagedResult<PropertyView>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = pagination.Page,
+                PageSize = pagination.PageSize
+            };
+
+            return Ok(result);
         }
         catch (PropertyViewDependencyException propertyViewDependencyException)
         {

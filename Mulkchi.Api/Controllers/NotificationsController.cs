@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Models.Foundations.Notifications;
 using Mulkchi.Api.Models.Foundations.Notifications.Exceptions;
 using Mulkchi.Api.Services.Foundations.Notifications;
@@ -46,12 +47,27 @@ public class NotificationsController : ControllerBase
 
     [HttpGet]
     [Authorize]
-    public ActionResult<IQueryable<Notification>> GetAllNotifications()
+    public ActionResult<PagedResult<Notification>> GetAllNotifications([FromQuery] PaginationParams pagination)
     {
         try
         {
-            IQueryable<Notification> notifications = this.notificationService.RetrieveAllNotifications();
-            return Ok(notifications);
+            IQueryable<Notification> query = this.notificationService.RetrieveAllNotifications();
+            int totalCount = query.Count();
+
+            var items = query
+                .Skip((pagination.Page - 1) * pagination.PageSize)
+                .Take(pagination.PageSize)
+                .ToList();
+
+            var result = new PagedResult<Notification>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = pagination.Page,
+                PageSize = pagination.PageSize
+            };
+
+            return Ok(result);
         }
         catch (NotificationDependencyException notificationDependencyException)
         {

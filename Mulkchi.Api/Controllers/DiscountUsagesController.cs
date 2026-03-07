@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Models.Foundations.Discounts;
 using Mulkchi.Api.Models.Foundations.Discounts.Exceptions;
 using Mulkchi.Api.Services.Foundations.DiscountUsages;
@@ -46,12 +47,27 @@ public class DiscountUsagesController : ControllerBase
 
     [HttpGet]
     [Authorize]
-    public ActionResult<IQueryable<DiscountUsage>> GetAllDiscountUsages()
+    public ActionResult<PagedResult<DiscountUsage>> GetAllDiscountUsages([FromQuery] PaginationParams pagination)
     {
         try
         {
-            IQueryable<DiscountUsage> discountUsages = this.discountUsageService.RetrieveAllDiscountUsages();
-            return Ok(discountUsages);
+            IQueryable<DiscountUsage> query = this.discountUsageService.RetrieveAllDiscountUsages();
+            int totalCount = query.Count();
+
+            var items = query
+                .Skip((pagination.Page - 1) * pagination.PageSize)
+                .Take(pagination.PageSize)
+                .ToList();
+
+            var result = new PagedResult<DiscountUsage>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = pagination.Page,
+                PageSize = pagination.PageSize
+            };
+
+            return Ok(result);
         }
         catch (DiscountUsageDependencyException discountUsageDependencyException)
         {

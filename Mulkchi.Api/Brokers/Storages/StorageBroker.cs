@@ -36,6 +36,10 @@ public partial class StorageBroker : DbContext, IStorageBroker
         {
             this.Database.EnsureCreated();
         }
+        else
+        {
+            this.Database.Migrate();
+        }
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

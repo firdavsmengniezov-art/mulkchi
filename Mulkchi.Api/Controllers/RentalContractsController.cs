@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Models.Foundations.RentalContracts;
 using Mulkchi.Api.Models.Foundations.RentalContracts.Exceptions;
 using Mulkchi.Api.Services.Foundations.RentalContracts;
@@ -46,12 +47,27 @@ public class RentalContractsController : ControllerBase
 
     [HttpGet]
     [Authorize]
-    public ActionResult<IQueryable<RentalContract>> GetAllRentalContracts()
+    public ActionResult<PagedResult<RentalContract>> GetAllRentalContracts([FromQuery] PaginationParams pagination)
     {
         try
         {
-            IQueryable<RentalContract> rentalContracts = this.rentalContractService.RetrieveAllRentalContracts();
-            return Ok(rentalContracts);
+            IQueryable<RentalContract> query = this.rentalContractService.RetrieveAllRentalContracts();
+            int totalCount = query.Count();
+
+            var items = query
+                .Skip((pagination.Page - 1) * pagination.PageSize)
+                .Take(pagination.PageSize)
+                .ToList();
+
+            var result = new PagedResult<RentalContract>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = pagination.Page,
+                PageSize = pagination.PageSize
+            };
+
+            return Ok(result);
         }
         catch (RentalContractDependencyException rentalContractDependencyException)
         {

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mulkchi.Api.Models.Foundations.Announcements;
 using Mulkchi.Api.Models.Foundations.Announcements.Exceptions;
+using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Services.Foundations.Announcements;
 
 namespace Mulkchi.Api.Controllers;
@@ -46,12 +47,27 @@ public class AnnouncementsController : ControllerBase
 
     [HttpGet]
     [AllowAnonymous]
-    public ActionResult<IQueryable<Announcement>> GetAllAnnouncements()
+    public ActionResult<PagedResult<Announcement>> GetAllAnnouncements([FromQuery] PaginationParams pagination)
     {
         try
         {
-            IQueryable<Announcement> announcements = this.announcementService.RetrieveAllAnnouncements();
-            return Ok(announcements);
+            IQueryable<Announcement> query = this.announcementService.RetrieveAllAnnouncements();
+            int totalCount = query.Count();
+
+            var items = query
+                .Skip((pagination.Page - 1) * pagination.PageSize)
+                .Take(pagination.PageSize)
+                .ToList();
+
+            var result = new PagedResult<Announcement>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = pagination.Page,
+                PageSize = pagination.PageSize
+            };
+
+            return Ok(result);
         }
         catch (AnnouncementDependencyException announcementDependencyException)
         {

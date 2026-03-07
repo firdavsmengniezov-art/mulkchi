@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Models.Foundations.Favorites;
 using Mulkchi.Api.Models.Foundations.Favorites.Exceptions;
 using Mulkchi.Api.Services.Foundations.Favorites;
@@ -46,12 +47,27 @@ public class FavoritesController : ControllerBase
 
     [HttpGet]
     [Authorize]
-    public ActionResult<IQueryable<Favorite>> GetAllFavorites()
+    public ActionResult<PagedResult<Favorite>> GetAllFavorites([FromQuery] PaginationParams pagination)
     {
         try
         {
-            IQueryable<Favorite> favorites = this.favoriteService.RetrieveAllFavorites();
-            return Ok(favorites);
+            IQueryable<Favorite> query = this.favoriteService.RetrieveAllFavorites();
+            int totalCount = query.Count();
+
+            var items = query
+                .Skip((pagination.Page - 1) * pagination.PageSize)
+                .Take(pagination.PageSize)
+                .ToList();
+
+            var result = new PagedResult<Favorite>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = pagination.Page,
+                PageSize = pagination.PageSize
+            };
+
+            return Ok(result);
         }
         catch (FavoriteDependencyException favoriteDependencyException)
         {
