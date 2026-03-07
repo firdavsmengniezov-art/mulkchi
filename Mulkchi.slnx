@@ -1,5 +1,2 @@
 <Solution>
-  <Project Path="Mulkchi.Api.Infrastructure.Build/Mulkchi.Api.Infrastructure.Build.csproj" />
-  <Project Path="Mulkchi.Api.Tests.Unit/Mulkchi.Api.Tests.Unit.csproj" />
-  <Project Path="Mulkchi.Api/Mulkchi.Api.csproj" />
 </Solution>
