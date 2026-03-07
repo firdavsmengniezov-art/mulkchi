@@ -21,6 +21,7 @@ using Mulkchi.Api.Services.Foundations.PropertyImages;
 using Mulkchi.Api.Services.Foundations.PropertyViews;
 using Mulkchi.Api.Services.Foundations.AiRecommendations;
 using Mulkchi.Api.Services.Foundations.Discounts;
+using Mulkchi.Api.Services.Foundations.DiscountUsages;
 using Mulkchi.Api.Services.Foundations.Announcements;
 using Mulkchi.Api.Services.Foundations.Auth;
 
@@ -158,6 +159,7 @@ public class Startup
         services.AddScoped<IPropertyViewService, PropertyViewService>();
         services.AddScoped<IAiRecommendationService, AiRecommendationService>();
         services.AddScoped<IDiscountService, DiscountService>();
+        services.AddScoped<IDiscountUsageService, DiscountUsageService>();
         services.AddScoped<IAnnouncementService, AnnouncementService>();
         services.AddScoped<IAuthService, AuthService>();
     }
