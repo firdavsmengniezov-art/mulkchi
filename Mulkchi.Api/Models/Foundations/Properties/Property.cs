@@ -34,6 +34,33 @@ public class Property
     public bool IsVacant { get; set; }
     public bool IsFeatured { get; set; }
     public bool IsVerified { get; set; }
+
+    // Infrastructure (Uzbekistan-specific)
+    public bool HasMetroNearby { get; set; }
+    public bool HasBusStop { get; set; }
+    public bool HasMarketNearby { get; set; }
+    public bool HasSchoolNearby { get; set; }
+    public bool HasHospitalNearby { get; set; }
+    public double DistanceToCityCenter { get; set; }
+
+    // Comfort
+    public bool HasElevator { get; set; }
+    public bool HasSecurity { get; set; }
+    public bool HasGenerator { get; set; }
+    public bool HasGas { get; set; }
+    public bool HasFurniture { get; set; }
+    public bool IsRenovated { get; set; }
+
+    // International standard (Airbnb/Booking)
+    public bool HasAirConditioning { get; set; }
+    public bool HasHeating { get; set; }
+    public bool HasWasher { get; set; }
+    public bool HasKitchen { get; set; }
+    public bool HasTV { get; set; }
+    public bool HasWorkspace { get; set; }
+    public bool IsSelfCheckIn { get; set; }
+    public bool IsChildFriendly { get; set; }
+    public bool IsAccessible { get; set; }
     public decimal AverageRating { get; set; }
     public int ViewsCount { get; set; }
     public int FavoritesCount { get; set; }
