@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Mulkchi.Api.Models.Foundations.AIs;
 using Mulkchi.Api.Models.Foundations.Announcements;
+using Mulkchi.Api.Models.Foundations.Auth;
 using Mulkchi.Api.Models.Foundations.Discounts;
 using Mulkchi.Api.Models.Foundations.Favorites;
 using Mulkchi.Api.Models.Foundations.HomeRequests;

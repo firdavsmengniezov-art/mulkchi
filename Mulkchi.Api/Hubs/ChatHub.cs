@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Mulkchi.Api.Brokers.Loggings;
 using Mulkchi.Api.Models.Foundations.Messages;
@@ -5,6 +6,7 @@ using Mulkchi.Api.Services.Foundations.Messages;
 
 namespace Mulkchi.Api.Hubs;
 
+[Authorize]
 public class ChatHub : Hub
 {
     private readonly IMessageService messageService;

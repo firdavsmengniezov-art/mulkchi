@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mulkchi.Api.Models.Foundations.Auth;
 using Mulkchi.Api.Models.Foundations.Auth.Exceptions;
@@ -98,6 +99,29 @@ public class AuthController : ControllerBase
         catch (AuthDependencyValidationException authDependencyValidationException)
         {
             return BadRequest(authDependencyValidationException.InnerException);
+        }
+        catch (AuthDependencyException authDependencyException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, authDependencyException.InnerException);
+        }
+        catch (AuthServiceException authServiceException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, authServiceException.InnerException);
+        }
+    }
+
+    [HttpPost("logout")]
+    [Authorize]
+    public async ValueTask<ActionResult> LogoutAsync([FromBody] string refreshToken)
+    {
+        try
+        {
+            await this.authService.LogoutAsync(refreshToken);
+            return NoContent();
+        }
+        catch (AuthValidationException authValidationException)
+        {
+            return BadRequest(authValidationException.InnerException);
         }
         catch (AuthDependencyException authDependencyException)
         {
