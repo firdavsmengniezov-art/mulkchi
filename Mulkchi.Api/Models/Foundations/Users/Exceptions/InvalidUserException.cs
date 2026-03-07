@@ -2,7 +2,7 @@ using Xeptions;
 
 namespace Mulkchi.Api.Models.Foundations.Users.Exceptions;
 
-public class InvalidUserException : Xeptions.Xeption
+public class InvalidUserException : Xeption
 {
     public InvalidUserException(string message)
         : base(message)

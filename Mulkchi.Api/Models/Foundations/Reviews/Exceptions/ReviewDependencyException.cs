@@ -2,9 +2,9 @@ using Xeptions;
 
 namespace Mulkchi.Api.Models.Foundations.Reviews.Exceptions;
 
-public class ReviewDependencyException : Xeptions.Xeption
+public class ReviewDependencyException : Xeption
 {
-    public ReviewDependencyException(string message, Xeptions.Xeption innerException)
+    public ReviewDependencyException(string message, Xeption innerException)
         : base(message, innerException)
     { }
 }

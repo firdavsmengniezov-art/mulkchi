@@ -2,7 +2,7 @@ using Xeptions;
 
 namespace Mulkchi.Api.Models.Foundations.PropertyViews.Exceptions;
 
-public class InvalidPropertyViewException : Xeptions.Xeption
+public class InvalidPropertyViewException : Xeption
 {
     public InvalidPropertyViewException(string message)
         : base(message)

@@ -2,7 +2,7 @@ using Xeptions;
 
 namespace Mulkchi.Api.Models.Foundations.Favorites.Exceptions;
 
-public class InvalidFavoriteException : Xeptions.Xeption
+public class InvalidFavoriteException : Xeption
 {
     public InvalidFavoriteException(string message)
         : base(message)

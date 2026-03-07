@@ -2,7 +2,7 @@ using Xeptions;
 
 namespace Mulkchi.Api.Models.Foundations.Messages.Exceptions;
 
-public class InvalidMessageException : Xeptions.Xeption
+public class InvalidMessageException : Xeption
 {
     public InvalidMessageException(string message)
         : base(message)

@@ -2,9 +2,9 @@ using Xeptions;
 
 namespace Mulkchi.Api.Models.Foundations.Favorites.Exceptions;
 
-public class FavoriteDependencyValidationException : Xeptions.Xeption
+public class FavoriteDependencyValidationException : Xeption
 {
-    public FavoriteDependencyValidationException(string message, Xeptions.Xeption innerException)
+    public FavoriteDependencyValidationException(string message, Xeption innerException)
         : base(message, innerException)
     { }
 }

@@ -2,7 +2,7 @@ using Xeptions;
 
 namespace Mulkchi.Api.Models.Foundations.Reviews.Exceptions;
 
-public class InvalidReviewException : Xeptions.Xeption
+public class InvalidReviewException : Xeption
 {
     public InvalidReviewException(string message)
         : base(message)

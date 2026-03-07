@@ -2,9 +2,9 @@ using Xeptions;
 
 namespace Mulkchi.Api.Models.Foundations.Users.Exceptions;
 
-public class UserDependencyValidationException : Xeptions.Xeption
+public class UserDependencyValidationException : Xeption
 {
-    public UserDependencyValidationException(string message, Xeptions.Xeption innerException)
+    public UserDependencyValidationException(string message, Xeption innerException)
         : base(message, innerException)
     { }
 }

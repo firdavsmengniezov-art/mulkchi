@@ -2,9 +2,9 @@ using Xeptions;
 
 namespace Mulkchi.Api.Models.Foundations.PropertyViews.Exceptions;
 
-public class PropertyViewValidationException : Xeptions.Xeption
+public class PropertyViewValidationException : Xeption
 {
-    public PropertyViewValidationException(string message, Xeptions.Xeption innerException)
+    public PropertyViewValidationException(string message, Xeption innerException)
         : base(message, innerException)
     { }
 }

@@ -2,9 +2,9 @@ using Xeptions;
 
 namespace Mulkchi.Api.Models.Foundations.Payments.Exceptions;
 
-public class PaymentDependencyException : Xeptions.Xeption
+public class PaymentDependencyException : Xeption
 {
-    public PaymentDependencyException(string message, Xeptions.Xeption innerException)
+    public PaymentDependencyException(string message, Xeption innerException)
         : base(message, innerException)
     { }
 }

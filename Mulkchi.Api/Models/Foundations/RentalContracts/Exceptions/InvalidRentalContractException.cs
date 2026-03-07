@@ -2,7 +2,7 @@ using Xeptions;
 
 namespace Mulkchi.Api.Models.Foundations.RentalContracts.Exceptions;
 
-public class InvalidRentalContractException : Xeptions.Xeption
+public class InvalidRentalContractException : Xeption
 {
     public InvalidRentalContractException(string message)
         : base(message)

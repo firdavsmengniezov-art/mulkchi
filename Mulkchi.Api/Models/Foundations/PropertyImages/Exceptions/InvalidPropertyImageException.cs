@@ -2,7 +2,7 @@ using Xeptions;
 
 namespace Mulkchi.Api.Models.Foundations.PropertyImages.Exceptions;
 
-public class InvalidPropertyImageException : Xeptions.Xeption
+public class InvalidPropertyImageException : Xeption
 {
     public InvalidPropertyImageException(string message)
         : base(message)

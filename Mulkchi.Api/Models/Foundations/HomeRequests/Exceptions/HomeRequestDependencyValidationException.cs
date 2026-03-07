@@ -2,9 +2,9 @@ using Xeptions;
 
 namespace Mulkchi.Api.Models.Foundations.HomeRequests.Exceptions;
 
-public class HomeRequestDependencyValidationException : Xeptions.Xeption
+public class HomeRequestDependencyValidationException : Xeption
 {
-    public HomeRequestDependencyValidationException(string message, Xeptions.Xeption innerException)
+    public HomeRequestDependencyValidationException(string message, Xeption innerException)
         : base(message, innerException)
     { }
 }

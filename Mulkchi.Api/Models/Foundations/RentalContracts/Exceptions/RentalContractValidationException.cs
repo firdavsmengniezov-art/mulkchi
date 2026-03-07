@@ -2,9 +2,9 @@ using Xeptions;
 
 namespace Mulkchi.Api.Models.Foundations.RentalContracts.Exceptions;
 
-public class RentalContractValidationException : Xeptions.Xeption
+public class RentalContractValidationException : Xeption
 {
-    public RentalContractValidationException(string message, Xeptions.Xeption innerException)
+    public RentalContractValidationException(string message, Xeption innerException)
         : base(message, innerException)
     { }
 }

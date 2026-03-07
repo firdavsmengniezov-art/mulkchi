@@ -2,7 +2,7 @@ using Xeptions;
 
 namespace Mulkchi.Api.Models.Foundations.Discounts.Exceptions;
 
-public class InvalidDiscountException : Xeptions.Xeption
+public class InvalidDiscountException : Xeption
 {
     public InvalidDiscountException(string message)
         : base(message)

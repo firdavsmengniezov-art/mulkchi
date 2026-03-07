@@ -2,9 +2,9 @@ using Xeptions;
 
 namespace Mulkchi.Api.Models.Foundations.Messages.Exceptions;
 
-public class MessageDependencyValidationException : Xeptions.Xeption
+public class MessageDependencyValidationException : Xeption
 {
-    public MessageDependencyValidationException(string message, Xeptions.Xeption innerException)
+    public MessageDependencyValidationException(string message, Xeption innerException)
         : base(message, innerException)
     { }
 }

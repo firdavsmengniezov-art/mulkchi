@@ -2,9 +2,9 @@ using Xeptions;
 
 namespace Mulkchi.Api.Models.Foundations.Notifications.Exceptions;
 
-public class NotificationValidationException : Xeptions.Xeption
+public class NotificationValidationException : Xeption
 {
-    public NotificationValidationException(string message, Xeptions.Xeption innerException)
+    public NotificationValidationException(string message, Xeption innerException)
         : base(message, innerException)
     { }
 }

@@ -2,9 +2,9 @@ using Xeptions;
 
 namespace Mulkchi.Api.Models.Foundations.Discounts.Exceptions;
 
-public class DiscountDependencyValidationException : Xeptions.Xeption
+public class DiscountDependencyValidationException : Xeption
 {
-    public DiscountDependencyValidationException(string message, Xeptions.Xeption innerException)
+    public DiscountDependencyValidationException(string message, Xeption innerException)
         : base(message, innerException)
     { }
 }

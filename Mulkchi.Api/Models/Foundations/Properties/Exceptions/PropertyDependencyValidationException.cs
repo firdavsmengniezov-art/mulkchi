@@ -2,9 +2,9 @@ using Xeptions;
 
 namespace Mulkchi.Api.Models.Foundations.Properties.Exceptions;
 
-public class PropertyDependencyValidationException : Xeptions.Xeption
+public class PropertyDependencyValidationException : Xeption
 {
-    public PropertyDependencyValidationException(string message, Xeptions.Xeption innerException)
+    public PropertyDependencyValidationException(string message, Xeption innerException)
         : base(message, innerException)
     { }
 }

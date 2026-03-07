@@ -2,7 +2,7 @@ using Xeptions;
 
 namespace Mulkchi.Api.Models.Foundations.Announcements.Exceptions;
 
-public class InvalidAnnouncementException : Xeptions.Xeption
+public class InvalidAnnouncementException : Xeption
 {
     public InvalidAnnouncementException(string message)
         : base(message)

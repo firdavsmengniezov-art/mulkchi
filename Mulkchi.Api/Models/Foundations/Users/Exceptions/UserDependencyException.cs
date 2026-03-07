@@ -2,9 +2,9 @@ using Xeptions;
 
 namespace Mulkchi.Api.Models.Foundations.Users.Exceptions;
 
-public class UserDependencyException : Xeptions.Xeption
+public class UserDependencyException : Xeption
 {
-    public UserDependencyException(string message, Xeptions.Xeption innerException)
+    public UserDependencyException(string message, Xeption innerException)
         : base(message, innerException)
     { }
 }

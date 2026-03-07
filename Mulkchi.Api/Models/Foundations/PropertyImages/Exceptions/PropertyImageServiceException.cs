@@ -2,9 +2,9 @@ using Xeptions;
 
 namespace Mulkchi.Api.Models.Foundations.PropertyImages.Exceptions;
 
-public class PropertyImageServiceException : Xeptions.Xeption
+public class PropertyImageServiceException : Xeption
 {
-    public PropertyImageServiceException(string message, Xeptions.Xeption innerException)
+    public PropertyImageServiceException(string message, Xeption innerException)
         : base(message, innerException)
     { }
 }

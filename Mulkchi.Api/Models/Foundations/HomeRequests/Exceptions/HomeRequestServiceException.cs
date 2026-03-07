@@ -2,9 +2,9 @@ using Xeptions;
 
 namespace Mulkchi.Api.Models.Foundations.HomeRequests.Exceptions;
 
-public class HomeRequestServiceException : Xeptions.Xeption
+public class HomeRequestServiceException : Xeption
 {
-    public HomeRequestServiceException(string message, Xeptions.Xeption innerException)
+    public HomeRequestServiceException(string message, Xeption innerException)
         : base(message, innerException)
     { }
 }

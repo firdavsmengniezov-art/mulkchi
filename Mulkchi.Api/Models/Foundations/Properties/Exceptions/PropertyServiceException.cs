@@ -2,9 +2,9 @@ using Xeptions;
 
 namespace Mulkchi.Api.Models.Foundations.Properties.Exceptions;
 
-public class PropertyServiceException : Xeptions.Xeption
+public class PropertyServiceException : Xeption
 {
-    public PropertyServiceException(string message, Xeptions.Xeption innerException)
+    public PropertyServiceException(string message, Xeption innerException)
         : base(message, innerException)
     { }
 }

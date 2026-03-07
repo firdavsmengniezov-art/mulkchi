@@ -2,9 +2,9 @@ using Xeptions;
 
 namespace Mulkchi.Api.Models.Foundations.Favorites.Exceptions;
 
-public class FavoriteServiceException : Xeptions.Xeption
+public class FavoriteServiceException : Xeption
 {
-    public FavoriteServiceException(string message, Xeptions.Xeption innerException)
+    public FavoriteServiceException(string message, Xeption innerException)
         : base(message, innerException)
     { }
 }

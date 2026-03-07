@@ -2,7 +2,7 @@ using Xeptions;
 
 namespace Mulkchi.Api.Models.Foundations.AIs.Exceptions;
 
-public class InvalidAiRecommendationException : Xeptions.Xeption
+public class InvalidAiRecommendationException : Xeption
 {
     public InvalidAiRecommendationException(string message)
         : base(message)

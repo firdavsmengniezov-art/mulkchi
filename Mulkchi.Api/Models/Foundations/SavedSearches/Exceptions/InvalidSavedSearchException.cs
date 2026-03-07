@@ -2,7 +2,7 @@ using Xeptions;
 
 namespace Mulkchi.Api.Models.Foundations.SavedSearches.Exceptions;
 
-public class InvalidSavedSearchException : Xeptions.Xeption
+public class InvalidSavedSearchException : Xeption
 {
     public InvalidSavedSearchException(string message)
         : base(message)
