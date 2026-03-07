@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using BCrypt.Net;
 using Microsoft.IdentityModel.Tokens;
@@ -46,7 +47,7 @@ public partial class AuthService : IAuthService
                 throw new InvalidLoginRequestException(
                     message: "The provided credentials are invalid.");
 
-            return GenerateAuthResponse(maybeUser);
+            return await GenerateAndSaveAuthResponseAsync(maybeUser);
         });
 
     public ValueTask<AuthResponse> RegisterAsync(RegisterRequest request) =>
@@ -77,7 +78,7 @@ public partial class AuthService : IAuthService
 
             User addedUser = await this.storageBroker.InsertUserAsync(user);
 
-            return GenerateAuthResponse(addedUser);
+            return await GenerateAndSaveAuthResponseAsync(addedUser);
         });
 
     public ValueTask<AuthResponse> RefreshTokenAsync(string refreshToken) =>
@@ -87,24 +88,47 @@ public partial class AuthService : IAuthService
                 throw new InvalidRefreshTokenException(
                     message: "Refresh token is required.");
 
-            ClaimsPrincipal principal = ValidateRefreshToken(refreshToken);
+            UserRefreshToken? storedToken =
+                await this.storageBroker.SelectRefreshTokenAsync(refreshToken);
 
-            string? userIdValue = principal.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (!Guid.TryParse(userIdValue, out Guid userId))
+            if (storedToken is null || storedToken.IsRevoked)
                 throw new InvalidRefreshTokenException(
-                    message: "Refresh token contains invalid user identifier.");
+                    message: "Refresh token is invalid or has been revoked.");
 
-            User? maybeUser = await this.storageBroker.SelectUserByIdAsync(userId);
+            if (storedToken.ExpiresAt <= this.dateTimeBroker.GetCurrentDateTimeOffset())
+                throw new InvalidRefreshTokenException(
+                    message: "Refresh token is invalid or expired.");
+
+            User? maybeUser = await this.storageBroker.SelectUserByIdAsync(storedToken.UserId);
 
             if (maybeUser is null)
                 throw new NotFoundUserByEmailException(
                     message: $"User associated with this refresh token was not found.");
 
-            return GenerateAuthResponse(maybeUser);
+            storedToken.IsRevoked = true;
+            await this.storageBroker.UpdateRefreshTokenAsync(storedToken);
+
+            return await GenerateAndSaveAuthResponseAsync(maybeUser);
         });
 
-    private AuthResponse GenerateAuthResponse(User user)
+    public ValueTask LogoutAsync(string refreshToken) =>
+        TryCatch(async () =>
+        {
+            if (string.IsNullOrWhiteSpace(refreshToken))
+                throw new InvalidRefreshTokenException(
+                    message: "Refresh token is required.");
+
+            UserRefreshToken? storedToken =
+                await this.storageBroker.SelectRefreshTokenAsync(refreshToken);
+
+            if (storedToken is not null && !storedToken.IsRevoked)
+            {
+                storedToken.IsRevoked = true;
+                await this.storageBroker.UpdateRefreshTokenAsync(storedToken);
+            }
+        });
+
+    private async Task<AuthResponse> GenerateAndSaveAuthResponseAsync(User user)
     {
         var jwtSettings = this.configuration.GetSection("JwtSettings");
         var secret = jwtSettings["Secret"]
@@ -136,25 +160,25 @@ public partial class AuthService : IAuthService
 
         string token = new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
 
-        var refreshClaims = new[]
+        string refreshTokenValue = GenerateSecureRefreshToken();
+        DateTimeOffset refreshExpiresAt = now.AddDays(expiryDays * 2);
+
+        var userRefreshToken = new UserRefreshToken
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            Id = Guid.NewGuid(),
+            Token = refreshTokenValue,
+            UserId = user.Id,
+            ExpiresAt = refreshExpiresAt,
+            IsRevoked = false,
+            CreatedDate = now
         };
 
-        var refreshDescriptor = new JwtSecurityToken(
-            issuer: issuer,
-            audience: audience,
-            claims: refreshClaims,
-            expires: now.AddDays(expiryDays * 2).UtcDateTime,
-            signingCredentials: credentials);
-
-        string refreshToken = new JwtSecurityTokenHandler().WriteToken(refreshDescriptor);
+        await this.storageBroker.InsertRefreshTokenAsync(userRefreshToken);
 
         return new AuthResponse
         {
             Token = token,
-            RefreshToken = refreshToken,
+            RefreshToken = refreshTokenValue,
             ExpiresAt = expiresAt,
             UserId = user.Id,
             Email = user.Email,
@@ -162,35 +186,10 @@ public partial class AuthService : IAuthService
         };
     }
 
-    private ClaimsPrincipal ValidateRefreshToken(string refreshToken)
+    private static string GenerateSecureRefreshToken()
     {
-        var jwtSettings = this.configuration.GetSection("JwtSettings");
-        var secret = jwtSettings["Secret"]
-            ?? throw new InvalidOperationException("JwtSettings:Secret is not configured.");
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
-
-        var validationParameters = new TokenValidationParameters
-        {
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = key,
-            ValidateIssuer = true,
-            ValidIssuer = jwtSettings["Issuer"],
-            ValidateAudience = true,
-            ValidAudience = jwtSettings["Audience"],
-            ValidateLifetime = true,
-            ClockSkew = TimeSpan.Zero
-        };
-
-        try
-        {
-            return new JwtSecurityTokenHandler()
-                .ValidateToken(refreshToken, validationParameters, out _);
-        }
-        catch (Exception exception)
-        {
-            throw new InvalidRefreshTokenException(
-                message: "Refresh token is invalid or expired.",
-                innerException: exception);
-        }
+        var randomBytes = new byte[64];
+        RandomNumberGenerator.Fill(randomBytes);
+        return Convert.ToBase64String(randomBytes);
     }
 }

@@ -32,9 +32,14 @@ public partial class RentalContractServiceTests
     private static RentalContract CreateRandomRentalContract()
     {
         var filler = new Filler<RentalContract>();
+        DateTimeOffset startDate = DateTimeOffset.UtcNow;
+        DateTimeOffset endDate = startDate.AddMonths(1);
+
         filler.Setup()
-            .OnType<DateTimeOffset>().Use(() => DateTimeOffset.UtcNow)
-            .OnType<DateTimeOffset?>().Use(() => (DateTimeOffset?)DateTimeOffset.UtcNow);
+            .OnType<DateTimeOffset>().Use(() => startDate)
+            .OnType<DateTimeOffset?>().Use(() => (DateTimeOffset?)startDate)
+            .OnProperty(r => r.StartDate).Use(() => startDate)
+            .OnProperty(r => r.EndDate).Use(() => endDate);
 
         return filler.Create();
     }

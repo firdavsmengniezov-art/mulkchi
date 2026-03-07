@@ -10,14 +10,20 @@ public partial class PaymentService
     {
         ValidatePaymentIsNotNull(payment);
         Validate(
-        (Rule: IsInvalid(payment.Id), Parameter: nameof(Payment.Id)));
+        (Rule: IsInvalid(payment.Id), Parameter: nameof(Payment.Id)),
+        (Rule: IsInvalid(payment.PayerId), Parameter: nameof(Payment.PayerId)),
+        (Rule: IsInvalid(payment.ReceiverId), Parameter: nameof(Payment.ReceiverId)),
+        (Rule: IsInvalidAmount(payment.Amount), Parameter: nameof(Payment.Amount)));
     }
 
     private void ValidatePaymentOnModify(Payment payment)
     {
         ValidatePaymentIsNotNull(payment);
         Validate(
-        (Rule: IsInvalid(payment.Id), Parameter: nameof(Payment.Id)));
+        (Rule: IsInvalid(payment.Id), Parameter: nameof(Payment.Id)),
+        (Rule: IsInvalid(payment.PayerId), Parameter: nameof(Payment.PayerId)),
+        (Rule: IsInvalid(payment.ReceiverId), Parameter: nameof(Payment.ReceiverId)),
+        (Rule: IsInvalidAmount(payment.Amount), Parameter: nameof(Payment.Amount)));
     }
 
     private static void ValidatePaymentId(Guid paymentId)
@@ -45,6 +51,12 @@ public partial class PaymentService
     {
         Condition = string.IsNullOrWhiteSpace(text),
         Message = "Value is required."
+    };
+
+    private static dynamic IsInvalidAmount(decimal amount) => new
+    {
+        Condition = amount <= 0,
+        Message = "Amount must be greater than zero."
     };
 
     private void Validate(params (dynamic Rule, string Parameter)[] validations)

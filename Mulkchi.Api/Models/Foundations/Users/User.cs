@@ -1,5 +1,7 @@
 #nullable disable
 
+using System.Text.Json.Serialization;
+
 namespace Mulkchi.Api.Models.Foundations.Users;
 
 public class User
@@ -9,6 +11,7 @@ public class User
     public string LastName { get; set; }
     public string Email { get; set; }
     public string Phone { get; set; }
+    [JsonIgnore]
     public string PasswordHash { get; set; }
     public string AvatarUrl { get; set; }
     public string Bio { get; set; }

@@ -34,7 +34,13 @@ public partial class ReviewServiceTests
         var filler = new Filler<Review>();
         filler.Setup()
             .OnType<DateTimeOffset>().Use(() => DateTimeOffset.UtcNow)
-            .OnType<DateTimeOffset?>().Use(() => (DateTimeOffset?)DateTimeOffset.UtcNow);
+            .OnType<DateTimeOffset?>().Use(() => (DateTimeOffset?)DateTimeOffset.UtcNow)
+            .OnProperty(r => r.OverallRating).Use(() => (decimal)Random.Shared.Next(1, 6))
+            .OnProperty(r => r.CleanlinessRating).Use(() => (decimal)Random.Shared.Next(1, 6))
+            .OnProperty(r => r.LocationRating).Use(() => (decimal)Random.Shared.Next(1, 6))
+            .OnProperty(r => r.ValueRating).Use(() => (decimal)Random.Shared.Next(1, 6))
+            .OnProperty(r => r.CommunicationRating).Use(() => (decimal)Random.Shared.Next(1, 6))
+            .OnProperty(r => r.AccuracyRating).Use(() => (decimal)Random.Shared.Next(1, 6));
 
         return filler.Create();
     }

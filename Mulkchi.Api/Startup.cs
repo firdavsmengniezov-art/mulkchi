@@ -58,7 +58,7 @@ public class Startup
         }
 
         app.UseHttpsRedirection();
-        app.UseCors("AllowAll");
+        app.UseCors(env.IsDevelopment() ? "AllowAll" : "Production");
         app.UseRouting();
         app.UseAuthentication();
         app.UseAuthorization();
@@ -111,8 +111,11 @@ public class Startup
     private void AddJwtAuthentication(IServiceCollection services)
     {
         var jwtSettings = this.configuration.GetSection("JwtSettings");
-        var secret = jwtSettings["Secret"];
-        var key = Encoding.UTF8.GetBytes(secret!);
+        var secret = jwtSettings["Secret"]
+            ?? throw new InvalidOperationException(
+                "JwtSettings:Secret is not configured. " +
+                "Add a 'JwtSettings' section with 'Secret', 'Issuer', 'Audience', and 'ExpiryDays' to appsettings.json.");
+        var key = Encoding.UTF8.GetBytes(secret);
 
         services.AddAuthentication(options =>
         {
@@ -184,6 +187,29 @@ public class Startup
                     .AllowAnyOrigin()
                     .AllowAnyMethod()
                     .AllowAnyHeader();
+            });
+
+            var allowedOrigins = this.configuration
+                .GetSection("AllowedOrigins")
+                .Get<string[]>();
+
+            options.AddPolicy("Production", builder =>
+            {
+                if (allowedOrigins is { Length: > 0 })
+                {
+                    builder
+                        .WithOrigins(allowedOrigins)
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .AllowCredentials();
+                }
+                else
+                {
+                    builder
+                        .WithOrigins(Array.Empty<string>())
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
+                }
             });
         });
     }

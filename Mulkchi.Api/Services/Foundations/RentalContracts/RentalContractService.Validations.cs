@@ -11,7 +11,11 @@ public partial class RentalContractService
         ValidateRentalContractIsNotNull(rentalContract);
         Validate(
         (Rule: IsInvalid(rentalContract.Id), Parameter: nameof(RentalContract.Id)),
-        (Rule: IsInvalid(rentalContract.Terms), Parameter: nameof(RentalContract.Terms)));
+        (Rule: IsInvalid(rentalContract.TenantId), Parameter: nameof(RentalContract.TenantId)),
+        (Rule: IsInvalid(rentalContract.LandlordId), Parameter: nameof(RentalContract.LandlordId)),
+        (Rule: IsInvalid(rentalContract.Terms), Parameter: nameof(RentalContract.Terms)),
+        (Rule: IsStartDateNotBeforeEndDate(rentalContract.StartDate, rentalContract.EndDate),
+            Parameter: nameof(RentalContract.StartDate)));
     }
 
     private void ValidateRentalContractOnModify(RentalContract rentalContract)
@@ -19,7 +23,11 @@ public partial class RentalContractService
         ValidateRentalContractIsNotNull(rentalContract);
         Validate(
         (Rule: IsInvalid(rentalContract.Id), Parameter: nameof(RentalContract.Id)),
-        (Rule: IsInvalid(rentalContract.Terms), Parameter: nameof(RentalContract.Terms)));
+        (Rule: IsInvalid(rentalContract.TenantId), Parameter: nameof(RentalContract.TenantId)),
+        (Rule: IsInvalid(rentalContract.LandlordId), Parameter: nameof(RentalContract.LandlordId)),
+        (Rule: IsInvalid(rentalContract.Terms), Parameter: nameof(RentalContract.Terms)),
+        (Rule: IsStartDateNotBeforeEndDate(rentalContract.StartDate, rentalContract.EndDate),
+            Parameter: nameof(RentalContract.StartDate)));
     }
 
     private static void ValidateRentalContractId(Guid rentalContractId)
@@ -47,6 +55,12 @@ public partial class RentalContractService
     {
         Condition = string.IsNullOrWhiteSpace(text),
         Message = "Value is required."
+    };
+
+    private static dynamic IsStartDateNotBeforeEndDate(DateTimeOffset startDate, DateTimeOffset endDate) => new
+    {
+        Condition = startDate >= endDate,
+        Message = "Start date must be before end date."
     };
 
     private void Validate(params (dynamic Rule, string Parameter)[] validations)

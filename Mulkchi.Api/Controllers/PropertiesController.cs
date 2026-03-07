@@ -52,7 +52,9 @@ public class PropertiesController : ControllerBase
         [FromQuery] string? city = null,
         [FromQuery] decimal? minPrice = null,
         [FromQuery] decimal? maxPrice = null,
-        [FromQuery] int? bedrooms = null)
+        [FromQuery] int? bedrooms = null,
+        [FromQuery] UzbekistanRegion? region = null,
+        [FromQuery] ListingType? listingType = null)
     {
         try
         {
@@ -69,6 +71,12 @@ public class PropertiesController : ControllerBase
 
             if (bedrooms.HasValue)
                 query = query.Where(p => p.NumberOfBedrooms == bedrooms);
+
+            if (region.HasValue)
+                query = query.Where(p => p.Region == region.Value);
+
+            if (listingType.HasValue)
+                query = query.Where(p => p.ListingType == listingType.Value);
 
             int totalCount = query.Count();
 

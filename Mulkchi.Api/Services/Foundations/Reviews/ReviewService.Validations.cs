@@ -11,7 +11,15 @@ public partial class ReviewService
         ValidateReviewIsNotNull(review);
         Validate(
         (Rule: IsInvalid(review.Id), Parameter: nameof(Review.Id)),
-        (Rule: IsInvalid(review.Comment), Parameter: nameof(Review.Comment)));
+        (Rule: IsInvalid(review.ReviewerId), Parameter: nameof(Review.ReviewerId)),
+        (Rule: IsInvalid(review.PropertyId), Parameter: nameof(Review.PropertyId)),
+        (Rule: IsInvalid(review.Comment), Parameter: nameof(Review.Comment)),
+        (Rule: IsOutOfRange(review.OverallRating), Parameter: nameof(Review.OverallRating)),
+        (Rule: IsOutOfRange(review.CleanlinessRating), Parameter: nameof(Review.CleanlinessRating)),
+        (Rule: IsOutOfRange(review.LocationRating), Parameter: nameof(Review.LocationRating)),
+        (Rule: IsOutOfRange(review.ValueRating), Parameter: nameof(Review.ValueRating)),
+        (Rule: IsOutOfRange(review.CommunicationRating), Parameter: nameof(Review.CommunicationRating)),
+        (Rule: IsOutOfRange(review.AccuracyRating), Parameter: nameof(Review.AccuracyRating)));
     }
 
     private void ValidateReviewOnModify(Review review)
@@ -19,7 +27,15 @@ public partial class ReviewService
         ValidateReviewIsNotNull(review);
         Validate(
         (Rule: IsInvalid(review.Id), Parameter: nameof(Review.Id)),
-        (Rule: IsInvalid(review.Comment), Parameter: nameof(Review.Comment)));
+        (Rule: IsInvalid(review.ReviewerId), Parameter: nameof(Review.ReviewerId)),
+        (Rule: IsInvalid(review.PropertyId), Parameter: nameof(Review.PropertyId)),
+        (Rule: IsInvalid(review.Comment), Parameter: nameof(Review.Comment)),
+        (Rule: IsOutOfRange(review.OverallRating), Parameter: nameof(Review.OverallRating)),
+        (Rule: IsOutOfRange(review.CleanlinessRating), Parameter: nameof(Review.CleanlinessRating)),
+        (Rule: IsOutOfRange(review.LocationRating), Parameter: nameof(Review.LocationRating)),
+        (Rule: IsOutOfRange(review.ValueRating), Parameter: nameof(Review.ValueRating)),
+        (Rule: IsOutOfRange(review.CommunicationRating), Parameter: nameof(Review.CommunicationRating)),
+        (Rule: IsOutOfRange(review.AccuracyRating), Parameter: nameof(Review.AccuracyRating)));
     }
 
     private static void ValidateReviewId(Guid reviewId)
@@ -47,6 +63,12 @@ public partial class ReviewService
     {
         Condition = string.IsNullOrWhiteSpace(text),
         Message = "Value is required."
+    };
+
+    private static dynamic IsOutOfRange(decimal rating) => new
+    {
+        Condition = rating < 1 || rating > 5,
+        Message = "Rating must be between 1 and 5."
     };
 
     private void Validate(params (dynamic Rule, string Parameter)[] validations)
