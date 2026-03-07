@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mulkchi.Api.Models.Foundations.Announcements;
 using Mulkchi.Api.Models.Foundations.Announcements.Exceptions;
@@ -17,6 +18,7 @@ public class AnnouncementsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async ValueTask<ActionResult<Announcement>> PostAnnouncementAsync(Announcement announcement)
     {
         try
@@ -43,6 +45,7 @@ public class AnnouncementsController : ControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public ActionResult<IQueryable<Announcement>> GetAllAnnouncements()
     {
         try
@@ -61,6 +64,7 @@ public class AnnouncementsController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [AllowAnonymous]
     public async ValueTask<ActionResult<Announcement>> GetAnnouncementByIdAsync(Guid id)
     {
         try
@@ -92,6 +96,7 @@ public class AnnouncementsController : ControllerBase
     }
 
     [HttpPut]
+    [Authorize(Roles = "Admin")]
     public async ValueTask<ActionResult<Announcement>> PutAnnouncementAsync(Announcement announcement)
     {
         try
@@ -123,6 +128,7 @@ public class AnnouncementsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
     public async ValueTask<ActionResult<Announcement>> DeleteAnnouncementByIdAsync(Guid id)
     {
         try

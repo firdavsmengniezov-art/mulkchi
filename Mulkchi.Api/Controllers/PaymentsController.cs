@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mulkchi.Api.Models.Foundations.Payments;
 using Mulkchi.Api.Models.Foundations.Payments.Exceptions;
@@ -17,6 +18,7 @@ public class PaymentsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public async ValueTask<ActionResult<Payment>> PostPaymentAsync(Payment payment)
     {
         try
@@ -43,6 +45,7 @@ public class PaymentsController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public ActionResult<IQueryable<Payment>> GetAllPayments()
     {
         try
@@ -61,6 +64,7 @@ public class PaymentsController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize]
     public async ValueTask<ActionResult<Payment>> GetPaymentByIdAsync(Guid id)
     {
         try
@@ -92,6 +96,7 @@ public class PaymentsController : ControllerBase
     }
 
     [HttpPut]
+    [Authorize]
     public async ValueTask<ActionResult<Payment>> PutPaymentAsync(Payment payment)
     {
         try
@@ -123,6 +128,7 @@ public class PaymentsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize]
     public async ValueTask<ActionResult<Payment>> DeletePaymentByIdAsync(Guid id)
     {
         try

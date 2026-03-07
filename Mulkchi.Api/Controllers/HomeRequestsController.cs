@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mulkchi.Api.Models.Foundations.HomeRequests;
 using Mulkchi.Api.Models.Foundations.HomeRequests.Exceptions;
@@ -17,6 +18,7 @@ public class HomeRequestsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public async ValueTask<ActionResult<HomeRequest>> PostHomeRequestAsync(HomeRequest homeRequest)
     {
         try
@@ -43,6 +45,7 @@ public class HomeRequestsController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public ActionResult<IQueryable<HomeRequest>> GetAllHomeRequests()
     {
         try
@@ -61,6 +64,7 @@ public class HomeRequestsController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize]
     public async ValueTask<ActionResult<HomeRequest>> GetHomeRequestByIdAsync(Guid id)
     {
         try
@@ -92,6 +96,7 @@ public class HomeRequestsController : ControllerBase
     }
 
     [HttpPut]
+    [Authorize]
     public async ValueTask<ActionResult<HomeRequest>> PutHomeRequestAsync(HomeRequest homeRequest)
     {
         try
@@ -123,6 +128,7 @@ public class HomeRequestsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize]
     public async ValueTask<ActionResult<HomeRequest>> DeleteHomeRequestByIdAsync(Guid id)
     {
         try

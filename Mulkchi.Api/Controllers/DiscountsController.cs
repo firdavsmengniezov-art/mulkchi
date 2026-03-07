@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mulkchi.Api.Models.Foundations.Discounts;
 using Mulkchi.Api.Models.Foundations.Discounts.Exceptions;
@@ -17,6 +18,7 @@ public class DiscountsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin,Host")]
     public async ValueTask<ActionResult<Discount>> PostDiscountAsync(Discount discount)
     {
         try
@@ -43,6 +45,7 @@ public class DiscountsController : ControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public ActionResult<IQueryable<Discount>> GetAllDiscounts()
     {
         try
@@ -61,6 +64,7 @@ public class DiscountsController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [AllowAnonymous]
     public async ValueTask<ActionResult<Discount>> GetDiscountByIdAsync(Guid id)
     {
         try
@@ -92,6 +96,7 @@ public class DiscountsController : ControllerBase
     }
 
     [HttpPut]
+    [Authorize(Roles = "Admin,Host")]
     public async ValueTask<ActionResult<Discount>> PutDiscountAsync(Discount discount)
     {
         try
@@ -123,6 +128,7 @@ public class DiscountsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin,Host")]
     public async ValueTask<ActionResult<Discount>> DeleteDiscountByIdAsync(Guid id)
     {
         try

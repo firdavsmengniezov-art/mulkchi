@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mulkchi.Api.Models.Foundations.Messages;
 using Mulkchi.Api.Models.Foundations.Messages.Exceptions;
@@ -17,6 +18,7 @@ public class MessagesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public async ValueTask<ActionResult<Message>> PostMessageAsync(Message message)
     {
         try
@@ -43,6 +45,7 @@ public class MessagesController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public ActionResult<IQueryable<Message>> GetAllMessages()
     {
         try
@@ -61,6 +64,7 @@ public class MessagesController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize]
     public async ValueTask<ActionResult<Message>> GetMessageByIdAsync(Guid id)
     {
         try
@@ -92,6 +96,7 @@ public class MessagesController : ControllerBase
     }
 
     [HttpPut]
+    [Authorize]
     public async ValueTask<ActionResult<Message>> PutMessageAsync(Message message)
     {
         try
@@ -123,6 +128,7 @@ public class MessagesController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize]
     public async ValueTask<ActionResult<Message>> DeleteMessageByIdAsync(Guid id)
     {
         try

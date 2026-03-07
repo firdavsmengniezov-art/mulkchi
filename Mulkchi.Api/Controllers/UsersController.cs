@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mulkchi.Api.Models.Foundations.Users;
 using Mulkchi.Api.Models.Foundations.Users.Exceptions;
@@ -17,6 +18,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost]
+    [AllowAnonymous]
     public async ValueTask<ActionResult<User>> PostUserAsync(User user)
     {
         try
@@ -43,6 +45,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public ActionResult<IQueryable<User>> GetAllUsers()
     {
         try
@@ -61,6 +64,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize]
     public async ValueTask<ActionResult<User>> GetUserByIdAsync(Guid id)
     {
         try
@@ -92,6 +96,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPut]
+    [Authorize]
     public async ValueTask<ActionResult<User>> PutUserAsync(User user)
     {
         try
@@ -123,6 +128,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
     public async ValueTask<ActionResult<User>> DeleteUserByIdAsync(Guid id)
     {
         try

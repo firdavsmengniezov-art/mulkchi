@@ -1,11 +1,18 @@
 using Microsoft.EntityFrameworkCore;
 using Mulkchi.Api.Models.Foundations.AIs;
+using Mulkchi.Api.Models.Foundations.Announcements;
 using Mulkchi.Api.Models.Foundations.Discounts;
+using Mulkchi.Api.Models.Foundations.Favorites;
 using Mulkchi.Api.Models.Foundations.HomeRequests;
+using Mulkchi.Api.Models.Foundations.Messages;
+using Mulkchi.Api.Models.Foundations.Notifications;
 using Mulkchi.Api.Models.Foundations.Payments;
 using Mulkchi.Api.Models.Foundations.Properties;
+using Mulkchi.Api.Models.Foundations.PropertyImages;
+using Mulkchi.Api.Models.Foundations.PropertyViews;
 using Mulkchi.Api.Models.Foundations.RentalContracts;
 using Mulkchi.Api.Models.Foundations.Reviews;
+using Mulkchi.Api.Models.Foundations.SavedSearches;
 using Mulkchi.Api.Models.Foundations.Users;
 
 namespace Mulkchi.Api.Brokers.Storages;
@@ -87,5 +94,22 @@ public partial class StorageBroker : DbContext, IStorageBroker
             entity.Property(p => p.Rating).HasPrecision(18, 2);
             entity.Property(p => p.ResponseRate).HasPrecision(18, 2);
         });
+
+        modelBuilder.Entity<AiRecommendation>().HasQueryFilter(e => e.DeletedDate == null);
+        modelBuilder.Entity<Announcement>().HasQueryFilter(e => e.DeletedDate == null);
+        modelBuilder.Entity<Discount>().HasQueryFilter(e => e.DeletedDate == null);
+        modelBuilder.Entity<DiscountUsage>().HasQueryFilter(e => e.DeletedDate == null);
+        modelBuilder.Entity<Favorite>().HasQueryFilter(e => e.DeletedDate == null);
+        modelBuilder.Entity<HomeRequest>().HasQueryFilter(e => e.DeletedDate == null);
+        modelBuilder.Entity<Message>().HasQueryFilter(e => e.DeletedDate == null);
+        modelBuilder.Entity<Notification>().HasQueryFilter(e => e.DeletedDate == null);
+        modelBuilder.Entity<Payment>().HasQueryFilter(e => e.DeletedDate == null);
+        modelBuilder.Entity<Property>().HasQueryFilter(e => e.DeletedDate == null);
+        modelBuilder.Entity<PropertyImage>().HasQueryFilter(e => e.DeletedDate == null);
+        modelBuilder.Entity<PropertyView>().HasQueryFilter(e => e.DeletedDate == null);
+        modelBuilder.Entity<RentalContract>().HasQueryFilter(e => e.DeletedDate == null);
+        modelBuilder.Entity<Review>().HasQueryFilter(e => e.DeletedDate == null);
+        modelBuilder.Entity<SavedSearch>().HasQueryFilter(e => e.DeletedDate == null);
+        modelBuilder.Entity<User>().HasQueryFilter(e => e.DeletedDate == null);
     }
 }

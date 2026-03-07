@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Models.Foundations.Properties;
 using Mulkchi.Api.Models.Foundations.Properties.Exceptions;
 using Mulkchi.Api.Services.Foundations.Properties;
@@ -17,6 +19,7 @@ public class PropertiesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Host,Admin")]
     public async ValueTask<ActionResult<Property>> PostPropertyAsync(Property property)
     {
         try
@@ -43,12 +46,46 @@ public class PropertiesController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<IQueryable<Property>> GetAllProperties()
+    [AllowAnonymous]
+    public ActionResult<PagedResult<Property>> GetAllProperties(
+        [FromQuery] PaginationParams pagination,
+        [FromQuery] string? city = null,
+        [FromQuery] decimal? minPrice = null,
+        [FromQuery] decimal? maxPrice = null,
+        [FromQuery] int? bedrooms = null)
     {
         try
         {
-            IQueryable<Property> propertys = this.propertyService.RetrieveAllProperties();
-            return Ok(propertys);
+            IQueryable<Property> query = this.propertyService.RetrieveAllProperties();
+
+            if (!string.IsNullOrWhiteSpace(city))
+                query = query.Where(p => p.City == city);
+
+            if (minPrice.HasValue)
+                query = query.Where(p => p.MonthlyRent >= minPrice || p.SalePrice >= minPrice || p.PricePerNight >= minPrice);
+
+            if (maxPrice.HasValue)
+                query = query.Where(p => p.MonthlyRent <= maxPrice || p.SalePrice <= maxPrice || p.PricePerNight <= maxPrice);
+
+            if (bedrooms.HasValue)
+                query = query.Where(p => p.NumberOfBedrooms == bedrooms);
+
+            int totalCount = query.Count();
+
+            var items = query
+                .Skip((pagination.Page - 1) * pagination.PageSize)
+                .Take(pagination.PageSize)
+                .ToList();
+
+            var result = new PagedResult<Property>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = pagination.Page,
+                PageSize = pagination.PageSize
+            };
+
+            return Ok(result);
         }
         catch (PropertyDependencyException propertyDependencyException)
         {
@@ -61,6 +98,7 @@ public class PropertiesController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [AllowAnonymous]
     public async ValueTask<ActionResult<Property>> GetPropertyByIdAsync(Guid id)
     {
         try
@@ -92,6 +130,7 @@ public class PropertiesController : ControllerBase
     }
 
     [HttpPut]
+    [Authorize(Roles = "Host,Admin")]
     public async ValueTask<ActionResult<Property>> PutPropertyAsync(Property property)
     {
         try
@@ -123,6 +162,7 @@ public class PropertiesController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Host,Admin")]
     public async ValueTask<ActionResult<Property>> DeletePropertyByIdAsync(Guid id)
     {
         try

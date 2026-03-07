@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mulkchi.Api.Models.Foundations.Notifications;
 using Mulkchi.Api.Models.Foundations.Notifications.Exceptions;
@@ -17,6 +18,7 @@ public class NotificationsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public async ValueTask<ActionResult<Notification>> PostNotificationAsync(Notification notification)
     {
         try
@@ -43,6 +45,7 @@ public class NotificationsController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public ActionResult<IQueryable<Notification>> GetAllNotifications()
     {
         try
@@ -61,6 +64,7 @@ public class NotificationsController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize]
     public async ValueTask<ActionResult<Notification>> GetNotificationByIdAsync(Guid id)
     {
         try
@@ -92,6 +96,7 @@ public class NotificationsController : ControllerBase
     }
 
     [HttpPut]
+    [Authorize]
     public async ValueTask<ActionResult<Notification>> PutNotificationAsync(Notification notification)
     {
         try
@@ -123,6 +128,7 @@ public class NotificationsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize]
     public async ValueTask<ActionResult<Notification>> DeleteNotificationByIdAsync(Guid id)
     {
         try

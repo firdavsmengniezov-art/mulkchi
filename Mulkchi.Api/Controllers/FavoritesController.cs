@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mulkchi.Api.Models.Foundations.Favorites;
 using Mulkchi.Api.Models.Foundations.Favorites.Exceptions;
@@ -17,6 +18,7 @@ public class FavoritesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public async ValueTask<ActionResult<Favorite>> PostFavoriteAsync(Favorite favorite)
     {
         try
@@ -43,6 +45,7 @@ public class FavoritesController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public ActionResult<IQueryable<Favorite>> GetAllFavorites()
     {
         try
@@ -61,6 +64,7 @@ public class FavoritesController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize]
     public async ValueTask<ActionResult<Favorite>> GetFavoriteByIdAsync(Guid id)
     {
         try
@@ -92,6 +96,7 @@ public class FavoritesController : ControllerBase
     }
 
     [HttpPut]
+    [Authorize]
     public async ValueTask<ActionResult<Favorite>> PutFavoriteAsync(Favorite favorite)
     {
         try
@@ -123,6 +128,7 @@ public class FavoritesController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize]
     public async ValueTask<ActionResult<Favorite>> DeleteFavoriteByIdAsync(Guid id)
     {
         try

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mulkchi.Api.Models.Foundations.Reviews;
 using Mulkchi.Api.Models.Foundations.Reviews.Exceptions;
@@ -17,6 +18,7 @@ public class ReviewsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public async ValueTask<ActionResult<Review>> PostReviewAsync(Review review)
     {
         try
@@ -43,6 +45,7 @@ public class ReviewsController : ControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public ActionResult<IQueryable<Review>> GetAllReviews()
     {
         try
@@ -61,6 +64,7 @@ public class ReviewsController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [AllowAnonymous]
     public async ValueTask<ActionResult<Review>> GetReviewByIdAsync(Guid id)
     {
         try
@@ -92,6 +96,7 @@ public class ReviewsController : ControllerBase
     }
 
     [HttpPut]
+    [Authorize]
     public async ValueTask<ActionResult<Review>> PutReviewAsync(Review review)
     {
         try
@@ -123,6 +128,7 @@ public class ReviewsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize]
     public async ValueTask<ActionResult<Review>> DeleteReviewByIdAsync(Guid id)
     {
         try

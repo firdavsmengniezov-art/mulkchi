@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mulkchi.Api.Models.Foundations.RentalContracts;
 using Mulkchi.Api.Models.Foundations.RentalContracts.Exceptions;
@@ -17,6 +18,7 @@ public class RentalContractsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public async ValueTask<ActionResult<RentalContract>> PostRentalContractAsync(RentalContract rentalContract)
     {
         try
@@ -43,6 +45,7 @@ public class RentalContractsController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public ActionResult<IQueryable<RentalContract>> GetAllRentalContracts()
     {
         try
@@ -61,6 +64,7 @@ public class RentalContractsController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize]
     public async ValueTask<ActionResult<RentalContract>> GetRentalContractByIdAsync(Guid id)
     {
         try
@@ -92,6 +96,7 @@ public class RentalContractsController : ControllerBase
     }
 
     [HttpPut]
+    [Authorize]
     public async ValueTask<ActionResult<RentalContract>> PutRentalContractAsync(RentalContract rentalContract)
     {
         try
@@ -123,6 +128,7 @@ public class RentalContractsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize]
     public async ValueTask<ActionResult<RentalContract>> DeleteRentalContractByIdAsync(Guid id)
     {
         try

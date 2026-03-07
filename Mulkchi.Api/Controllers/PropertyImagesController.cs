@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mulkchi.Api.Models.Foundations.PropertyImages;
 using Mulkchi.Api.Models.Foundations.PropertyImages.Exceptions;
@@ -17,6 +18,7 @@ public class PropertyImagesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public async ValueTask<ActionResult<PropertyImage>> PostPropertyImageAsync(PropertyImage propertyImage)
     {
         try
@@ -43,6 +45,7 @@ public class PropertyImagesController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public ActionResult<IQueryable<PropertyImage>> GetAllPropertyImages()
     {
         try
@@ -61,6 +64,7 @@ public class PropertyImagesController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize]
     public async ValueTask<ActionResult<PropertyImage>> GetPropertyImageByIdAsync(Guid id)
     {
         try
@@ -92,6 +96,7 @@ public class PropertyImagesController : ControllerBase
     }
 
     [HttpPut]
+    [Authorize]
     public async ValueTask<ActionResult<PropertyImage>> PutPropertyImageAsync(PropertyImage propertyImage)
     {
         try
@@ -123,6 +128,7 @@ public class PropertyImagesController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize]
     public async ValueTask<ActionResult<PropertyImage>> DeletePropertyImageByIdAsync(Guid id)
     {
         try

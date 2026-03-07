@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mulkchi.Api.Models.Foundations.PropertyViews;
 using Mulkchi.Api.Models.Foundations.PropertyViews.Exceptions;
@@ -17,6 +18,7 @@ public class PropertyViewsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public async ValueTask<ActionResult<PropertyView>> PostPropertyViewAsync(PropertyView propertyView)
     {
         try
@@ -43,6 +45,7 @@ public class PropertyViewsController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public ActionResult<IQueryable<PropertyView>> GetAllPropertyViews()
     {
         try
@@ -61,6 +64,7 @@ public class PropertyViewsController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize]
     public async ValueTask<ActionResult<PropertyView>> GetPropertyViewByIdAsync(Guid id)
     {
         try
@@ -92,6 +96,7 @@ public class PropertyViewsController : ControllerBase
     }
 
     [HttpPut]
+    [Authorize]
     public async ValueTask<ActionResult<PropertyView>> PutPropertyViewAsync(PropertyView propertyView)
     {
         try
@@ -123,6 +128,7 @@ public class PropertyViewsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize]
     public async ValueTask<ActionResult<PropertyView>> DeletePropertyViewByIdAsync(Guid id)
     {
         try

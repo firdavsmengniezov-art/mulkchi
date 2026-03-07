@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mulkchi.Api.Models.Foundations.SavedSearches;
 using Mulkchi.Api.Models.Foundations.SavedSearches.Exceptions;
@@ -17,6 +18,7 @@ public class SavedSearchesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public async ValueTask<ActionResult<SavedSearch>> PostSavedSearchAsync(SavedSearch savedSearch)
     {
         try
@@ -43,6 +45,7 @@ public class SavedSearchesController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public ActionResult<IQueryable<SavedSearch>> GetAllSavedSearches()
     {
         try
@@ -61,6 +64,7 @@ public class SavedSearchesController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize]
     public async ValueTask<ActionResult<SavedSearch>> GetSavedSearchByIdAsync(Guid id)
     {
         try
@@ -92,6 +96,7 @@ public class SavedSearchesController : ControllerBase
     }
 
     [HttpPut]
+    [Authorize]
     public async ValueTask<ActionResult<SavedSearch>> PutSavedSearchAsync(SavedSearch savedSearch)
     {
         try
@@ -123,6 +128,7 @@ public class SavedSearchesController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize]
     public async ValueTask<ActionResult<SavedSearch>> DeleteSavedSearchByIdAsync(Guid id)
     {
         try
