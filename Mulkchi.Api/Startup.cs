@@ -22,6 +22,7 @@ using Mulkchi.Api.Services.Foundations.PropertyViews;
 using Mulkchi.Api.Services.Foundations.AiRecommendations;
 using Mulkchi.Api.Services.Foundations.Discounts;
 using Mulkchi.Api.Services.Foundations.Announcements;
+using Mulkchi.Api.Services.Foundations.Auth;
 
 namespace Mulkchi.Api;
 
@@ -158,6 +159,7 @@ public class Startup
         services.AddScoped<IAiRecommendationService, AiRecommendationService>();
         services.AddScoped<IDiscountService, DiscountService>();
         services.AddScoped<IAnnouncementService, AnnouncementService>();
+        services.AddScoped<IAuthService, AuthService>();
     }
 
     private void AddDbContext(IServiceCollection services)

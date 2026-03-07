@@ -1,0 +1,15 @@
+#nullable disable
+
+using Mulkchi.Api.Models.Foundations.Users;
+
+namespace Mulkchi.Api.Models.Foundations.Auth;
+
+public class RegisterRequest
+{
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public string Email { get; set; }
+    public string Phone { get; set; }
+    public string Password { get; set; }
+    public UserRole Role { get; set; }
+}
