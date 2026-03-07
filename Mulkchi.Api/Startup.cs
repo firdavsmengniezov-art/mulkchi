@@ -6,6 +6,7 @@ using Microsoft.OpenApi.Models;
 using Mulkchi.Api.Brokers.DateTimes;
 using Mulkchi.Api.Brokers.Loggings;
 using Mulkchi.Api.Brokers.Storages;
+using Microsoft.AspNetCore.SignalR;
 using Mulkchi.Api.Hubs;
 using Mulkchi.Api.Services.Foundations.Users;
 using Mulkchi.Api.Services.Foundations.Properties;
@@ -46,6 +47,7 @@ public class Startup
         AddBrokers(services);
         AddFoundationServices(services);
         services.AddSignalR();
+        services.AddSingleton<IUserIdProvider, JwtUserIdProvider>();
         AddCors(services);
     }
 
