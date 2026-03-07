@@ -10,14 +10,18 @@ public partial class FavoriteService
     {
         ValidateFavoriteIsNotNull(favorite);
         Validate(
-        (Rule: IsInvalid(favorite.Id), Parameter: nameof(Favorite.Id)));
+        (Rule: IsInvalid(favorite.Id), Parameter: nameof(Favorite.Id)),
+        (Rule: IsInvalid(favorite.UserId), Parameter: nameof(Favorite.UserId)),
+        (Rule: IsInvalid(favorite.PropertyId), Parameter: nameof(Favorite.PropertyId)));
     }
 
     private void ValidateFavoriteOnModify(Favorite favorite)
     {
         ValidateFavoriteIsNotNull(favorite);
         Validate(
-        (Rule: IsInvalid(favorite.Id), Parameter: nameof(Favorite.Id)));
+        (Rule: IsInvalid(favorite.Id), Parameter: nameof(Favorite.Id)),
+        (Rule: IsInvalid(favorite.UserId), Parameter: nameof(Favorite.UserId)),
+        (Rule: IsInvalid(favorite.PropertyId), Parameter: nameof(Favorite.PropertyId)));
     }
 
     private static void ValidateFavoriteId(Guid favoriteId)

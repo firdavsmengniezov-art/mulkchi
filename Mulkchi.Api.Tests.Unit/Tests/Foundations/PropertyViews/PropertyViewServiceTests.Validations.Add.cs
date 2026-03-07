@@ -52,4 +52,48 @@ public partial class PropertyViewServiceTests
 
         this.storageBrokerMock.VerifyNoOtherCalls();
     }
+
+    [Fact]
+    public async Task ShouldThrowValidationException_OnAdd_WhenPropertyIdIsEmpty()
+    {
+        // given
+        PropertyView randomPropertyView = CreateRandomPropertyView();
+        randomPropertyView.PropertyId = Guid.Empty;
+
+        // when
+        ValueTask<PropertyView> addPropertyViewTask =
+            this.propertyViewService.AddPropertyViewAsync(randomPropertyView);
+
+        // then
+        await Assert.ThrowsAsync<PropertyViewValidationException>(
+            testCode: async () => await addPropertyViewTask);
+
+        this.storageBrokerMock.Verify(broker =>
+            broker.InsertPropertyViewAsync(It.IsAny<PropertyView>()),
+            Times.Never);
+
+        this.storageBrokerMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ShouldThrowValidationException_OnAdd_WhenIpAddressIsEmpty()
+    {
+        // given
+        PropertyView randomPropertyView = CreateRandomPropertyView();
+        randomPropertyView.IpAddress = string.Empty;
+
+        // when
+        ValueTask<PropertyView> addPropertyViewTask =
+            this.propertyViewService.AddPropertyViewAsync(randomPropertyView);
+
+        // then
+        await Assert.ThrowsAsync<PropertyViewValidationException>(
+            testCode: async () => await addPropertyViewTask);
+
+        this.storageBrokerMock.Verify(broker =>
+            broker.InsertPropertyViewAsync(It.IsAny<PropertyView>()),
+            Times.Never);
+
+        this.storageBrokerMock.VerifyNoOtherCalls();
+    }
 }

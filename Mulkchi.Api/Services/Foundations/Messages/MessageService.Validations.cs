@@ -11,7 +11,9 @@ public partial class MessageService
         ValidateMessageIsNotNull(message);
         Validate(
         (Rule: IsInvalid(message.Id), Parameter: nameof(Message.Id)),
-        (Rule: IsInvalid(message.Content), Parameter: nameof(Message.Content)));
+        (Rule: IsInvalid(message.Content), Parameter: nameof(Message.Content)),
+        (Rule: IsInvalid(message.SenderId), Parameter: nameof(Message.SenderId)),
+        (Rule: IsInvalid(message.ReceiverId), Parameter: nameof(Message.ReceiverId)));
     }
 
     private void ValidateMessageOnModify(Message message)
@@ -19,7 +21,9 @@ public partial class MessageService
         ValidateMessageIsNotNull(message);
         Validate(
         (Rule: IsInvalid(message.Id), Parameter: nameof(Message.Id)),
-        (Rule: IsInvalid(message.Content), Parameter: nameof(Message.Content)));
+        (Rule: IsInvalid(message.Content), Parameter: nameof(Message.Content)),
+        (Rule: IsInvalid(message.SenderId), Parameter: nameof(Message.SenderId)),
+        (Rule: IsInvalid(message.ReceiverId), Parameter: nameof(Message.ReceiverId)));
     }
 
     private static void ValidateMessageId(Guid messageId)

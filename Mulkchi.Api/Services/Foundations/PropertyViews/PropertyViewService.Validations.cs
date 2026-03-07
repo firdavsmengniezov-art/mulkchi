@@ -10,14 +10,18 @@ public partial class PropertyViewService
     {
         ValidatePropertyViewIsNotNull(propertyView);
         Validate(
-        (Rule: IsInvalid(propertyView.Id), Parameter: nameof(PropertyView.Id)));
+        (Rule: IsInvalid(propertyView.Id), Parameter: nameof(PropertyView.Id)),
+        (Rule: IsInvalid(propertyView.PropertyId), Parameter: nameof(PropertyView.PropertyId)),
+        (Rule: IsInvalid(propertyView.IpAddress), Parameter: nameof(PropertyView.IpAddress)));
     }
 
     private void ValidatePropertyViewOnModify(PropertyView propertyView)
     {
         ValidatePropertyViewIsNotNull(propertyView);
         Validate(
-        (Rule: IsInvalid(propertyView.Id), Parameter: nameof(PropertyView.Id)));
+        (Rule: IsInvalid(propertyView.Id), Parameter: nameof(PropertyView.Id)),
+        (Rule: IsInvalid(propertyView.PropertyId), Parameter: nameof(PropertyView.PropertyId)),
+        (Rule: IsInvalid(propertyView.IpAddress), Parameter: nameof(PropertyView.IpAddress)));
     }
 
     private static void ValidatePropertyViewId(Guid propertyViewId)

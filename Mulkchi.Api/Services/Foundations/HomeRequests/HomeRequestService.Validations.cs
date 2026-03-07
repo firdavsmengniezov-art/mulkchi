@@ -10,14 +10,20 @@ public partial class HomeRequestService
     {
         ValidateHomeRequestIsNotNull(homeRequest);
         Validate(
-        (Rule: IsInvalid(homeRequest.Id), Parameter: nameof(HomeRequest.Id)));
+        (Rule: IsInvalid(homeRequest.Id), Parameter: nameof(HomeRequest.Id)),
+        (Rule: IsInvalid(homeRequest.GuestId), Parameter: nameof(HomeRequest.GuestId)),
+        (Rule: IsInvalid(homeRequest.HostId), Parameter: nameof(HomeRequest.HostId)),
+        (Rule: IsInvalid(homeRequest.PropertyId), Parameter: nameof(HomeRequest.PropertyId)));
     }
 
     private void ValidateHomeRequestOnModify(HomeRequest homeRequest)
     {
         ValidateHomeRequestIsNotNull(homeRequest);
         Validate(
-        (Rule: IsInvalid(homeRequest.Id), Parameter: nameof(HomeRequest.Id)));
+        (Rule: IsInvalid(homeRequest.Id), Parameter: nameof(HomeRequest.Id)),
+        (Rule: IsInvalid(homeRequest.GuestId), Parameter: nameof(HomeRequest.GuestId)),
+        (Rule: IsInvalid(homeRequest.HostId), Parameter: nameof(HomeRequest.HostId)),
+        (Rule: IsInvalid(homeRequest.PropertyId), Parameter: nameof(HomeRequest.PropertyId)));
     }
 
     private static void ValidateHomeRequestId(Guid homeRequestId)

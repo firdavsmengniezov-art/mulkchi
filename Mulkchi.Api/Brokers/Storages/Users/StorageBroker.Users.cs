@@ -32,8 +32,13 @@ public partial class StorageBroker
 
     public async ValueTask<User> DeleteUserByIdAsync(Guid userId)
     {
-        User user = (await this.Users.FindAsync(userId))!;
-        this.Users.Remove(user);
+        User? user = await this.Users.FindAsync(userId);
+
+        if (user is null)
+            return null!;
+
+        user.DeletedDate = DateTimeOffset.UtcNow;
+        this.Entry(user).State = EntityState.Modified;
         await this.SaveChangesAsync();
         return user;
     }

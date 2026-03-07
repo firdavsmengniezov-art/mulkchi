@@ -52,4 +52,70 @@ public partial class HomeRequestServiceTests
 
         this.storageBrokerMock.VerifyNoOtherCalls();
     }
+
+    [Fact]
+    public async Task ShouldThrowValidationException_OnAdd_WhenGuestIdIsEmpty()
+    {
+        // given
+        HomeRequest randomHomeRequest = CreateRandomHomeRequest();
+        randomHomeRequest.GuestId = Guid.Empty;
+
+        // when
+        ValueTask<HomeRequest> addHomeRequestTask =
+            this.homeRequestService.AddHomeRequestAsync(randomHomeRequest);
+
+        // then
+        await Assert.ThrowsAsync<HomeRequestValidationException>(
+            testCode: async () => await addHomeRequestTask);
+
+        this.storageBrokerMock.Verify(broker =>
+            broker.InsertHomeRequestAsync(It.IsAny<HomeRequest>()),
+            Times.Never);
+
+        this.storageBrokerMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ShouldThrowValidationException_OnAdd_WhenHostIdIsEmpty()
+    {
+        // given
+        HomeRequest randomHomeRequest = CreateRandomHomeRequest();
+        randomHomeRequest.HostId = Guid.Empty;
+
+        // when
+        ValueTask<HomeRequest> addHomeRequestTask =
+            this.homeRequestService.AddHomeRequestAsync(randomHomeRequest);
+
+        // then
+        await Assert.ThrowsAsync<HomeRequestValidationException>(
+            testCode: async () => await addHomeRequestTask);
+
+        this.storageBrokerMock.Verify(broker =>
+            broker.InsertHomeRequestAsync(It.IsAny<HomeRequest>()),
+            Times.Never);
+
+        this.storageBrokerMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ShouldThrowValidationException_OnAdd_WhenPropertyIdIsEmpty()
+    {
+        // given
+        HomeRequest randomHomeRequest = CreateRandomHomeRequest();
+        randomHomeRequest.PropertyId = Guid.Empty;
+
+        // when
+        ValueTask<HomeRequest> addHomeRequestTask =
+            this.homeRequestService.AddHomeRequestAsync(randomHomeRequest);
+
+        // then
+        await Assert.ThrowsAsync<HomeRequestValidationException>(
+            testCode: async () => await addHomeRequestTask);
+
+        this.storageBrokerMock.Verify(broker =>
+            broker.InsertHomeRequestAsync(It.IsAny<HomeRequest>()),
+            Times.Never);
+
+        this.storageBrokerMock.VerifyNoOtherCalls();
+    }
 }

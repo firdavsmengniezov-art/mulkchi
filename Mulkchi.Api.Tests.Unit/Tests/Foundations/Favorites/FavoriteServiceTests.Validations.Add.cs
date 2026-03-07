@@ -52,4 +52,48 @@ public partial class FavoriteServiceTests
 
         this.storageBrokerMock.VerifyNoOtherCalls();
     }
+
+    [Fact]
+    public async Task ShouldThrowValidationException_OnAdd_WhenUserIdIsEmpty()
+    {
+        // given
+        Favorite randomFavorite = CreateRandomFavorite();
+        randomFavorite.UserId = Guid.Empty;
+
+        // when
+        ValueTask<Favorite> addFavoriteTask =
+            this.favoriteService.AddFavoriteAsync(randomFavorite);
+
+        // then
+        await Assert.ThrowsAsync<FavoriteValidationException>(
+            testCode: async () => await addFavoriteTask);
+
+        this.storageBrokerMock.Verify(broker =>
+            broker.InsertFavoriteAsync(It.IsAny<Favorite>()),
+            Times.Never);
+
+        this.storageBrokerMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ShouldThrowValidationException_OnAdd_WhenPropertyIdIsEmpty()
+    {
+        // given
+        Favorite randomFavorite = CreateRandomFavorite();
+        randomFavorite.PropertyId = Guid.Empty;
+
+        // when
+        ValueTask<Favorite> addFavoriteTask =
+            this.favoriteService.AddFavoriteAsync(randomFavorite);
+
+        // then
+        await Assert.ThrowsAsync<FavoriteValidationException>(
+            testCode: async () => await addFavoriteTask);
+
+        this.storageBrokerMock.Verify(broker =>
+            broker.InsertFavoriteAsync(It.IsAny<Favorite>()),
+            Times.Never);
+
+        this.storageBrokerMock.VerifyNoOtherCalls();
+    }
 }
