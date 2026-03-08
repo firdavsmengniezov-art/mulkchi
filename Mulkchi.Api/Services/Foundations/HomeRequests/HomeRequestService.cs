@@ -33,6 +33,10 @@ public partial class HomeRequestService : IHomeRequestService
                 homeRequest.TotalNights = (int)(homeRequest.CheckOutDate.Value - homeRequest.CheckInDate.Value).TotalDays;
             }
 
+            var now = this.dateTimeBroker.GetCurrentDateTimeOffset();
+            homeRequest.CreatedDate = now;
+            homeRequest.UpdatedDate = now;
+
             return await this.storageBroker.InsertHomeRequestAsync(homeRequest);
         });
 

@@ -35,7 +35,8 @@ public partial class HomeRequestServiceTests
         filler.Setup()
             .OnType<DateTimeOffset>().Use(() => DateTimeOffset.UtcNow)
             .OnType<DateTimeOffset?>().Use(() => (DateTimeOffset?)DateTimeOffset.UtcNow)
-            .OnProperty(r => r.GuestCount).Use(() => Random.Shared.Next(1, 100));
+            .OnProperty(r => r.GuestCount).Use(() => Random.Shared.Next(1, 100))
+            .OnProperty(r => r.TotalPrice).Use(() => (decimal)Random.Shared.Next(1, 10000));
 
         return filler.Create();
     }

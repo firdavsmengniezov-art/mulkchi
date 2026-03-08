@@ -26,6 +26,9 @@ public partial class PaymentService : IPaymentService
         TryCatch(async () =>
         {
             ValidatePaymentOnAdd(payment);
+            var now = this.dateTimeBroker.GetCurrentDateTimeOffset();
+            payment.CreatedDate = now;
+            payment.UpdatedDate = now;
             return await this.storageBroker.InsertPaymentAsync(payment);
         });
 

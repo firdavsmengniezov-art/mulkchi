@@ -27,6 +27,19 @@ public partial class ReviewService : IReviewService
         TryCatch(async () =>
         {
             ValidateReviewOnAdd(review);
+
+            bool alreadyReviewed = this.storageBroker
+                .SelectAllReviews()
+                .Any(r => r.ReviewerId == review.ReviewerId && r.PropertyId == review.PropertyId);
+
+            if (alreadyReviewed)
+                throw new AlreadyExistsReviewException(
+                    message: "Review already exists for this user and property.");
+
+            var now = this.dateTimeBroker.GetCurrentDateTimeOffset();
+            review.CreatedDate = now;
+            review.UpdatedDate = now;
+
             Review addedReview = await this.storageBroker.InsertReviewAsync(review);
             await UpdatePropertyAverageRatingAsync(review.PropertyId);
             return addedReview;

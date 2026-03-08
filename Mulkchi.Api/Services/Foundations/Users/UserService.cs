@@ -26,6 +26,9 @@ public partial class UserService : IUserService
         TryCatch(async () =>
         {
             ValidateUserOnAdd(user);
+            var now = this.dateTimeBroker.GetCurrentDateTimeOffset();
+            user.CreatedDate = now;
+            user.UpdatedDate = now;
             return await this.storageBroker.InsertUserAsync(user);
         });
 

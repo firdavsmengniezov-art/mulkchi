@@ -35,6 +35,10 @@ public partial class FavoriteService : IFavoriteService
                 throw new AlreadyExistsFavoriteException(
                     message: "Favorite already exists for this user and property.");
 
+            var now = this.dateTimeBroker.GetCurrentDateTimeOffset();
+            favorite.CreatedDate = now;
+            favorite.UpdatedDate = now;
+
             return await this.storageBroker.InsertFavoriteAsync(favorite);
         });
 

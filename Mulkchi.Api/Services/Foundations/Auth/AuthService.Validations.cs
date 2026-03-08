@@ -36,18 +36,30 @@ public partial class AuthService
         if (IsInvalid(request.LastName))
             invalidRegisterRequestException.UpsertDataList(nameof(RegisterRequest.LastName), "Value is required.");
 
-        if (IsInvalid(request.Email))
-            invalidRegisterRequestException.UpsertDataList(nameof(RegisterRequest.Email), "Value is required.");
+        if (IsInvalidEmail(request.Email))
+            invalidRegisterRequestException.UpsertDataList(nameof(RegisterRequest.Email), "Email format is invalid.");
 
         if (IsInvalid(request.Phone))
             invalidRegisterRequestException.UpsertDataList(nameof(RegisterRequest.Phone), "Value is required.");
 
-        if (IsInvalid(request.Password))
-            invalidRegisterRequestException.UpsertDataList(nameof(RegisterRequest.Password), "Value is required.");
+        if (IsWeakPassword(request.Password))
+            invalidRegisterRequestException.UpsertDataList(nameof(RegisterRequest.Password), "Password must be at least 8 characters with uppercase, lowercase, and digit.");
 
         invalidRegisterRequestException.ThrowIfContainsErrors();
     }
 
     private static bool IsInvalid(string text) =>
         string.IsNullOrWhiteSpace(text);
+
+    private static bool IsInvalidEmail(string email) =>
+        string.IsNullOrWhiteSpace(email)
+            || !email.Contains('@')
+            || !email.Contains('.');
+
+    private static bool IsWeakPassword(string password) =>
+        string.IsNullOrWhiteSpace(password)
+            || password.Length < 8
+            || !password.Any(char.IsUpper)
+            || !password.Any(char.IsLower)
+            || !password.Any(char.IsDigit);
 }

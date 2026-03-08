@@ -26,6 +26,9 @@ public partial class DiscountService : IDiscountService
         TryCatch(async () =>
         {
             ValidateDiscountOnAdd(discount);
+            var now = this.dateTimeBroker.GetCurrentDateTimeOffset();
+            discount.CreatedDate = now;
+            discount.UpdatedDate = now;
             return await this.storageBroker.InsertDiscountAsync(discount);
         });
 

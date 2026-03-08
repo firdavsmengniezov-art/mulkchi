@@ -10,9 +10,16 @@ public partial class AnnouncementServiceTests
     public async Task ShouldAddAnnouncementAsync()
     {
         // given
+        DateTimeOffset randomDateTimeOffset = DateTimeOffset.UtcNow;
         Announcement randomAnnouncement = CreateRandomAnnouncement();
         Announcement inputAnnouncement = randomAnnouncement;
+        inputAnnouncement.CreatedDate = randomDateTimeOffset;
+        inputAnnouncement.UpdatedDate = randomDateTimeOffset;
         Announcement expectedAnnouncement = inputAnnouncement;
+
+        this.dateTimeBrokerMock.Setup(broker =>
+            broker.GetCurrentDateTimeOffset())
+                .Returns(randomDateTimeOffset);
 
         this.storageBrokerMock.Setup(broker =>
             broker.InsertAnnouncementAsync(inputAnnouncement))
@@ -23,6 +30,10 @@ public partial class AnnouncementServiceTests
 
         // then
         actualAnnouncement.Should().BeEquivalentTo(expectedAnnouncement);
+
+        this.dateTimeBrokerMock.Verify(broker =>
+            broker.GetCurrentDateTimeOffset(),
+            Times.Once);
 
         this.storageBrokerMock.Verify(broker =>
             broker.InsertAnnouncementAsync(inputAnnouncement),

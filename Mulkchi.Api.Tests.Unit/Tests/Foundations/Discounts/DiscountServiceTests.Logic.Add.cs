@@ -10,9 +10,16 @@ public partial class DiscountServiceTests
     public async Task ShouldAddDiscountAsync()
     {
         // given
+        DateTimeOffset randomDateTimeOffset = DateTimeOffset.UtcNow;
         Discount randomDiscount = CreateRandomDiscount();
         Discount inputDiscount = randomDiscount;
+        inputDiscount.CreatedDate = randomDateTimeOffset;
+        inputDiscount.UpdatedDate = randomDateTimeOffset;
         Discount expectedDiscount = inputDiscount;
+
+        this.dateTimeBrokerMock.Setup(broker =>
+            broker.GetCurrentDateTimeOffset())
+                .Returns(randomDateTimeOffset);
 
         this.storageBrokerMock.Setup(broker =>
             broker.InsertDiscountAsync(inputDiscount))
@@ -23,6 +30,10 @@ public partial class DiscountServiceTests
 
         // then
         actualDiscount.Should().BeEquivalentTo(expectedDiscount);
+
+        this.dateTimeBrokerMock.Verify(broker =>
+            broker.GetCurrentDateTimeOffset(),
+            Times.Once);
 
         this.storageBrokerMock.Verify(broker =>
             broker.InsertDiscountAsync(inputDiscount),

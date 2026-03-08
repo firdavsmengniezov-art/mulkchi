@@ -10,9 +10,16 @@ public partial class HomeRequestServiceTests
     public async Task ShouldAddHomeRequestAsync()
     {
         // given
+        DateTimeOffset randomDateTimeOffset = DateTimeOffset.UtcNow;
         HomeRequest randomHomeRequest = CreateRandomHomeRequest();
         HomeRequest inputHomeRequest = randomHomeRequest;
+        inputHomeRequest.CreatedDate = randomDateTimeOffset;
+        inputHomeRequest.UpdatedDate = randomDateTimeOffset;
         HomeRequest expectedHomeRequest = inputHomeRequest;
+
+        this.dateTimeBrokerMock.Setup(broker =>
+            broker.GetCurrentDateTimeOffset())
+                .Returns(randomDateTimeOffset);
 
         this.storageBrokerMock.Setup(broker =>
             broker.InsertHomeRequestAsync(inputHomeRequest))
@@ -23,6 +30,10 @@ public partial class HomeRequestServiceTests
 
         // then
         actualHomeRequest.Should().BeEquivalentTo(expectedHomeRequest);
+
+        this.dateTimeBrokerMock.Verify(broker =>
+            broker.GetCurrentDateTimeOffset(),
+            Times.Once);
 
         this.storageBrokerMock.Verify(broker =>
             broker.InsertHomeRequestAsync(inputHomeRequest),

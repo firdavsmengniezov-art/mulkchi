@@ -11,20 +11,25 @@ public partial class ReviewServiceTests
     public async Task ShouldAddReviewAsync()
     {
         // given
+        DateTimeOffset randomDateTimeOffset = DateTimeOffset.UtcNow;
         Review randomReview = CreateRandomReview();
         Review inputReview = randomReview;
+        inputReview.CreatedDate = randomDateTimeOffset;
+        inputReview.UpdatedDate = randomDateTimeOffset;
         Review expectedReview = inputReview;
         Property randomProperty = CreateRandomProperty(inputReview.PropertyId);
 
-        IQueryable<Review> allReviews = new List<Review> { inputReview }.AsQueryable();
+        IQueryable<Review> emptyReviews = new List<Review>().AsQueryable();
+        IQueryable<Review> allReviewsAfterInsert = new List<Review> { inputReview }.AsQueryable();
+
+        this.storageBrokerMock.SetupSequence(broker =>
+            broker.SelectAllReviews())
+                .Returns(emptyReviews)
+                .Returns(allReviewsAfterInsert);
 
         this.storageBrokerMock.Setup(broker =>
             broker.InsertReviewAsync(inputReview))
                 .ReturnsAsync(expectedReview);
-
-        this.storageBrokerMock.Setup(broker =>
-            broker.SelectAllReviews())
-                .Returns(allReviews);
 
         this.storageBrokerMock.Setup(broker =>
             broker.SelectPropertyByIdAsync(inputReview.PropertyId))
@@ -36,7 +41,7 @@ public partial class ReviewServiceTests
 
         this.dateTimeBrokerMock.Setup(broker =>
             broker.GetCurrentDateTimeOffset())
-                .Returns(DateTimeOffset.UtcNow);
+                .Returns(randomDateTimeOffset);
 
         // when
         Review actualReview = await this.reviewService.AddReviewAsync(inputReview);
@@ -44,13 +49,17 @@ public partial class ReviewServiceTests
         // then
         actualReview.Should().BeEquivalentTo(expectedReview);
 
+        this.dateTimeBrokerMock.Verify(broker =>
+            broker.GetCurrentDateTimeOffset(),
+            Times.Exactly(2));
+
         this.storageBrokerMock.Verify(broker =>
             broker.InsertReviewAsync(inputReview),
             Times.Once);
 
         this.storageBrokerMock.Verify(broker =>
             broker.SelectAllReviews(),
-            Times.Once);
+            Times.Exactly(2));
 
         this.storageBrokerMock.Verify(broker =>
             broker.SelectPropertyByIdAsync(inputReview.PropertyId),

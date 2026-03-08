@@ -102,8 +102,8 @@ public partial class AuthService : IAuthService
             User? maybeUser = await this.storageBroker.SelectUserByIdAsync(storedToken.UserId);
 
             if (maybeUser is null)
-                throw new NotFoundUserByEmailException(
-                    message: $"User associated with this refresh token was not found.");
+                throw new InvalidRefreshTokenException(
+                    message: "Refresh token references a user that no longer exists.");
 
             storedToken.IsRevoked = true;
             await this.storageBroker.UpdateRefreshTokenAsync(storedToken);

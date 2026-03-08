@@ -26,8 +26,7 @@ public partial class UserService
         (Rule: IsInvalid(user.FirstName), Parameter: nameof(User.FirstName)),
         (Rule: IsInvalid(user.LastName), Parameter: nameof(User.LastName)),
         (Rule: IsInvalid(user.Email), Parameter: nameof(User.Email)),
-        (Rule: IsInvalid(user.Phone), Parameter: nameof(User.Phone)),
-        (Rule: IsInvalid(user.PasswordHash), Parameter: nameof(User.PasswordHash)));
+        (Rule: IsInvalid(user.Phone), Parameter: nameof(User.Phone)));
     }
 
     private static void ValidateUserId(Guid userId)

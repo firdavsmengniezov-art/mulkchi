@@ -26,6 +26,9 @@ public partial class PropertyService : IPropertyService
         TryCatch(async () =>
         {
             ValidatePropertyOnAdd(property);
+            var now = this.dateTimeBroker.GetCurrentDateTimeOffset();
+            property.CreatedDate = now;
+            property.UpdatedDate = now;
             return await this.storageBroker.InsertPropertyAsync(property);
         });
 

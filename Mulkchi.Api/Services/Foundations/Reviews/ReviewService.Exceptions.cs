@@ -29,6 +29,10 @@ public partial class ReviewService
         {
             throw CreateAndLogDependencyValidationException(notFoundReviewException);
         }
+        catch (AlreadyExistsReviewException alreadyExistsReviewException)
+        {
+            throw CreateAndLogDependencyValidationException(alreadyExistsReviewException);
+        }
         catch (SqlException sqlException)
         {
             var failedStorage = new FailedReviewStorageException(

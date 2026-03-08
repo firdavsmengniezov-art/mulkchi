@@ -26,6 +26,9 @@ public partial class AiRecommendationService : IAiRecommendationService
         TryCatch(async () =>
         {
             ValidateAiRecommendationOnAdd(aiRecommendation);
+            var now = this.dateTimeBroker.GetCurrentDateTimeOffset();
+            aiRecommendation.CreatedDate = now;
+            aiRecommendation.UpdatedDate = now;
             return await this.storageBroker.InsertAiRecommendationAsync(aiRecommendation);
         });
 

@@ -10,9 +10,16 @@ public partial class PropertyServiceTests
     public async Task ShouldAddPropertyAsync()
     {
         // given
+        DateTimeOffset randomDateTimeOffset = DateTimeOffset.UtcNow;
         Property randomProperty = CreateRandomProperty();
         Property inputProperty = randomProperty;
+        inputProperty.CreatedDate = randomDateTimeOffset;
+        inputProperty.UpdatedDate = randomDateTimeOffset;
         Property expectedProperty = inputProperty;
+
+        this.dateTimeBrokerMock.Setup(broker =>
+            broker.GetCurrentDateTimeOffset())
+                .Returns(randomDateTimeOffset);
 
         this.storageBrokerMock.Setup(broker =>
             broker.InsertPropertyAsync(inputProperty))
@@ -23,6 +30,10 @@ public partial class PropertyServiceTests
 
         // then
         actualProperty.Should().BeEquivalentTo(expectedProperty);
+
+        this.dateTimeBrokerMock.Verify(broker =>
+            broker.GetCurrentDateTimeOffset(),
+            Times.Once);
 
         this.storageBrokerMock.Verify(broker =>
             broker.InsertPropertyAsync(inputProperty),

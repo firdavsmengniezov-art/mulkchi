@@ -26,6 +26,9 @@ public partial class AnnouncementService : IAnnouncementService
         TryCatch(async () =>
         {
             ValidateAnnouncementOnAdd(announcement);
+            var now = this.dateTimeBroker.GetCurrentDateTimeOffset();
+            announcement.CreatedDate = now;
+            announcement.UpdatedDate = now;
             return await this.storageBroker.InsertAnnouncementAsync(announcement);
         });
 

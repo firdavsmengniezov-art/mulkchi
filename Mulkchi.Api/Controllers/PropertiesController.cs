@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mulkchi.Api.Models.Foundations.Common;
@@ -24,6 +25,17 @@ public class PropertiesController : ControllerBase
     {
         try
         {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdClaim is null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
+                return Unauthorized();
+
+            property.HostId = currentUserId;
+            property.IsFeatured = false;
+            property.IsVerified = false;
+            property.AverageRating = 0;
+            property.ViewsCount = 0;
+            property.FavoritesCount = 0;
+
             Property addedProperty = await this.propertyService.AddPropertyAsync(property);
             return Created("property", addedProperty);
         }
@@ -143,6 +155,18 @@ public class PropertiesController : ControllerBase
     {
         try
         {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdClaim is null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
+                return Unauthorized();
+
+            bool isAdmin = User.IsInRole("Admin");
+            if (!isAdmin)
+            {
+                Property existingProperty = await this.propertyService.RetrievePropertyByIdAsync(property.Id);
+                if (existingProperty.HostId != currentUserId)
+                    return Forbid();
+            }
+
             Property modifiedProperty = await this.propertyService.ModifyPropertyAsync(property);
             return Ok(modifiedProperty);
         }

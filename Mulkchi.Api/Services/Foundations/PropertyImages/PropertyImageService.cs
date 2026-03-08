@@ -26,6 +26,9 @@ public partial class PropertyImageService : IPropertyImageService
         TryCatch(async () =>
         {
             ValidatePropertyImageOnAdd(propertyImage);
+            var now = this.dateTimeBroker.GetCurrentDateTimeOffset();
+            propertyImage.CreatedDate = now;
+            propertyImage.UpdatedDate = now;
             return await this.storageBroker.InsertPropertyImageAsync(propertyImage);
         });
 

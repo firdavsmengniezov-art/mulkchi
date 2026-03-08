@@ -14,7 +14,8 @@ public partial class HomeRequestService
         (Rule: IsInvalid(homeRequest.GuestId), Parameter: nameof(HomeRequest.GuestId)),
         (Rule: IsInvalid(homeRequest.HostId), Parameter: nameof(HomeRequest.HostId)),
         (Rule: IsInvalid(homeRequest.PropertyId), Parameter: nameof(HomeRequest.PropertyId)),
-        (Rule: IsInvalidOrZero(homeRequest.GuestCount), Parameter: nameof(HomeRequest.GuestCount)));
+        (Rule: IsInvalidOrZero(homeRequest.GuestCount), Parameter: nameof(HomeRequest.GuestCount)),
+        (Rule: IsInvalidOrNegativeOptional(homeRequest.TotalPrice), Parameter: nameof(HomeRequest.TotalPrice)));
     }
 
     private void ValidateHomeRequestOnModify(HomeRequest homeRequest)
@@ -25,7 +26,8 @@ public partial class HomeRequestService
         (Rule: IsInvalid(homeRequest.GuestId), Parameter: nameof(HomeRequest.GuestId)),
         (Rule: IsInvalid(homeRequest.HostId), Parameter: nameof(HomeRequest.HostId)),
         (Rule: IsInvalid(homeRequest.PropertyId), Parameter: nameof(HomeRequest.PropertyId)),
-        (Rule: IsInvalidOrZero(homeRequest.GuestCount), Parameter: nameof(HomeRequest.GuestCount)));
+        (Rule: IsInvalidOrZero(homeRequest.GuestCount), Parameter: nameof(HomeRequest.GuestCount)),
+        (Rule: IsInvalidOrNegativeOptional(homeRequest.TotalPrice), Parameter: nameof(HomeRequest.TotalPrice)));
     }
 
     private static void ValidateHomeRequestId(Guid homeRequestId)
@@ -59,6 +61,12 @@ public partial class HomeRequestService
     {
         Condition = value <= 0,
         Message = "Value must be greater than zero."
+    };
+
+    private static dynamic IsInvalidOrNegativeOptional(decimal value) => new
+    {
+        Condition = value != 0 && value <= 0,
+        Message = "Value must be greater than zero when provided."
     };
 
     private void Validate(params (dynamic Rule, string Parameter)[] validations)

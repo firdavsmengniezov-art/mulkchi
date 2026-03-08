@@ -26,6 +26,9 @@ public partial class DiscountUsageService : IDiscountUsageService
         TryCatch(async () =>
         {
             ValidateDiscountUsageOnAdd(discountUsage);
+            var now = this.dateTimeBroker.GetCurrentDateTimeOffset();
+            discountUsage.CreatedDate = now;
+            discountUsage.UpdatedDate = now;
             return await this.storageBroker.InsertDiscountUsageAsync(discountUsage);
         });
 

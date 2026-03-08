@@ -49,8 +49,15 @@ public partial class AuthServiceTests
     private static LoginRequest CreateRandomLoginRequest() =>
         new Filler<LoginRequest>().Create();
 
-    private static RegisterRequest CreateRandomRegisterRequest() =>
-        new Filler<RegisterRequest>().Create();
+    private static RegisterRequest CreateRandomRegisterRequest()
+    {
+        var filler = new Filler<RegisterRequest>();
+        filler.Setup()
+            .OnProperty(r => r.Email).Use(() => $"user{Random.Shared.Next(1000, 9999)}@example.com")
+            .OnProperty(r => r.Password).Use(() => $"Pass{Random.Shared.Next(1000, 9999)}word1");
+
+        return filler.Create();
+    }
 
     private static User CreateRandomUser()
     {

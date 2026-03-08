@@ -26,6 +26,9 @@ public partial class MessageService : IMessageService
         TryCatch(async () =>
         {
             ValidateMessageOnAdd(message);
+            var now = this.dateTimeBroker.GetCurrentDateTimeOffset();
+            message.CreatedDate = now;
+            message.UpdatedDate = now;
             return await this.storageBroker.InsertMessageAsync(message);
         });
 

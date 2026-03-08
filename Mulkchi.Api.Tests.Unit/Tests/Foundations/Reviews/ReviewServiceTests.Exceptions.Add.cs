@@ -15,6 +15,12 @@ public partial class ReviewServiceTests
         Review someReview = CreateRandomReview();
         SqlException sqlException = CreateSqlException();
 
+        IQueryable<Review> emptyReviews = new List<Review>().AsQueryable();
+
+        this.storageBrokerMock.Setup(broker =>
+            broker.SelectAllReviews())
+                .Returns(emptyReviews);
+
         this.storageBrokerMock.Setup(broker =>
             broker.InsertReviewAsync(It.IsAny<Review>()))
                 .ThrowsAsync(sqlException);
@@ -29,6 +35,10 @@ public partial class ReviewServiceTests
                 testCode: async () => await addReviewTask());
 
         actualException.InnerException.Should().BeOfType<FailedReviewStorageException>();
+
+        this.storageBrokerMock.Verify(broker =>
+            broker.SelectAllReviews(),
+            Times.Once);
 
         this.storageBrokerMock.Verify(broker =>
             broker.InsertReviewAsync(It.IsAny<Review>()),
@@ -49,6 +59,12 @@ public partial class ReviewServiceTests
         Review someReview = CreateRandomReview();
         var exception = new Exception();
 
+        IQueryable<Review> emptyReviews = new List<Review>().AsQueryable();
+
+        this.storageBrokerMock.Setup(broker =>
+            broker.SelectAllReviews())
+                .Returns(emptyReviews);
+
         this.storageBrokerMock.Setup(broker =>
             broker.InsertReviewAsync(It.IsAny<Review>()))
                 .ThrowsAsync(exception);
@@ -63,6 +79,10 @@ public partial class ReviewServiceTests
                 testCode: async () => await addReviewTask());
 
         actualException.InnerException.Should().BeOfType<FailedReviewServiceException>();
+
+        this.storageBrokerMock.Verify(broker =>
+            broker.SelectAllReviews(),
+            Times.Once);
 
         this.storageBrokerMock.Verify(broker =>
             broker.InsertReviewAsync(It.IsAny<Review>()),

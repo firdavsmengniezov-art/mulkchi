@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mulkchi.Api.Models.Foundations.Users;
@@ -18,7 +19,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public ActionResult<IQueryable<User>> GetAllUsers()
     {
         try
@@ -42,6 +43,14 @@ public class UsersController : ControllerBase
     {
         try
         {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdClaim is null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
+                return Unauthorized();
+
+            bool isAdmin = User.IsInRole("Admin");
+            if (!isAdmin && id != currentUserId)
+                return Forbid();
+
             User user = await this.userService.RetrieveUserByIdAsync(id);
             return Ok(user);
         }
