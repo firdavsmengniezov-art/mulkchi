@@ -30,7 +30,8 @@ public partial class StorageBroker
     public async ValueTask<AiRecommendation> DeleteAiRecommendationByIdAsync(Guid aiRecommendationId)
     {
         AiRecommendation aiRecommendation = (await this.AiRecommendations.FindAsync(aiRecommendationId))!;
-        this.AiRecommendations.Remove(aiRecommendation);
+        aiRecommendation.DeletedDate = DateTimeOffset.UtcNow;
+        this.Entry(aiRecommendation).State = EntityState.Modified;
         await this.SaveChangesAsync();
         return aiRecommendation;
     }

@@ -11,6 +11,7 @@ public partial class PropertyImageService
         ValidatePropertyImageIsNotNull(propertyImage);
         Validate(
         (Rule: IsInvalid(propertyImage.Id), Parameter: nameof(PropertyImage.Id)),
+        (Rule: IsInvalid(propertyImage.PropertyId), Parameter: nameof(PropertyImage.PropertyId)),
         (Rule: IsInvalid(propertyImage.Url), Parameter: nameof(PropertyImage.Url)));
     }
 
@@ -19,6 +20,7 @@ public partial class PropertyImageService
         ValidatePropertyImageIsNotNull(propertyImage);
         Validate(
         (Rule: IsInvalid(propertyImage.Id), Parameter: nameof(PropertyImage.Id)),
+        (Rule: IsInvalid(propertyImage.PropertyId), Parameter: nameof(PropertyImage.PropertyId)),
         (Rule: IsInvalid(propertyImage.Url), Parameter: nameof(PropertyImage.Url)));
     }
 

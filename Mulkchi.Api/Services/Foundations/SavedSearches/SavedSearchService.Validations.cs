@@ -11,6 +11,7 @@ public partial class SavedSearchService
         ValidateSavedSearchIsNotNull(savedSearch);
         Validate(
         (Rule: IsInvalid(savedSearch.Id), Parameter: nameof(SavedSearch.Id)),
+        (Rule: IsInvalid(savedSearch.UserId), Parameter: nameof(SavedSearch.UserId)),
         (Rule: IsInvalid(savedSearch.Name), Parameter: nameof(SavedSearch.Name)),
         (Rule: IsInvalid(savedSearch.SearchQuery), Parameter: nameof(SavedSearch.SearchQuery)));
     }
@@ -20,6 +21,7 @@ public partial class SavedSearchService
         ValidateSavedSearchIsNotNull(savedSearch);
         Validate(
         (Rule: IsInvalid(savedSearch.Id), Parameter: nameof(SavedSearch.Id)),
+        (Rule: IsInvalid(savedSearch.UserId), Parameter: nameof(SavedSearch.UserId)),
         (Rule: IsInvalid(savedSearch.Name), Parameter: nameof(SavedSearch.Name)),
         (Rule: IsInvalid(savedSearch.SearchQuery), Parameter: nameof(SavedSearch.SearchQuery)));
     }

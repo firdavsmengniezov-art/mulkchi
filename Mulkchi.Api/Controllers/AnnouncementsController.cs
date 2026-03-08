@@ -51,7 +51,8 @@ public class AnnouncementsController : ControllerBase
     {
         try
         {
-            IQueryable<Announcement> query = this.announcementService.RetrieveAllAnnouncements();
+            IQueryable<Announcement> query = this.announcementService.RetrieveAllAnnouncements()
+                .Where(a => a.ExpiresAt == null || a.ExpiresAt > DateTimeOffset.UtcNow);
             int totalCount = query.Count();
 
             var items = query

@@ -51,7 +51,9 @@ public partial class ReviewService : IReviewService
         TryCatch(async () =>
         {
             ValidateReviewOnModify(review);
-            return await this.storageBroker.UpdateReviewAsync(review);
+            Review modifiedReview = await this.storageBroker.UpdateReviewAsync(review);
+            await UpdatePropertyAverageRatingAsync(modifiedReview.PropertyId);
+            return modifiedReview;
         });
 
     public ValueTask<Review> RemoveReviewByIdAsync(Guid reviewId) =>

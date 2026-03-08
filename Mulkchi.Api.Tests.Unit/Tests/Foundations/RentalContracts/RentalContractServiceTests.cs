@@ -39,7 +39,8 @@ public partial class RentalContractServiceTests
             .OnType<DateTimeOffset>().Use(() => startDate)
             .OnType<DateTimeOffset?>().Use(() => (DateTimeOffset?)startDate)
             .OnProperty(r => r.StartDate).Use(() => startDate)
-            .OnProperty(r => r.EndDate).Use(() => endDate);
+            .OnProperty(r => r.EndDate).Use(() => endDate)
+            .OnProperty(r => r.MonthlyRent).Use(() => (decimal)Random.Shared.Next(1, 10000));
 
         return filler.Create();
     }

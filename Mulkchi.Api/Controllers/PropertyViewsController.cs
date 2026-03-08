@@ -24,7 +24,20 @@ public class PropertyViewsController : ControllerBase
     {
         try
         {
+            propertyView.IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+            var todayStart = new DateTimeOffset(DateTimeOffset.UtcNow.Date, TimeSpan.Zero);
+            var tomorrowStart = todayStart.AddDays(1);
+            bool alreadyViewed = this.propertyViewService.RetrieveAllPropertyViews()
+                .Any(v => v.PropertyId == propertyView.PropertyId
+                       && v.IpAddress == propertyView.IpAddress
+                       && v.CreatedDate >= todayStart
+                       && v.CreatedDate < tomorrowStart);
+            if (alreadyViewed)
+                return Ok(propertyView);
+
             PropertyView addedPropertyView = await this.propertyViewService.AddPropertyViewAsync(propertyView);
+            // TODO: ViewsCount increment should be handled by an Orchestration service
             return Created("propertyView", addedPropertyView);
         }
         catch (PropertyViewValidationException propertyViewValidationException)

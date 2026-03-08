@@ -13,7 +13,9 @@ public partial class RentalContractService
         (Rule: IsInvalid(rentalContract.Id), Parameter: nameof(RentalContract.Id)),
         (Rule: IsInvalid(rentalContract.TenantId), Parameter: nameof(RentalContract.TenantId)),
         (Rule: IsInvalid(rentalContract.LandlordId), Parameter: nameof(RentalContract.LandlordId)),
+        (Rule: IsInvalid(rentalContract.PropertyId), Parameter: nameof(RentalContract.PropertyId)),
         (Rule: IsInvalid(rentalContract.Terms), Parameter: nameof(RentalContract.Terms)),
+        (Rule: IsInvalidOrNegative(rentalContract.MonthlyRent), Parameter: nameof(RentalContract.MonthlyRent)),
         (Rule: IsStartDateNotBeforeEndDate(rentalContract.StartDate, rentalContract.EndDate),
             Parameter: nameof(RentalContract.StartDate)));
     }
@@ -25,7 +27,9 @@ public partial class RentalContractService
         (Rule: IsInvalid(rentalContract.Id), Parameter: nameof(RentalContract.Id)),
         (Rule: IsInvalid(rentalContract.TenantId), Parameter: nameof(RentalContract.TenantId)),
         (Rule: IsInvalid(rentalContract.LandlordId), Parameter: nameof(RentalContract.LandlordId)),
+        (Rule: IsInvalid(rentalContract.PropertyId), Parameter: nameof(RentalContract.PropertyId)),
         (Rule: IsInvalid(rentalContract.Terms), Parameter: nameof(RentalContract.Terms)),
+        (Rule: IsInvalidOrNegative(rentalContract.MonthlyRent), Parameter: nameof(RentalContract.MonthlyRent)),
         (Rule: IsStartDateNotBeforeEndDate(rentalContract.StartDate, rentalContract.EndDate),
             Parameter: nameof(RentalContract.StartDate)));
     }
@@ -55,6 +59,12 @@ public partial class RentalContractService
     {
         Condition = string.IsNullOrWhiteSpace(text),
         Message = "Value is required."
+    };
+
+    private static dynamic IsInvalidOrNegative(decimal value) => new
+    {
+        Condition = value <= 0,
+        Message = "Value must be greater than zero."
     };
 
     private static dynamic IsStartDateNotBeforeEndDate(DateTimeOffset startDate, DateTimeOffset endDate) => new

@@ -11,6 +11,7 @@ public partial class AiRecommendationService
         ValidateAiRecommendationIsNotNull(aiRecommendation);
         Validate(
         (Rule: IsInvalid(aiRecommendation.Id), Parameter: nameof(AiRecommendation.Id)),
+        (Rule: IsInvalid(aiRecommendation.UserId), Parameter: nameof(AiRecommendation.UserId)),
         (Rule: IsInvalid(aiRecommendation.Title), Parameter: nameof(AiRecommendation.Title)),
         (Rule: IsInvalid(aiRecommendation.Description), Parameter: nameof(AiRecommendation.Description)));
     }
@@ -20,6 +21,7 @@ public partial class AiRecommendationService
         ValidateAiRecommendationIsNotNull(aiRecommendation);
         Validate(
         (Rule: IsInvalid(aiRecommendation.Id), Parameter: nameof(AiRecommendation.Id)),
+        (Rule: IsInvalid(aiRecommendation.UserId), Parameter: nameof(AiRecommendation.UserId)),
         (Rule: IsInvalid(aiRecommendation.Title), Parameter: nameof(AiRecommendation.Title)),
         (Rule: IsInvalid(aiRecommendation.Description), Parameter: nameof(AiRecommendation.Description)));
     }

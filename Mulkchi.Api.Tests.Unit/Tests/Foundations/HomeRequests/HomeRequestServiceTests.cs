@@ -34,7 +34,8 @@ public partial class HomeRequestServiceTests
         var filler = new Filler<HomeRequest>();
         filler.Setup()
             .OnType<DateTimeOffset>().Use(() => DateTimeOffset.UtcNow)
-            .OnType<DateTimeOffset?>().Use(() => (DateTimeOffset?)DateTimeOffset.UtcNow);
+            .OnType<DateTimeOffset?>().Use(() => (DateTimeOffset?)DateTimeOffset.UtcNow)
+            .OnProperty(r => r.GuestCount).Use(() => Random.Shared.Next(1, 100));
 
         return filler.Create();
     }

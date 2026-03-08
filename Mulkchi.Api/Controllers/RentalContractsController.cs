@@ -4,6 +4,7 @@ using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Models.Foundations.RentalContracts;
 using Mulkchi.Api.Models.Foundations.RentalContracts.Exceptions;
 using Mulkchi.Api.Services.Foundations.RentalContracts;
+using System.Security.Claims;
 
 namespace Mulkchi.Api.Controllers;
 
@@ -51,7 +52,15 @@ public class RentalContractsController : ControllerBase
     {
         try
         {
-            IQueryable<RentalContract> query = this.rentalContractService.RetrieveAllRentalContracts();
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdClaim is null || !Guid.TryParse(userIdClaim, out Guid userId))
+                return Unauthorized();
+
+            var isAdmin = User.IsInRole("Admin");
+            IQueryable<RentalContract> query = isAdmin
+                ? this.rentalContractService.RetrieveAllRentalContracts()
+                : this.rentalContractService.RetrieveAllRentalContracts().Where(r => r.TenantId == userId || r.LandlordId == userId);
+
             int totalCount = query.Count();
 
             var items = query

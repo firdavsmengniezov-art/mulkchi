@@ -30,7 +30,8 @@ public partial class StorageBroker
     public async ValueTask<DiscountUsage> DeleteDiscountUsageByIdAsync(Guid discountUsageId)
     {
         DiscountUsage discountUsage = (await this.DiscountUsages.FindAsync(discountUsageId))!;
-        this.DiscountUsages.Remove(discountUsage);
+        discountUsage.DeletedDate = DateTimeOffset.UtcNow;
+        this.Entry(discountUsage).State = EntityState.Modified;
         await this.SaveChangesAsync();
         return discountUsage;
     }

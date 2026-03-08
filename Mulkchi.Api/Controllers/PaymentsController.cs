@@ -4,6 +4,7 @@ using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Models.Foundations.Payments;
 using Mulkchi.Api.Models.Foundations.Payments.Exceptions;
 using Mulkchi.Api.Services.Foundations.Payments;
+using System.Security.Claims;
 
 namespace Mulkchi.Api.Controllers;
 
@@ -51,7 +52,15 @@ public class PaymentsController : ControllerBase
     {
         try
         {
-            IQueryable<Payment> query = this.paymentService.RetrieveAllPayments();
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdClaim is null || !Guid.TryParse(userIdClaim, out Guid userId))
+                return Unauthorized();
+
+            var isAdmin = User.IsInRole("Admin");
+            IQueryable<Payment> query = isAdmin
+                ? this.paymentService.RetrieveAllPayments()
+                : this.paymentService.RetrieveAllPayments().Where(p => p.PayerId == userId || p.ReceiverId == userId);
+
             int totalCount = query.Count();
 
             var items = query

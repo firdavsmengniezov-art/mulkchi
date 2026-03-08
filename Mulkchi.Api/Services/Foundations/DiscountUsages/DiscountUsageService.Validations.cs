@@ -11,7 +11,8 @@ public partial class DiscountUsageService
         Validate(
         (Rule: IsInvalid(discountUsage.Id), Parameter: nameof(DiscountUsage.Id)),
         (Rule: IsInvalid(discountUsage.DiscountId), Parameter: nameof(DiscountUsage.DiscountId)),
-        (Rule: IsInvalid(discountUsage.UserId), Parameter: nameof(DiscountUsage.UserId)));
+        (Rule: IsInvalid(discountUsage.UserId), Parameter: nameof(DiscountUsage.UserId)),
+        (Rule: IsInvalidOrNegative(discountUsage.AmountSaved), Parameter: nameof(DiscountUsage.AmountSaved)));
     }
 
     private void ValidateDiscountUsageOnModify(DiscountUsage discountUsage)
@@ -20,7 +21,8 @@ public partial class DiscountUsageService
         Validate(
         (Rule: IsInvalid(discountUsage.Id), Parameter: nameof(DiscountUsage.Id)),
         (Rule: IsInvalid(discountUsage.DiscountId), Parameter: nameof(DiscountUsage.DiscountId)),
-        (Rule: IsInvalid(discountUsage.UserId), Parameter: nameof(DiscountUsage.UserId)));
+        (Rule: IsInvalid(discountUsage.UserId), Parameter: nameof(DiscountUsage.UserId)),
+        (Rule: IsInvalidOrNegative(discountUsage.AmountSaved), Parameter: nameof(DiscountUsage.AmountSaved)));
     }
 
     private static void ValidateDiscountUsageId(Guid discountUsageId)
@@ -42,6 +44,12 @@ public partial class DiscountUsageService
     {
         Condition = id == Guid.Empty,
         Message = "Id is required."
+    };
+
+    private static dynamic IsInvalidOrNegative(decimal value) => new
+    {
+        Condition = value <= 0,
+        Message = "Value must be greater than zero."
     };
 
     private void Validate(params (dynamic Rule, string Parameter)[] validations)

@@ -11,6 +11,7 @@ public partial class NotificationService
         ValidateNotificationIsNotNull(notification);
         Validate(
         (Rule: IsInvalid(notification.Id), Parameter: nameof(Notification.Id)),
+        (Rule: IsInvalid(notification.UserId), Parameter: nameof(Notification.UserId)),
         (Rule: IsInvalid(notification.TitleUz), Parameter: nameof(Notification.TitleUz)),
         (Rule: IsInvalid(notification.BodyUz), Parameter: nameof(Notification.BodyUz)));
     }
@@ -20,6 +21,7 @@ public partial class NotificationService
         ValidateNotificationIsNotNull(notification);
         Validate(
         (Rule: IsInvalid(notification.Id), Parameter: nameof(Notification.Id)),
+        (Rule: IsInvalid(notification.UserId), Parameter: nameof(Notification.UserId)),
         (Rule: IsInvalid(notification.TitleUz), Parameter: nameof(Notification.TitleUz)),
         (Rule: IsInvalid(notification.BodyUz), Parameter: nameof(Notification.BodyUz)));
     }

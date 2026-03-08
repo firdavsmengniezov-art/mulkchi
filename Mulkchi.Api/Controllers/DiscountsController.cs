@@ -51,7 +51,8 @@ public class DiscountsController : ControllerBase
     {
         try
         {
-            IQueryable<Discount> query = this.discountService.RetrieveAllDiscounts();
+            IQueryable<Discount> query = this.discountService.RetrieveAllDiscounts()
+                .Where(d => d.IsActive);
             int totalCount = query.Count();
 
             var items = query
