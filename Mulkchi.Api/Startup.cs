@@ -60,7 +60,7 @@ public class Startup
         }
 
         app.UseHttpsRedirection();
-        app.UseCors(env.IsDevelopment() ? "AllowAll" : "Production");
+        app.UseCors("AllowAngular");
         app.UseRouting();
         app.UseAuthentication();
         app.UseAuthorization();
@@ -197,6 +197,18 @@ public class Startup
     {
         services.AddCors(options =>
         {
+            options.AddPolicy("AllowAngular", policy =>
+            {
+                policy
+                    .WithOrigins(
+                        "http://localhost:4200",
+                        "https://localhost:4200"
+                    )
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
+            });
+
             options.AddPolicy("AllowAll", builder =>
             {
                 builder
