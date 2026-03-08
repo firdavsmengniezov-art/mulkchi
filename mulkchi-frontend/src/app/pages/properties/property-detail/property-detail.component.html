@@ -9,7 +9,8 @@
           <span>🏠</span>
           <div class="image-overlay">
             <span *ngIf="property.isVerified" class="verified-chip">✓ Tasdiqlangan</span>
-            <span class="listing-type-chip">{{ property.listingType === 'Rent' ? 'IJARA' : property.listingType === 'Sale' ? 'SOTUVDA' : 'QISQA MUDDATLI' }}</span>
+            <span class="listing-type-chip">{{ property.listingType === 'Rent' ? 'IJARA' : property.listingType ===
+              'Sale' ? 'SOTUVDA' : 'QISQA MUDDATLI' }}</span>
           </div>
         </div>
       </div>
@@ -92,7 +93,7 @@
               <div class="review-item" *ngFor="let review of reviews">
                 <div class="review-header">
                   <span class="reviewer">👤 Foydalanuvchi</span>
-                  <span class="review-rating">{{ '⭐'.repeat(review.rating) }}</span>
+                  <span class="review-rating">{{ '⭐'.repeat(review.overallRating) }}</span>
                 </div>
                 <p>{{ review.comment }}</p>
               </div>
@@ -127,7 +128,8 @@
 
             <ng-template #loginPrompt>
               <p class="login-prompt">So'rov yuborish uchun tizimga kiring</p>
-              <a routerLink="/login" class="btn-gold" style="display:block; text-align:center; text-decoration:none; padding: 12px;">
+              <a routerLink="/login" class="btn-gold"
+                style="display:block; text-align:center; text-decoration:none; padding: 12px;">
                 Kirish
               </a>
             </ng-template>

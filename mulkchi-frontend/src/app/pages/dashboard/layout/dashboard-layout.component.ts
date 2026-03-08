@@ -1,12 +1,14 @@
-import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router, RouterOutlet } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { Router, RouterModule, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { LanguageService } from '../../../core/services/language.service';
+import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-dashboard-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, RouterOutlet],
+  imports: [CommonModule, RouterModule, RouterOutlet, TranslatePipe],
   template: `
     <div class="dashboard-wrapper">
       <aside class="dashboard-sidebar">
@@ -15,31 +17,74 @@ import { AuthService } from '../../../core/services/auth.service';
         </a>
 
         <nav class="sidebar-nav">
-          <a routerLink="/dashboard/overview" routerLinkActive="active" class="nav-item">
+          <a
+            routerLink="/dashboard/overview"
+            routerLinkActive="active"
+            class="nav-item"
+          >
             <span class="nav-icon">📊</span>
-            <span>Umumiy ko'rinish</span>
+            <span>{{ 'nav.overview' | translate }}</span>
           </a>
-          <a routerLink="/dashboard/my-properties" routerLinkActive="active" class="nav-item">
+          <a
+            routerLink="/dashboard/my-properties"
+            routerLinkActive="active"
+            class="nav-item"
+          >
             <span class="nav-icon">🏠</span>
-            <span>Mulklarim</span>
+            <span>{{ 'nav.properties' | translate }}</span>
           </a>
-          <a routerLink="/dashboard/requests" routerLinkActive="active" class="nav-item">
+          <a
+            routerLink="/dashboard/requests"
+            routerLinkActive="active"
+            class="nav-item"
+          >
             <span class="nav-icon">📋</span>
-            <span>So'rovlar</span>
+            <span>{{ 'nav.requests' | translate }}</span>
           </a>
-          <a routerLink="/dashboard/payments" routerLinkActive="active" class="nav-item">
+          <a
+            routerLink="/dashboard/payments"
+            routerLinkActive="active"
+            class="nav-item"
+          >
             <span class="nav-icon">💳</span>
-            <span>To'lovlar</span>
+            <span>{{ 'nav.payments' | translate }}</span>
           </a>
-          <a routerLink="/dashboard/settings" routerLinkActive="active" class="nav-item">
+          <a
+            routerLink="/dashboard/settings"
+            routerLinkActive="active"
+            class="nav-item"
+          >
             <span class="nav-icon">⚙️</span>
-            <span>Sozlamalar</span>
+            <span>{{ 'nav.settings' | translate }}</span>
           </a>
         </nav>
 
         <div class="sidebar-footer">
+          <div class="lang-switcher">
+            <button
+              class="lang-btn"
+              [class.active]="(langService.currentLang$ | async) === 'uz'"
+              (click)="setLang('uz')"
+            >
+              UZ
+            </button>
+            <button
+              class="lang-btn"
+              [class.active]="(langService.currentLang$ | async) === 'ru'"
+              (click)="setLang('ru')"
+            >
+              RU
+            </button>
+            <button
+              class="lang-btn"
+              [class.active]="(langService.currentLang$ | async) === 'en'"
+              (click)="setLang('en')"
+            >
+              EN
+            </button>
+          </div>
           <button class="logout-btn" (click)="logout()">
-            <span>🚪</span> Chiqish
+            <span>🚪</span> {{ 'nav.logout' | translate }}
           </button>
         </div>
       </aside>
@@ -49,11 +94,16 @@ import { AuthService } from '../../../core/services/auth.service';
       </main>
     </div>
   `,
-  styleUrls: ['./dashboard-layout.component.scss']
+  styleUrls: ['./dashboard-layout.component.scss'],
 })
 export class DashboardLayoutComponent {
   private readonly authService = inject(AuthService);
+  protected readonly langService = inject(LanguageService);
   private readonly router = inject(Router);
+
+  setLang(lang: string): void {
+    this.langService.setLanguage(lang);
+  }
 
   logout(): void {
     this.authService.logout();

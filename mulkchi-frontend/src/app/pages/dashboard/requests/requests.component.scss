@@ -2,7 +2,7 @@
   padding: 40px;
 
   h1 {
-    font-family: 'Playfair Display', serif;
+    font-family: "Playfair Display", serif;
     font-size: 28px;
     font-weight: 700;
     color: var(--text);
@@ -13,14 +13,14 @@
 .table-wrapper {
   background: var(--card-bg);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: auto;
 }
 
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 600px;
+  min-width: 700px;
 
   th {
     padding: 14px 16px;
@@ -32,6 +32,7 @@
     letter-spacing: 1px;
     background: var(--card-bg-2);
     border-bottom: 1px solid var(--border);
+    white-space: nowrap;
   }
 
   td {
@@ -39,48 +40,118 @@
     font-size: 13px;
     color: var(--text-muted);
     border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+    vertical-align: middle;
   }
 
   tr:last-child td {
     border-bottom: none;
   }
+
+  tr:hover td {
+    background: rgba(201, 168, 76, 0.03);
+    color: var(--text);
+  }
 }
 
-.status-badge {
+.type-badge {
+  display: inline-block;
   padding: 3px 10px;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  color: #818cf8;
   border-radius: 20px;
   font-size: 11px;
   font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
 
   &.status-pending {
-    background: rgba(201, 168, 76, 0.1);
+    background: rgba(201, 168, 76, 0.12);
     color: var(--gold);
   }
-
   &.status-approved {
-    background: rgba(76, 175, 130, 0.1);
+    background: rgba(76, 175, 130, 0.12);
     color: var(--green);
   }
-
   &.status-rejected {
-    background: rgba(224, 82, 82, 0.1);
+    background: rgba(224, 82, 82, 0.12);
     color: var(--red);
   }
-
   &.status-completed {
-    background: rgba(100, 149, 237, 0.1);
+    background: rgba(100, 149, 237, 0.12);
     color: #6495ed;
   }
-
   &.status-cancelled {
-    background: rgba(138, 134, 128, 0.1);
+    background: rgba(138, 134, 128, 0.12);
     color: var(--text-muted);
   }
 }
 
+.btn-approve {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  background: rgba(76, 175, 130, 0.1);
+  border: 1px solid rgba(76, 175, 130, 0.3);
+  color: var(--green);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: "DM Sans", sans-serif;
+  transition: all 0.2s;
+  margin-right: 6px;
+  white-space: nowrap;
+
+  &:hover {
+    background: rgba(76, 175, 130, 0.2);
+    border-color: var(--green);
+  }
+}
+
+.btn-reject {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  background: rgba(224, 82, 82, 0.1);
+  border: 1px solid rgba(224, 82, 82, 0.3);
+  color: var(--red);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: "DM Sans", sans-serif;
+  transition: all 0.2s;
+  white-space: nowrap;
+
+  &:hover {
+    background: rgba(224, 82, 82, 0.2);
+    border-color: var(--red);
+  }
+}
+
+.reason-text {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.4;
+  max-width: 220px;
+}
+
 .empty-state {
   text-align: center;
-  padding: 60px;
+  padding: 80px 60px;
   color: var(--text-muted);
   font-size: 14px;
 }

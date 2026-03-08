@@ -1,3 +1,10 @@
+export type AnnouncementType =
+  | 'General'
+  | 'Maintenance'
+  | 'Promotion'
+  | 'PolicyUpdate';
+export type AnnouncementTarget = 'AllUsers' | 'Hosts' | 'Guests' | 'Admins';
+
 export interface Announcement {
   id: string;
   titleUz: string;
@@ -6,6 +13,13 @@ export interface Announcement {
   contentUz: string;
   contentRu?: string;
   contentEn?: string;
-  expiresAt: string | null;
+  type: AnnouncementType;
+  target: AnnouncementTarget;
+  isActive: boolean;
+  publishedAt?: string;
+  expiresAt?: string;
+  createdBy: string;
   createdDate: string;
+  updatedDate: string;
+  deletedDate?: string;
 }

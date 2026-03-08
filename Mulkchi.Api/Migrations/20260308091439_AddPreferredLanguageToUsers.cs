@@ -5,7 +5,7 @@
 namespace Mulkchi.Api.Migrations
 {
     /// <inheritdoc />
-    public partial class AddPreferredLanguageToUser : Migration
+    public partial class AddPreferredLanguageToUsers : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

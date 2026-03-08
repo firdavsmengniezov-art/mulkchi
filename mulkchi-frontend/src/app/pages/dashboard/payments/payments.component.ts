@@ -1,62 +1,72 @@
-import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PaymentService } from '../../../core/services/payment.service';
+import { Component, inject, OnInit } from '@angular/core';
 import { Payment } from '../../../core/models/payment.models';
+import { LanguageService } from '../../../core/services/language.service';
+import { PaymentService } from '../../../core/services/payment.service';
+import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-payments',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   template: `
     <div class="payments-page">
-      <h1>To'lovlar</h1>
+      <h1>{{ 'payments.title' | translate }}</h1>
 
       <div class="table-wrapper">
         <table class="data-table" *ngIf="payments.length > 0">
           <thead>
             <tr>
-              <th>Sana</th>
-              <th>Summa</th>
-              <th>Holat</th>
-              <th>To'lov usuli</th>
+              <th>{{ 'payments.col_date' | translate }}</th>
+              <th>{{ 'payments.col_amount' | translate }}</th>
+              <th>{{ 'payments.col_status' | translate }}</th>
+              <th>{{ 'payments.col_method' | translate }}</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let payment of payments">
-              <td>{{ payment.createdDate | date:'dd.MM.yyyy HH:mm' }}</td>
+              <td>{{ payment.createdDate | date: 'dd.MM.yyyy HH:mm' }}</td>
               <td>{{ payment.amount | number }} UZS</td>
               <td>
-                <span class="status-badge" [ngClass]="'status-' + payment.status.toLowerCase()">
+                <span
+                  class="status-badge"
+                  [ngClass]="'status-' + payment.status.toLowerCase()"
+                >
                   {{ getStatusLabel(payment.status) }}
                 </span>
               </td>
-              <td>{{ payment.paymentMethod }}</td>
+              <td>{{ payment.method }}</td>
             </tr>
           </tbody>
         </table>
-        <p class="empty-state" *ngIf="payments.length === 0">To'lovlar mavjud emas</p>
+        <p class="empty-state" *ngIf="payments.length === 0">
+          {{ 'payments.empty' | translate }}
+        </p>
       </div>
     </div>
   `,
-  styleUrls: ['./payments.component.scss']
+  styleUrls: ['./payments.component.scss'],
 })
 export class PaymentsComponent implements OnInit {
   private readonly paymentService = inject(PaymentService);
+  private readonly langService = inject(LanguageService);
   payments: Payment[] = [];
 
   ngOnInit(): void {
     this.paymentService.getAll().subscribe({
-      next: (result) => this.payments = result.items,
-      error: () => {}
+      next: (result) => (this.payments = result.items),
+      error: () => {},
     });
   }
 
   getStatusLabel(status: string): string {
     const labels: Record<string, string> = {
       Pending: 'Kutilmoqda',
+      Processing: 'Jarayonda',
       Completed: 'Yakunlangan',
       Failed: 'Xatolik',
-      Refunded: 'Qaytarilgan'
+      Refunded: 'Qaytarilgan',
+      Cancelled: 'Bekor qilingan',
     };
     return labels[status] ?? status;
   }

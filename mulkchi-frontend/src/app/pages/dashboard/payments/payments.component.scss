@@ -2,7 +2,7 @@
   padding: 40px;
 
   h1 {
-    font-family: 'Playfair Display', serif;
+    font-family: "Playfair Display", serif;
     font-size: 28px;
     font-weight: 700;
     color: var(--text);
@@ -13,16 +13,17 @@
 .table-wrapper {
   background: var(--card-bg);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: auto;
 }
 
 .data-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 480px;
 
   th {
-    padding: 14px 16px;
+    padding: 14px 20px;
     text-align: left;
     font-size: 11px;
     font-weight: 700;
@@ -34,32 +35,61 @@
   }
 
   td {
-    padding: 14px 16px;
+    padding: 15px 20px;
     font-size: 13px;
     color: var(--text-muted);
     border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
   }
 
   tr:last-child td {
     border-bottom: none;
   }
+
+  tr:hover td {
+    background: rgba(201, 168, 76, 0.03);
+    color: var(--text);
+  }
 }
 
 .status-badge {
-  padding: 3px 10px;
+  display: inline-block;
+  padding: 4px 12px;
   border-radius: 20px;
   font-size: 11px;
   font-weight: 600;
+  white-space: nowrap;
 
-  &.status-pending { background: rgba(201,168,76,0.1); color: var(--gold); }
-  &.status-completed { background: rgba(76,175,130,0.1); color: var(--green); }
-  &.status-failed { background: rgba(224,82,82,0.1); color: var(--red); }
-  &.status-refunded { background: rgba(100,149,237,0.1); color: #6495ed; }
+  &.status-pending {
+    background: rgba(201, 168, 76, 0.12);
+    color: var(--gold);
+  }
+  &.status-processing {
+    background: rgba(99, 102, 241, 0.12);
+    color: #818cf8;
+  }
+  &.status-completed {
+    background: rgba(76, 175, 130, 0.12);
+    color: var(--green);
+  }
+  &.status-failed {
+    background: rgba(224, 82, 82, 0.12);
+    color: var(--red);
+  }
+  &.status-refunded {
+    background: rgba(100, 149, 237, 0.12);
+    color: #6495ed;
+  }
+  &.status-cancelled {
+    background: rgba(138, 134, 128, 0.12);
+    color: var(--text-muted);
+  }
 }
 
 .empty-state {
   text-align: center;
-  padding: 60px;
+  padding: 80px 60px;
   color: var(--text-muted);
   font-size: 14px;
+  line-height: 1.6;
 }

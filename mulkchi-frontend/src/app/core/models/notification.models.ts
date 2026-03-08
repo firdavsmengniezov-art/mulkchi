@@ -1,3 +1,12 @@
+export type NotificationType =
+  | 'BookingRequest'
+  | 'BookingApproved'
+  | 'BookingRejected'
+  | 'PaymentReceived'
+  | 'NewMessage'
+  | 'ReviewReceived'
+  | 'SystemAlert';
+
 export interface Notification {
   id: string;
   userId: string;
@@ -8,5 +17,10 @@ export interface Notification {
   bodyRu?: string;
   bodyEn?: string;
   isRead: boolean;
+  readAt?: string;
+  actionUrl?: string;
+  type: NotificationType;
   createdDate: string;
+  updatedDate: string;
+  deletedDate?: string;
 }

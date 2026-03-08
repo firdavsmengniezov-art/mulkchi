@@ -12,8 +12,8 @@ using Mulkchi.Api.Brokers.Storages;
 namespace Mulkchi.Api.Migrations
 {
     [DbContext(typeof(StorageBroker))]
-    [Migration("20260308071624_AddPreferredLanguageToUser")]
-    partial class AddPreferredLanguageToUser
+    [Migration("20260308091439_AddPreferredLanguageToUsers")]
+    partial class AddPreferredLanguageToUsers
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
