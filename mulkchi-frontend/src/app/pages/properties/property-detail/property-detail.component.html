@@ -1,0 +1,144 @@
+<div class="detail-page page-wrapper">
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <ng-container *ngIf="!isLoading && property">
+    <div class="detail-container">
+      <!-- Image -->
+      <div class="property-image">
+        <div class="image-placeholder">
+          <span>🏠</span>
+          <div class="image-overlay">
+            <span *ngIf="property.isVerified" class="verified-chip">✓ Tasdiqlangan</span>
+            <span class="listing-type-chip">{{ property.listingType === 'Rent' ? 'IJARA' : property.listingType === 'Sale' ? 'SOTUVDA' : 'QISQA MUDDATLI' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-content">
+        <!-- Main Info -->
+        <div class="detail-main">
+          <div class="detail-header">
+            <div>
+              <h1>{{ property.title }}</h1>
+              <p class="location">📍 {{ property.address }}, {{ property.city }}</p>
+            </div>
+            <div class="price-block">
+              <span class="price">{{ getPrice() }}</span>
+            </div>
+          </div>
+
+          <!-- Meta -->
+          <div class="meta-grid">
+            <div class="meta-item">
+              <span class="meta-icon">🛏</span>
+              <span class="meta-label">{{ property.numberOfBedrooms }} xona</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-icon">🚿</span>
+              <span class="meta-label">{{ property.numberOfBathrooms }} hammom</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-icon">📐</span>
+              <span class="meta-label">{{ property.area }} m²</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-icon">🏠</span>
+              <span class="meta-label">{{ property.type }}</span>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="section">
+            <h3>Tavsif</h3>
+            <p class="description">{{ property.description }}</p>
+          </div>
+
+          <!-- Amenities -->
+          <div class="section">
+            <h3>Qulayliklar</h3>
+            <div class="amenities-grid">
+              <span class="amenity" *ngIf="property.hasWifi">📶 Wi-Fi</span>
+              <span class="amenity" *ngIf="property.hasParking">🚗 Avtoturargoh</span>
+              <span class="amenity" *ngIf="property.hasPool">🏊 Basseyn</span>
+              <span class="amenity" *ngIf="property.hasFurniture">🪑 Mebel</span>
+              <span class="amenity" *ngIf="property.hasAirConditioning">❄️ Konditsioner</span>
+              <span class="amenity" *ngIf="property.hasHeating">🔥 Isitish</span>
+              <span class="amenity" *ngIf="property.hasKitchen">🍳 Oshxona</span>
+              <span class="amenity" *ngIf="property.hasWasher">🧺 Kir yuvish mashina</span>
+              <span class="amenity" *ngIf="property.hasTV">📺 TV</span>
+              <span class="amenity" *ngIf="property.hasElevator">🛗 Lift</span>
+              <span class="amenity" *ngIf="property.hasSecurity">🔐 Qo'riqlov</span>
+              <span class="amenity" *ngIf="property.petsAllowed">🐾 Uy hayvonlari</span>
+            </div>
+          </div>
+
+          <!-- Host Info -->
+          <div class="section">
+            <h3>Mulkdor</h3>
+            <div class="host-card">
+              <div class="host-avatar">👤</div>
+              <div class="host-info">
+                <span class="host-name">Mulkdor</span>
+                <span class="host-meta">ID: {{ property.hostId.substring(0, 8) }}...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reviews -->
+          <div class="section" *ngIf="property.averageRating > 0">
+            <h3>Baholar ⭐ {{ property.averageRating | number:'1.1-1' }}</h3>
+            <div *ngIf="reviews.length === 0" class="no-reviews">Hali baho yo'q</div>
+            <div class="reviews-list">
+              <div class="review-item" *ngFor="let review of reviews">
+                <div class="review-header">
+                  <span class="reviewer">👤 Foydalanuvchi</span>
+                  <span class="review-rating">{{ '⭐'.repeat(review.rating) }}</span>
+                </div>
+                <p>{{ review.comment }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Request Form -->
+        <aside class="request-sidebar">
+          <div class="request-card">
+            <h3>So'rov yuborish</h3>
+
+            <ng-container *ngIf="isLoggedIn; else loginPrompt">
+              <form [formGroup]="requestForm" (ngSubmit)="submitRequest()">
+                <div class="form-group">
+                  <label>Kirish sanasi</label>
+                  <input type="date" formControlName="checkInDate">
+                </div>
+                <div class="form-group">
+                  <label>Chiqish sanasi</label>
+                  <input type="date" formControlName="checkOutDate">
+                </div>
+                <div class="form-group">
+                  <label>Mehmonlar soni</label>
+                  <input type="number" formControlName="guestCount" min="1" [max]="property.maxGuests">
+                </div>
+                <button type="submit" class="btn-gold submit-btn" [disabled]="isRequestLoading">
+                  {{ isRequestLoading ? 'Yuklanmoqda...' : 'So\'rov yuborish' }}
+                </button>
+              </form>
+            </ng-container>
+
+            <ng-template #loginPrompt>
+              <p class="login-prompt">So'rov yuborish uchun tizimga kiring</p>
+              <a routerLink="/login" class="btn-gold" style="display:block; text-align:center; text-decoration:none; padding: 12px;">
+                Kirish
+              </a>
+            </ng-template>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </ng-container>
+
+  <div class="not-found" *ngIf="!isLoading && !property">
+    <p>Mulk topilmadi</p>
+    <a routerLink="/properties" class="btn-outline-gold">Orqaga qaytish</a>
+  </div>
+</div>

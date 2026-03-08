@@ -1,0 +1,131 @@
+.dashboard-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background: var(--primary-dark);
+}
+
+.dashboard-sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--card-bg);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 100;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  margin-bottom: 32px;
+  text-decoration: none;
+
+  span {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .dot {
+    color: var(--gold);
+    font-size: 26px;
+  }
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 2px;
+  padding: 0 12px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+
+  .nav-icon {
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text);
+  }
+
+  &.active {
+    background: rgba(201, 168, 76, 0.1);
+    color: var(--gold);
+    border: 1px solid rgba(201, 168, 76, 0.15);
+  }
+}
+
+.sidebar-footer {
+  padding: 0 12px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+  margin-top: 8px;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 14px;
+  background: none;
+  border: none;
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(224, 82, 82, 0.08);
+    color: var(--red);
+  }
+}
+
+.dashboard-main {
+  flex: 1;
+  margin-left: 220px;
+  min-height: 100vh;
+  background: var(--primary-dark);
+}
+
+@media (max-width: 768px) {
+  .dashboard-sidebar {
+    width: 64px;
+
+    span:not(.nav-icon):not(.dot) {
+      display: none;
+    }
+
+    .sidebar-logo span:first-child {
+      display: none;
+    }
+  }
+
+  .dashboard-main {
+    margin-left: 64px;
+  }
+}
