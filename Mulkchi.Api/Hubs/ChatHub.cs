@@ -114,8 +114,8 @@ public class ChatHub : Hub
         {
             Message message = await this.messageService.RetrieveMessageByIdAsync(messageId);
             message.IsRead = true;
-            message.ReadAt = DateTimeOffset.UtcNow;
-            message.UpdatedDate = DateTimeOffset.UtcNow;
+            message.ReadAt = this.dateTimeBroker.GetCurrentDateTimeOffset();
+            message.UpdatedDate = this.dateTimeBroker.GetCurrentDateTimeOffset();
 
             Message updatedMessage = await this.messageService.ModifyMessageAsync(message);
 
