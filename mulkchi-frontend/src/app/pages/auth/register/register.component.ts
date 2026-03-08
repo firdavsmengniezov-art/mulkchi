@@ -11,9 +11,7 @@ import {
 } from '@angular/forms';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router, RouterModule } from '@angular/router';
-import { UserRole } from '../../../core/models/user.models';
 import { AuthService } from '../../../core/services/auth.service';
-import { UserService } from '../../../core/services/user.service';
 
 const passwordStrengthValidator: ValidatorFn = (
   control: AbstractControl,
@@ -81,29 +79,13 @@ const passwordStrengthValidator: ValidatorFn = (
             </span>
           </div>
 
-          <!-- Role Selector -->
-          <div class="role-selector">
-            <label>Siz kim sifatida ro'yxatdan o'tyapsiz?</label>
-            <div class="role-options">
-              <button
-                type="button"
-                class="role-btn"
-                [class.active]="registerForm.get('role')?.value === 'Host'"
-                (click)="registerForm.patchValue({ role: 'Host' })"
-              >
-                🏠 Mulkdor
-                <small>Mulk ijaraga bering yoki soting</small>
-              </button>
-              <button
-                type="button"
-                class="role-btn"
-                [class.active]="registerForm.get('role')?.value === 'Guest'"
-                (click)="registerForm.patchValue({ role: 'Guest' })"
-              >
-                🔍 Ijarachi
-                <small>Mulk izlang va ijaraga oling</small>
-              </button>
-            </div>
+          <div class="form-group">
+            <label>Telefon <span class="optional">(ixtiyoriy)</span></label>
+            <input
+              type="tel"
+              formControlName="phone"
+              placeholder="+998 90 123 45 67"
+            />
           </div>
 
           <div class="form-group">
@@ -111,24 +93,11 @@ const passwordStrengthValidator: ValidatorFn = (
             <select
               formControlName="preferredLanguage"
               class="lang-select"
-              [class.error]="
-                f['preferredLanguage'].invalid && f['preferredLanguage'].touched
-              "
             >
-              <option value="uz">O'zbekcha</option>
-              <option value="ru">Русский</option>
-              <option value="en">English</option>
+              <option value="uz">🇺🇿 O'zbekcha</option>
+              <option value="ru">🇷🇺 Русский</option>
+              <option value="en">🇬🇧 English</option>
             </select>
-          </div>
-
-          <div class="form-group">
-            <label>Telefon</label>
-            <input
-              type="tel"
-              formControlName="phone"
-              placeholder="+998 90 123 45 67"
-              [class.error]="f['phone'].invalid && f['phone'].touched"
-            />
           </div>
 
           <div class="form-group">
@@ -283,7 +252,6 @@ const passwordStrengthValidator: ValidatorFn = (
 export class RegisterComponent {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
-  private readonly userService = inject(UserService);
   private readonly router = inject(Router);
   private readonly snackBar = inject(MatSnackBar);
 
@@ -295,10 +263,9 @@ export class RegisterComponent {
     firstName: ['', [Validators.required]],
     lastName: ['', [Validators.required]],
     email: ['', [Validators.required, Validators.email]],
-    phone: ['', [Validators.required]],
+    phone: [''],
     password: ['', [Validators.required, passwordStrengthValidator]],
     preferredLanguage: ['uz', [Validators.required]],
-    role: ['Guest', [Validators.required]],
   });
 
   get f() {
@@ -314,39 +281,14 @@ export class RegisterComponent {
     this.isLoading = true;
     this.errorMessage = '';
 
-    const { role, ...registerPayload } = this.registerForm.value;
-
-    this.authService.register(registerPayload).subscribe({
+    this.authService.register(this.registerForm.value).subscribe({
       next: () => {
-        if (role === 'Host') {
-          const userId = this.authService.getUserId()!;
-          this.userService.getProfile(userId).subscribe({
-            next: (user) => {
-              this.userService
-                .update({ ...user, role: UserRole.Host })
-                .subscribe({
-                  next: () => {
-                    // Refresh JWT so it carries the new Host role
-                    this.authService.refreshToken().subscribe({
-                      next: () => this.router.navigate(['/dashboard']),
-                      error: () => this.router.navigate(['/dashboard']),
-                    });
-                  },
-                  error: () => this.router.navigate(['/dashboard']),
-                });
-            },
-            error: () => this.router.navigate(['/dashboard']),
-          });
-        } else {
-          this.router.navigate(['/dashboard']);
-        }
+        this.snackBar.open("Muvaffaqiyatli ro'yxatdan o'tdingiz! 🎉", 'OK', { duration: 3000 });
+        this.router.navigate(['/dashboard']);
       },
       error: (err) => {
         this.isLoading = false;
-        this.errorMessage =
-          (err.error?.message ?? err.error?.errors)
-            ? JSON.stringify(err.error?.errors)
-            : "Ro'yxatdan o'tishda xatolik yuz berdi";
+        this.errorMessage = err.error?.message ?? "Ro'yxatdan o'tishda xatolik yuz berdi";
       },
     });
   }

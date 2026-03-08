@@ -39,9 +39,6 @@ public partial class AuthService
         if (IsInvalidEmail(request.Email))
             invalidRegisterRequestException.UpsertDataList(nameof(RegisterRequest.Email), "Email format is invalid.");
 
-        if (IsInvalid(request.Phone))
-            invalidRegisterRequestException.UpsertDataList(nameof(RegisterRequest.Phone), "Value is required.");
-
         if (IsWeakPassword(request.Password))
             invalidRegisterRequestException.UpsertDataList(nameof(RegisterRequest.Password), "Password must be at least 8 characters with uppercase, lowercase, and digit.");
 
