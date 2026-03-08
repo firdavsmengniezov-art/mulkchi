@@ -1,10 +1,5 @@
-export type DiscountType = 'Percentage' | 'Fixed';
-export type DiscountTarget =
-  | 'AllUsers'
-  | 'Hosts'
-  | 'Guests'
-  | 'SpecificUser'
-  | 'SpecificProperty';
+export enum DiscountType { Percentage = 0, FixedAmount = 1 }
+export enum DiscountTarget { AllProperties = 0, SpecificProperty = 1, SpecificUser = 2, FirstBooking = 3 }
 
 export interface Discount {
   id: string;

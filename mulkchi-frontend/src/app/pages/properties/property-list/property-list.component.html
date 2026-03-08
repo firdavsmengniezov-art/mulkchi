@@ -25,14 +25,14 @@
           </button>
           <button
             class="toggle-btn"
-            [class.active]="filterListingType === 'Rent'"
-            (click)="setListingType('Rent')">
+            [class.active]="filterListingType === ListingType.Rent"
+            (click)="setListingType(ListingType.Rent)">
             Ijara
           </button>
           <button
             class="toggle-btn"
-            [class.active]="filterListingType === 'Sale'"
-            (click)="setListingType('Sale')">
+            [class.active]="filterListingType === ListingType.Sale"
+            (click)="setListingType(ListingType.Sale)">
             Sotish
           </button>
         </div>

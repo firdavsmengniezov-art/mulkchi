@@ -1,3 +1,7 @@
+export enum AiRecommendationType {
+  PersonalizedListing = 0, SimilarProperty = 1, PriceOptimization = 2, MarketInsight = 3
+}
+
 export interface AiRecommendation {
   id: string;
   score: number;

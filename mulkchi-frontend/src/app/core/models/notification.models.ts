@@ -1,11 +1,7 @@
-export type NotificationType =
-  | 'BookingRequest'
-  | 'BookingApproved'
-  | 'BookingRejected'
-  | 'PaymentReceived'
-  | 'NewMessage'
-  | 'ReviewReceived'
-  | 'SystemAlert';
+export enum NotificationType {
+  BookingRequest = 0, BookingApproved = 1, BookingRejected = 2,
+  PaymentReceived = 3, NewMessage = 4, ReviewReceived = 5, SystemAlert = 6
+}
 
 export interface Notification {
   id: string;

@@ -1,10 +1,4 @@
-export type ContractStatus =
-  | 'Draft'
-  | 'Pending'
-  | 'Active'
-  | 'Expired'
-  | 'Terminated'
-  | 'Cancelled';
+export enum ContractStatus { Draft = 0, Pending = 1, Active = 2, Expired = 3, Terminated = 4, Cancelled = 5 }
 
 export interface RentalContract {
   id: string;

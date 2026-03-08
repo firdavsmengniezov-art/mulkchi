@@ -1,6 +1,6 @@
-export type Gender = 'Male' | 'Female' | 'Other';
-export type UserRole = 'Guest' | 'Host' | 'Admin';
-export type HostBadge = 'None' | 'SuperHost' | 'PremiumHost';
+export enum Gender { Male = 0, Female = 1, Other = 2, PreferNotToSay = 3 }
+export enum UserRole { Guest = 0, Host = 1, Admin = 2 }
+export enum HostBadge { None = 0, NewHost = 1, SuperHost = 2, PremiumHost = 3 }
 
 export interface User {
   id: string;

@@ -9,8 +9,7 @@
           <span>🏠</span>
           <div class="image-overlay">
             <span *ngIf="property.isVerified" class="verified-chip">✓ Tasdiqlangan</span>
-            <span class="listing-type-chip">{{ property.listingType === 'Rent' ? 'IJARA' : property.listingType ===
-              'Sale' ? 'SOTUVDA' : 'QISQA MUDDATLI' }}</span>
+            <span class="listing-type-chip">{{ getListingTypeLabel(property.listingType) }}</span>
           </div>
         </div>
       </div>
