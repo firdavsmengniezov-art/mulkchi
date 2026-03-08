@@ -30,7 +30,8 @@ public partial class StorageBroker
     public async ValueTask<Message> DeleteMessageByIdAsync(Guid messageId)
     {
         Message message = (await this.Messages.FindAsync(messageId))!;
-        this.Messages.Remove(message);
+        message.DeletedDate = DateTimeOffset.UtcNow;
+        this.Entry(message).State = EntityState.Modified;
         await this.SaveChangesAsync();
         return message;
     }

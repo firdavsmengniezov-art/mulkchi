@@ -29,6 +29,10 @@ public partial class FavoriteService
         {
             throw CreateAndLogDependencyValidationException(notFoundFavoriteException);
         }
+        catch (AlreadyExistsFavoriteException alreadyExistsFavoriteException)
+        {
+            throw CreateAndLogDependencyValidationException(alreadyExistsFavoriteException);
+        }
         catch (SqlException sqlException)
         {
             var failedStorage = new FailedFavoriteStorageException(

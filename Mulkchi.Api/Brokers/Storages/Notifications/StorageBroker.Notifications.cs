@@ -30,7 +30,8 @@ public partial class StorageBroker
     public async ValueTask<Notification> DeleteNotificationByIdAsync(Guid notificationId)
     {
         Notification notification = (await this.Notifications.FindAsync(notificationId))!;
-        this.Notifications.Remove(notification);
+        notification.DeletedDate = DateTimeOffset.UtcNow;
+        this.Entry(notification).State = EntityState.Modified;
         await this.SaveChangesAsync();
         return notification;
     }

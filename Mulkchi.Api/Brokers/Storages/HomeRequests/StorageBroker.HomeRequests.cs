@@ -30,7 +30,8 @@ public partial class StorageBroker
     public async ValueTask<HomeRequest> DeleteHomeRequestByIdAsync(Guid homeRequestId)
     {
         HomeRequest homeRequest = (await this.HomeRequests.FindAsync(homeRequestId))!;
-        this.HomeRequests.Remove(homeRequest);
+        homeRequest.DeletedDate = DateTimeOffset.UtcNow;
+        this.Entry(homeRequest).State = EntityState.Modified;
         await this.SaveChangesAsync();
         return homeRequest;
     }

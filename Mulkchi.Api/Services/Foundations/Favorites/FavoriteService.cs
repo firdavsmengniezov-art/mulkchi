@@ -26,6 +26,15 @@ public partial class FavoriteService : IFavoriteService
         TryCatch(async () =>
         {
             ValidateFavoriteOnAdd(favorite);
+
+            bool alreadyExists = this.storageBroker
+                .SelectAllFavorites()
+                .Any(f => f.UserId == favorite.UserId && f.PropertyId == favorite.PropertyId);
+
+            if (alreadyExists)
+                throw new AlreadyExistsFavoriteException(
+                    message: "Favorite already exists for this user and property.");
+
             return await this.storageBroker.InsertFavoriteAsync(favorite);
         });
 

@@ -30,7 +30,8 @@ public partial class StorageBroker
     public async ValueTask<Payment> DeletePaymentByIdAsync(Guid paymentId)
     {
         Payment payment = (await this.Payments.FindAsync(paymentId))!;
-        this.Payments.Remove(payment);
+        payment.DeletedDate = DateTimeOffset.UtcNow;
+        this.Entry(payment).State = EntityState.Modified;
         await this.SaveChangesAsync();
         return payment;
     }

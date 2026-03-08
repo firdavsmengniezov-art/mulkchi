@@ -12,18 +12,15 @@ public partial class ReviewService : IReviewService
     private readonly IStorageBroker storageBroker;
     private readonly ILoggingBroker loggingBroker;
     private readonly IDateTimeBroker dateTimeBroker;
-    private readonly Services.Foundations.Properties.IPropertyService propertyService;
 
     public ReviewService(
         IStorageBroker storageBroker,
         ILoggingBroker loggingBroker,
-        IDateTimeBroker dateTimeBroker,
-        Services.Foundations.Properties.IPropertyService propertyService)
+        IDateTimeBroker dateTimeBroker)
     {
         this.storageBroker = storageBroker;
         this.loggingBroker = loggingBroker;
         this.dateTimeBroker = dateTimeBroker;
-        this.propertyService = propertyService;
     }
 
     public ValueTask<Review> AddReviewAsync(Review review) =>

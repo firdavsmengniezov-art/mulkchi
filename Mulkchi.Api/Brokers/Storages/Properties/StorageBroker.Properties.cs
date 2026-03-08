@@ -30,7 +30,8 @@ public partial class StorageBroker
     public async ValueTask<Property> DeletePropertyByIdAsync(Guid propertyId)
     {
         Property property = (await this.Properties.FindAsync(propertyId))!;
-        this.Properties.Remove(property);
+        property.DeletedDate = DateTimeOffset.UtcNow;
+        this.Entry(property).State = EntityState.Modified;
         await this.SaveChangesAsync();
         return property;
     }

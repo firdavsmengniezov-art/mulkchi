@@ -30,7 +30,8 @@ public partial class StorageBroker
     public async ValueTask<Announcement> DeleteAnnouncementByIdAsync(Guid announcementId)
     {
         Announcement announcement = (await this.Announcements.FindAsync(announcementId))!;
-        this.Announcements.Remove(announcement);
+        announcement.DeletedDate = DateTimeOffset.UtcNow;
+        this.Entry(announcement).State = EntityState.Modified;
         await this.SaveChangesAsync();
         return announcement;
     }

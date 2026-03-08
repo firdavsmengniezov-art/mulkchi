@@ -30,7 +30,8 @@ public partial class StorageBroker
     public async ValueTask<Review> DeleteReviewByIdAsync(Guid reviewId)
     {
         Review review = (await this.Reviews.FindAsync(reviewId))!;
-        this.Reviews.Remove(review);
+        review.DeletedDate = DateTimeOffset.UtcNow;
+        this.Entry(review).State = EntityState.Modified;
         await this.SaveChangesAsync();
         return review;
     }

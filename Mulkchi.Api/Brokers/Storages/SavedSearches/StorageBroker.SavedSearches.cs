@@ -30,7 +30,8 @@ public partial class StorageBroker
     public async ValueTask<SavedSearch> DeleteSavedSearchByIdAsync(Guid savedSearchId)
     {
         SavedSearch savedSearch = (await this.SavedSearches.FindAsync(savedSearchId))!;
-        this.SavedSearches.Remove(savedSearch);
+        savedSearch.DeletedDate = DateTimeOffset.UtcNow;
+        this.Entry(savedSearch).State = EntityState.Modified;
         await this.SaveChangesAsync();
         return savedSearch;
     }
