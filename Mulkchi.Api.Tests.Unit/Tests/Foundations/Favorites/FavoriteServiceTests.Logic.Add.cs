@@ -14,6 +14,12 @@ public partial class FavoriteServiceTests
         Favorite inputFavorite = randomFavorite;
         Favorite expectedFavorite = inputFavorite;
 
+        IQueryable<Favorite> emptyFavorites = new List<Favorite>().AsQueryable();
+
+        this.storageBrokerMock.Setup(broker =>
+            broker.SelectAllFavorites())
+                .Returns(emptyFavorites);
+
         this.storageBrokerMock.Setup(broker =>
             broker.InsertFavoriteAsync(inputFavorite))
                 .ReturnsAsync(expectedFavorite);
@@ -23,6 +29,10 @@ public partial class FavoriteServiceTests
 
         // then
         actualFavorite.Should().BeEquivalentTo(expectedFavorite);
+
+        this.storageBrokerMock.Verify(broker =>
+            broker.SelectAllFavorites(),
+            Times.Once);
 
         this.storageBrokerMock.Verify(broker =>
             broker.InsertFavoriteAsync(inputFavorite),

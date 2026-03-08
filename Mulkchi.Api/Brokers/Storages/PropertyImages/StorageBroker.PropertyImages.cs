@@ -30,7 +30,8 @@ public partial class StorageBroker
     public async ValueTask<PropertyImage> DeletePropertyImageByIdAsync(Guid propertyImageId)
     {
         PropertyImage propertyImage = (await this.PropertyImages.FindAsync(propertyImageId))!;
-        this.PropertyImages.Remove(propertyImage);
+        propertyImage.DeletedDate = DateTimeOffset.UtcNow;
+        this.Entry(propertyImage).State = EntityState.Modified;
         await this.SaveChangesAsync();
         return propertyImage;
     }

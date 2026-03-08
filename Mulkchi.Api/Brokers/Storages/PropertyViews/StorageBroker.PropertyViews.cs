@@ -30,7 +30,8 @@ public partial class StorageBroker
     public async ValueTask<PropertyView> DeletePropertyViewByIdAsync(Guid propertyViewId)
     {
         PropertyView propertyView = (await this.PropertyViews.FindAsync(propertyViewId))!;
-        this.PropertyViews.Remove(propertyView);
+        propertyView.DeletedDate = DateTimeOffset.UtcNow;
+        this.Entry(propertyView).State = EntityState.Modified;
         await this.SaveChangesAsync();
         return propertyView;
     }

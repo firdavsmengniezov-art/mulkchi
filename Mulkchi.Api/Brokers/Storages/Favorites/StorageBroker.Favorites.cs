@@ -30,7 +30,8 @@ public partial class StorageBroker
     public async ValueTask<Favorite> DeleteFavoriteByIdAsync(Guid favoriteId)
     {
         Favorite favorite = (await this.Favorites.FindAsync(favoriteId))!;
-        this.Favorites.Remove(favorite);
+        favorite.DeletedDate = DateTimeOffset.UtcNow;
+        this.Entry(favorite).State = EntityState.Modified;
         await this.SaveChangesAsync();
         return favorite;
     }

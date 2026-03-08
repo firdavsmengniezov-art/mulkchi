@@ -30,7 +30,8 @@ public partial class StorageBroker
     public async ValueTask<RentalContract> DeleteRentalContractByIdAsync(Guid rentalContractId)
     {
         RentalContract rentalContract = (await this.RentalContracts.FindAsync(rentalContractId))!;
-        this.RentalContracts.Remove(rentalContract);
+        rentalContract.DeletedDate = DateTimeOffset.UtcNow;
+        this.Entry(rentalContract).State = EntityState.Modified;
         await this.SaveChangesAsync();
         return rentalContract;
     }

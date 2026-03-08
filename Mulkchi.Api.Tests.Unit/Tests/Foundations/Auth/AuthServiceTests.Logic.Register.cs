@@ -38,7 +38,7 @@ public partial class AuthServiceTests
         actualResponse.Token.Should().NotBeNullOrEmpty();
         actualResponse.RefreshToken.Should().NotBeNullOrEmpty();
         actualResponse.Email.Should().Be(inputRequest.Email);
-        actualResponse.Role.Should().Be(inputRequest.Role);
+        actualResponse.Role.Should().Be(UserRole.Guest);
 
         this.storageBrokerMock.Verify(broker =>
             broker.SelectUserByEmailAsync(inputRequest.Email),

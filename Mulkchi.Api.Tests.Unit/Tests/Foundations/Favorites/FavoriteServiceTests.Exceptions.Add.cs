@@ -14,6 +14,11 @@ public partial class FavoriteServiceTests
         // given
         Favorite someFavorite = CreateRandomFavorite();
         SqlException sqlException = CreateSqlException();
+        IQueryable<Favorite> emptyFavorites = new List<Favorite>().AsQueryable();
+
+        this.storageBrokerMock.Setup(broker =>
+            broker.SelectAllFavorites())
+                .Returns(emptyFavorites);
 
         this.storageBrokerMock.Setup(broker =>
             broker.InsertFavoriteAsync(It.IsAny<Favorite>()))
@@ -29,6 +34,10 @@ public partial class FavoriteServiceTests
                 testCode: async () => await addFavoriteTask());
 
         actualException.InnerException.Should().BeOfType<FailedFavoriteStorageException>();
+
+        this.storageBrokerMock.Verify(broker =>
+            broker.SelectAllFavorites(),
+            Times.Once);
 
         this.storageBrokerMock.Verify(broker =>
             broker.InsertFavoriteAsync(It.IsAny<Favorite>()),
@@ -48,6 +57,11 @@ public partial class FavoriteServiceTests
         // given
         Favorite someFavorite = CreateRandomFavorite();
         var exception = new Exception();
+        IQueryable<Favorite> emptyFavorites = new List<Favorite>().AsQueryable();
+
+        this.storageBrokerMock.Setup(broker =>
+            broker.SelectAllFavorites())
+                .Returns(emptyFavorites);
 
         this.storageBrokerMock.Setup(broker =>
             broker.InsertFavoriteAsync(It.IsAny<Favorite>()))
@@ -63,6 +77,10 @@ public partial class FavoriteServiceTests
                 testCode: async () => await addFavoriteTask());
 
         actualException.InnerException.Should().BeOfType<FailedFavoriteServiceException>();
+
+        this.storageBrokerMock.Verify(broker =>
+            broker.SelectAllFavorites(),
+            Times.Once);
 
         this.storageBrokerMock.Verify(broker =>
             broker.InsertFavoriteAsync(It.IsAny<Favorite>()),
