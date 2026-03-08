@@ -15,7 +15,9 @@ import { UserRole } from '../../../core/models/user.models';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserService } from '../../../core/services/user.service';
 
-const passwordStrengthValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+const passwordStrengthValidator: ValidatorFn = (
+  control: AbstractControl,
+): ValidationErrors | null => {
   const value: string = control.value ?? '';
   if (!value) return null;
   if (value.length < 8) return { weakPassword: 'minLength' };
@@ -153,13 +155,30 @@ const passwordStrengthValidator: ValidatorFn = (control: AbstractControl): Valid
               class="error-msg"
               *ngIf="f['password'].invalid && f['password'].touched"
             >
-              <ng-container *ngIf="f['password'].errors?.['required']; else strengthError">Parol kiritilmadi</ng-container>
+              <ng-container
+                *ngIf="f['password'].errors?.['required']; else strengthError"
+                >Parol kiritilmadi</ng-container
+              >
               <ng-template #strengthError>
-                <ng-container [ngSwitch]="f['password'].errors?.['weakPassword']">
-                  <ng-container *ngSwitchCase="'minLength'">Parol kamida 8 ta belgidan iborat bo'lishi kerak</ng-container>
-                  <ng-container *ngSwitchCase="'uppercase'">Parolda kamida 1 ta katta harf (A-Z) bo'lishi kerak</ng-container>
-                  <ng-container *ngSwitchCase="'lowercase'">Parolda kamida 1 ta kichik harf (a-z) bo'lishi kerak</ng-container>
-                  <ng-container *ngSwitchCase="'digit'">Parolda kamida 1 ta raqam (0-9) bo'lishi kerak</ng-container>
+                <ng-container
+                  [ngSwitch]="f['password'].errors?.['weakPassword']"
+                >
+                  <ng-container *ngSwitchCase="'minLength'"
+                    >Parol kamida 8 ta belgidan iborat bo'lishi
+                    kerak</ng-container
+                  >
+                  <ng-container *ngSwitchCase="'uppercase'"
+                    >Parolda kamida 1 ta katta harf (A-Z) bo'lishi
+                    kerak</ng-container
+                  >
+                  <ng-container *ngSwitchCase="'lowercase'"
+                    >Parolda kamida 1 ta kichik harf (a-z) bo'lishi
+                    kerak</ng-container
+                  >
+                  <ng-container *ngSwitchCase="'digit'"
+                    >Parolda kamida 1 ta raqam (0-9) bo'lishi
+                    kerak</ng-container
+                  >
                 </ng-container>
               </ng-template>
             </span>
@@ -306,7 +325,13 @@ export class RegisterComponent {
               this.userService
                 .update({ ...user, role: UserRole.Host })
                 .subscribe({
-                  next: () => this.router.navigate(['/dashboard']),
+                  next: () => {
+                    // Refresh JWT so it carries the new Host role
+                    this.authService.refreshToken().subscribe({
+                      next: () => this.router.navigate(['/dashboard']),
+                      error: () => this.router.navigate(['/dashboard']),
+                    });
+                  },
                   error: () => this.router.navigate(['/dashboard']),
                 });
             },
