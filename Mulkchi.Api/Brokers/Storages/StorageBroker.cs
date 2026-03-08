@@ -32,11 +32,7 @@ public partial class StorageBroker : DbContext, IStorageBroker
         this.configuration = configuration;
         this.environment = environment;
 
-        if (this.environment.IsDevelopment())
-        {
-            this.Database.Migrate();
-        }
-        else
+        if (!this.environment.IsEnvironment("DesignTime"))
         {
             this.Database.Migrate();
         }
@@ -55,6 +51,11 @@ public partial class StorageBroker : DbContext, IStorageBroker
         {
             entity.Property(p => p.Value).HasPrecision(18, 2);
             entity.Property(p => p.MaxDiscountAmount).HasPrecision(18, 2);
+        });
+
+        modelBuilder.Entity<DiscountUsage>(entity =>
+        {
+            entity.Property(p => p.AmountSaved).HasPrecision(18, 2);
         });
 
         modelBuilder.Entity<HomeRequest>(entity =>
