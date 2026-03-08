@@ -1,14 +1,27 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import {
+  AbstractControl,
   FormBuilder,
   FormGroup,
   ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
   Validators,
 } from '@angular/forms';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+
+const passwordStrengthValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+  const value: string = control.value ?? '';
+  if (!value) return null;
+  if (value.length < 8) return { weakPassword: 'minLength' };
+  if (!/[A-Z]/.test(value)) return { weakPassword: 'uppercase' };
+  if (!/[a-z]/.test(value)) return { weakPassword: 'lowercase' };
+  if (!/[0-9]/.test(value)) return { weakPassword: 'digit' };
+  return null;
+};
 
 @Component({
   selector: 'app-register',
@@ -113,7 +126,15 @@ import { AuthService } from '../../../core/services/auth.service';
               class="error-msg"
               *ngIf="f['password'].invalid && f['password'].touched"
             >
-              Parol kamida 8 ta belgidan iborat bo'lishi kerak
+              <ng-container *ngIf="f['password'].errors?.['required']; else strengthError">Parol kiritilmadi</ng-container>
+              <ng-template #strengthError>
+                <ng-container [ngSwitch]="f['password'].errors?.['weakPassword']">
+                  <ng-container *ngSwitchCase="'minLength'">Parol kamida 8 ta belgidan iborat bo'lishi kerak</ng-container>
+                  <ng-container *ngSwitchCase="'uppercase'">Parolda kamida 1 ta katta harf (A-Z) bo'lishi kerak</ng-container>
+                  <ng-container *ngSwitchCase="'lowercase'">Parolda kamida 1 ta kichik harf (a-z) bo'lishi kerak</ng-container>
+                  <ng-container *ngSwitchCase="'digit'">Parolda kamida 1 ta raqam (0-9) bo'lishi kerak</ng-container>
+                </ng-container>
+              </ng-template>
             </span>
           </div>
 
@@ -184,7 +205,7 @@ export class RegisterComponent {
     lastName: ['', [Validators.required]],
     email: ['', [Validators.required, Validators.email]],
     phone: ['', [Validators.required]],
-    password: ['', [Validators.required, Validators.minLength(8)]],
+    password: ['', [Validators.required, passwordStrengthValidator]],
     preferredLanguage: ['uz', [Validators.required]],
   });
 
