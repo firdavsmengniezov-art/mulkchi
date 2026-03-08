@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { Property } from '../../../core/models/property.models';
+import { Property, ListingType, UzbekistanRegion } from '../../../core/models/property.models';
 
 @Component({
   selector: 'app-property-card',
@@ -34,8 +34,8 @@ import { Property } from '../../../core/models/property.models';
           <div class="price">
             <span class="price-amount">{{ getPrice() | number }}</span>
             <span class="price-currency"> UZS</span>
-            <span class="price-period" *ngIf="property.listingType === 'Rent'">/oy</span>
-            <span class="price-period" *ngIf="property.listingType === 'ShortTermRent'">/kecha</span>
+            <span class="price-period" *ngIf="property.listingType === ListingType.Rent">/oy</span>
+            <span class="price-period" *ngIf="property.listingType === ListingType.ShortTermRent">/kecha</span>
           </div>
           <div class="rating" *ngIf="property.averageRating > 0">
             ⭐ {{ property.averageRating | number:'1.1-1' }}
@@ -48,50 +48,51 @@ import { Property } from '../../../core/models/property.models';
 })
 export class PropertyCardComponent {
   @Input() property!: Property;
+  readonly ListingType = ListingType;
   isFavorite = false;
 
   getBadgeClass(): string {
     switch (this.property.listingType) {
-      case 'Rent': return 'badge-rent';
-      case 'Sale': return 'badge-sale';
-      case 'ShortTermRent': return 'badge-short';
+      case ListingType.Rent: return 'badge-rent';
+      case ListingType.Sale: return 'badge-sale';
+      case ListingType.ShortTermRent: return 'badge-short';
       default: return 'badge-rent';
     }
   }
 
   getBadgeLabel(): string {
     switch (this.property.listingType) {
-      case 'Rent': return 'IJARA';
-      case 'Sale': return 'SOTUVDA';
-      case 'ShortTermRent': return 'QISQA MUDDAT';
+      case ListingType.Rent: return 'IJARA';
+      case ListingType.Sale: return 'SOTUVDA';
+      case ListingType.ShortTermRent: return 'QISQA MUDDAT';
       default: return 'IJARA';
     }
   }
 
   getPrice(): number {
-    if (this.property.listingType === 'Sale') return this.property.salePrice ?? 0;
-    if (this.property.listingType === 'ShortTermRent') return this.property.pricePerNight ?? 0;
+    if (this.property.listingType === ListingType.Sale) return this.property.salePrice ?? 0;
+    if (this.property.listingType === ListingType.ShortTermRent) return this.property.pricePerNight ?? 0;
     return this.property.monthlyRent ?? 0;
   }
 
-  getRegionLabel(region: string): string {
-    const labels: Record<string, string> = {
-      ToshkentShahar: 'Toshkent sh.',
-      ToshkentViloyat: 'Toshkent vil.',
-      Samarqand: 'Samarqand',
-      Buxoro: 'Buxoro',
-      Andijon: 'Andijon',
-      Fargona: 'Fargʻona',
-      Namangan: 'Namangan',
-      Qashqadaryo: 'Qashqadaryo',
-      Surxondaryo: 'Surxondaryo',
-      Xorazm: 'Xorazm',
-      Navoiy: 'Navoiy',
-      Jizzax: 'Jizzax',
-      Sirdaryo: 'Sirdaryo',
-      Qoraqalpogiston: 'Qoraqalpogʻiston'
+  getRegionLabel(region: UzbekistanRegion): string {
+    const labels: Record<number, string> = {
+      [UzbekistanRegion.ToshkentShahar]: 'Toshkent sh.',
+      [UzbekistanRegion.ToshkentViloyat]: 'Toshkent vil.',
+      [UzbekistanRegion.Samarqand]: 'Samarqand',
+      [UzbekistanRegion.Buxoro]: 'Buxoro',
+      [UzbekistanRegion.Andijon]: 'Andijon',
+      [UzbekistanRegion.Fargona]: 'Farg\'ona',
+      [UzbekistanRegion.Namangan]: 'Namangan',
+      [UzbekistanRegion.Qashqadaryo]: 'Qashqadaryo',
+      [UzbekistanRegion.Surxondaryo]: 'Surxondaryo',
+      [UzbekistanRegion.Xorazm]: 'Xorazm',
+      [UzbekistanRegion.Navoiy]: 'Navoiy',
+      [UzbekistanRegion.Jizzax]: 'Jizzax',
+      [UzbekistanRegion.Sirdaryo]: 'Sirdaryo',
+      [UzbekistanRegion.Qoraqalpogiston]: 'Qoraqalpog\'iston',
     };
-    return labels[region] ?? region;
+    return labels[region] ?? String(region);
   }
 
   toggleFavorite(event: Event): void {

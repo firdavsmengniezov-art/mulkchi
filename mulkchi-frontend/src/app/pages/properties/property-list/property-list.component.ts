@@ -19,6 +19,7 @@ export class PropertyListComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
+  readonly ListingType = ListingType;
   properties: Property[] = [];
   totalCount = 0;
   isLoading = false;

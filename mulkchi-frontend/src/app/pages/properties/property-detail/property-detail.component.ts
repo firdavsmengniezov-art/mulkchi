@@ -7,8 +7,9 @@ import { PropertyService } from '../../../core/services/property.service';
 import { ReviewService } from '../../../core/services/review.service';
 import { HomeRequestService } from '../../../core/services/home-request.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { Property } from '../../../core/models/property.models';
+import { Property, ListingType } from '../../../core/models/property.models';
 import { Review } from '../../../core/models/review.models';
+import { RequestType, RequestStatus } from '../../../core/models/home-request.models';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 
 @Component({
@@ -69,10 +70,16 @@ export class PropertyDetailComponent implements OnInit {
     });
   }
 
+  getListingTypeLabel(listingType: ListingType): string {
+    if (listingType === ListingType.Sale) return 'SOTUVDA';
+    if (listingType === ListingType.ShortTermRent) return 'QISQA MUDDATLI';
+    return 'IJARA';
+  }
+
   getPrice(): string {
     if (!this.property) return '';
-    if (this.property.listingType === 'Sale') return `${(this.property.salePrice ?? 0).toLocaleString()} UZS`;
-    if (this.property.listingType === 'ShortTermRent') return `${(this.property.pricePerNight ?? 0).toLocaleString()} UZS/kecha`;
+    if (this.property.listingType === ListingType.Sale) return `${(this.property.salePrice ?? 0).toLocaleString()} UZS`;
+    if (this.property.listingType === ListingType.ShortTermRent) return `${(this.property.pricePerNight ?? 0).toLocaleString()} UZS/kecha`;
     return `${(this.property.monthlyRent ?? 0).toLocaleString()} UZS/oy`;
   }
 
@@ -91,7 +98,10 @@ export class PropertyDetailComponent implements OnInit {
       hostId: this.property.hostId,
       checkInDate: this.requestForm.value.checkInDate,
       checkOutDate: this.requestForm.value.checkOutDate,
-      guestCount: this.requestForm.value.guestCount
+      guestCount: this.requestForm.value.guestCount,
+      type: RequestType.Booking,
+      status: RequestStatus.Pending,
+      totalPrice: 0
     }).subscribe({
       next: () => {
         this.isRequestLoading = false;

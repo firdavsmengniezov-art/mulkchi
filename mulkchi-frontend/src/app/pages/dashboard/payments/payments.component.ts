@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
-import { Payment } from '../../../core/models/payment.models';
+import { Payment, PaymentStatus } from '../../../core/models/payment.models';
 import { LanguageService } from '../../../core/services/language.service';
 import { PaymentService } from '../../../core/services/payment.service';
 import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
@@ -30,7 +30,7 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
               <td>
                 <span
                   class="status-badge"
-                  [ngClass]="'status-' + payment.status.toLowerCase()"
+                  [ngClass]="'status-' + payment.status"
                 >
                   {{ getStatusLabel(payment.status) }}
                 </span>
@@ -59,15 +59,15 @@ export class PaymentsComponent implements OnInit {
     });
   }
 
-  getStatusLabel(status: string): string {
-    const labels: Record<string, string> = {
-      Pending: 'Kutilmoqda',
-      Processing: 'Jarayonda',
-      Completed: 'Yakunlangan',
-      Failed: 'Xatolik',
-      Refunded: 'Qaytarilgan',
-      Cancelled: 'Bekor qilingan',
+  getStatusLabel(status: PaymentStatus): string {
+    const labels: Record<number, string> = {
+      [PaymentStatus.Pending]: 'Kutilmoqda',
+      [PaymentStatus.Processing]: 'Jarayonda',
+      [PaymentStatus.Completed]: 'Yakunlangan',
+      [PaymentStatus.Failed]: 'Xatolik',
+      [PaymentStatus.Refunded]: 'Qaytarilgan',
+      [PaymentStatus.Cancelled]: 'Bekor qilingan',
     };
-    return labels[status] ?? status;
+    return labels[status] ?? String(status);
   }
 }

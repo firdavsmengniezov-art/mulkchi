@@ -1,12 +1,13 @@
-export type ListingType = 'Rent' | 'Sale' | 'ShortTermRent';
-export type PropertyType = 'Apartment' | 'House' | 'Villa' | 'Room' | 'Office' | 'Land' | 'Commercial';
-export type PropertyStatus = 'Active' | 'Inactive' | 'Pending' | 'Rejected' | 'Deleted';
-export type PropertyCategory = 'Residential' | 'Commercial' | 'Industrial' | 'Agricultural';
-export type UzbekistanRegion =
-  | 'ToshkentShahar' | 'ToshkentViloyat' | 'Samarqand' | 'Buxoro'
-  | 'Andijon' | 'Fargona' | 'Namangan' | 'Qashqadaryo'
-  | 'Surxondaryo' | 'Xorazm' | 'Navoiy' | 'Jizzax'
-  | 'Sirdaryo' | 'Qoraqalpogiston';
+export enum ListingType { Rent = 0, Sale = 1, ShortTermRent = 2 }
+export enum PropertyType { Apartment = 0, House = 1, Villa = 2, Room = 3, Office = 4, Land = 5, Commercial = 6 }
+export enum PropertyCategory { Residential = 0, Commercial = 1, Industrial = 2, Agricultural = 3 }
+export enum PropertyStatus { Active = 0, Inactive = 1, Pending = 2, Rejected = 3, Deleted = 4 }
+export enum UzbekistanRegion {
+  ToshkentShahar = 0, ToshkentViloyat = 1, Samarqand = 2, Buxoro = 3,
+  Andijon = 4, Fargona = 5, Namangan = 6, Qashqadaryo = 7,
+  Surxondaryo = 8, Xorazm = 9, Navoiy = 10, Jizzax = 11,
+  Sirdaryo = 12, Qoraqalpogiston = 13
+}
 
 export interface Property {
   id: string;

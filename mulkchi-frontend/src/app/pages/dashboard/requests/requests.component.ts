@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
-import { HomeRequest } from '../../../core/models/home-request.models';
+import { HomeRequest, RequestStatus, RequestType } from '../../../core/models/home-request.models';
 import { AuthService } from '../../../core/services/auth.service';
 import { HomeRequestService } from '../../../core/services/home-request.service';
 import { LanguageService } from '../../../core/services/language.service';
@@ -51,13 +51,13 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
               <td>
                 <span
                   class="status-badge"
-                  [ngClass]="'status-' + req.status.toLowerCase()"
+                  [ngClass]="'status-' + req.status"
                 >
                   {{ getStatusLabel(req.status) }}
                 </span>
               </td>
               <td>
-                <ng-container *ngIf="req.status === 'Pending' && isHost">
+                <ng-container *ngIf="req.status === RequestStatus.Pending && isHost">
                   <button class="btn-approve" (click)="approveRequest(req)">
                     {{ 'requests.approve' | translate }}
                   </button>
@@ -66,13 +66,13 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
                   </button>
                 </ng-container>
                 <small
-                  *ngIf="req.status === 'Rejected' && req.rejectionReason"
+                  *ngIf="req.status === RequestStatus.Rejected && req.rejectionReason"
                   class="reason-text"
                 >
                   📋 {{ req.rejectionReason }}
                 </small>
                 <small
-                  *ngIf="req.status === 'Cancelled' && req.cancellationReason"
+                  *ngIf="req.status === RequestStatus.Cancelled && req.cancellationReason"
                   class="reason-text"
                 >
                   📋 {{ req.cancellationReason }}
@@ -93,10 +93,12 @@ export class RequestsComponent implements OnInit {
   private readonly homeRequestService = inject(HomeRequestService);
   private readonly authService = inject(AuthService);
   private readonly langService = inject(LanguageService);
+  readonly RequestStatus = RequestStatus;
   requests: HomeRequest[] = [];
-  isHost =
-    this.authService.getRole() === 'Host' ||
-    this.authService.getRole() === 'Admin';
+  isHost = (() => {
+    const role = this.authService.getRole();
+    return role === '1' || role === '2' || role === 'Host' || role === 'Admin';
+  })();
 
   ngOnInit(): void {
     this.loadRequests();
@@ -110,7 +112,7 @@ export class RequestsComponent implements OnInit {
   }
 
   approveRequest(req: HomeRequest): void {
-    this.homeRequestService.update({ ...req, status: 'Approved' }).subscribe({
+    this.homeRequestService.update({ ...req, status: RequestStatus.Approved }).subscribe({
       next: () => this.loadRequests(),
       error: () => {},
     });
@@ -119,30 +121,30 @@ export class RequestsComponent implements OnInit {
   rejectRequest(req: HomeRequest): void {
     const reason = prompt(this.langService.t('requests.reject_prompt')) ?? '';
     this.homeRequestService
-      .update({ ...req, status: 'Rejected', rejectionReason: reason })
+      .update({ ...req, status: RequestStatus.Rejected, rejectionReason: reason })
       .subscribe({
         next: () => this.loadRequests(),
         error: () => {},
       });
   }
 
-  getTypeLabel(type: string): string {
-    const labels: Record<string, string> = {
-      Booking: 'Bron',
-      Inquiry: "So'rov",
-      ShortTermRent: 'Qisqa muddatli',
+  getTypeLabel(type: RequestType): string {
+    const labels: Record<number, string> = {
+      [RequestType.Booking]: 'Bron',
+      [RequestType.Inquiry]: "So'rov",
+      [RequestType.ShortTermRent]: 'Qisqa muddatli',
     };
-    return labels[type] ?? type;
+    return labels[type] ?? String(type);
   }
 
-  getStatusLabel(status: string): string {
-    const labels: Record<string, string> = {
-      Pending: 'Kutilmoqda',
-      Approved: 'Tasdiqlangan',
-      Rejected: 'Rad etilgan',
-      Cancelled: 'Bekor qilingan',
-      Completed: 'Yakunlangan',
+  getStatusLabel(status: RequestStatus): string {
+    const labels: Record<number, string> = {
+      [RequestStatus.Pending]: 'Kutilmoqda',
+      [RequestStatus.Approved]: 'Tasdiqlangan',
+      [RequestStatus.Rejected]: 'Rad etilgan',
+      [RequestStatus.Cancelled]: 'Bekor qilingan',
+      [RequestStatus.Completed]: 'Yakunlangan',
     };
-    return labels[status] ?? status;
+    return labels[status] ?? String(status);
   }
 }

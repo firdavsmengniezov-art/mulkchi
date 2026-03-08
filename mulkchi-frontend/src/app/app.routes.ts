@@ -11,6 +11,9 @@ import { MyPropertiesComponent } from './pages/dashboard/my-properties/my-proper
 import { RequestsComponent } from './pages/dashboard/requests/requests.component';
 import { PaymentsComponent } from './pages/dashboard/payments/payments.component';
 import { SettingsComponent } from './pages/dashboard/settings/settings.component';
+import { FavoritesComponent } from './pages/dashboard/favorites/favorites.component';
+import { NotificationsComponent } from './pages/dashboard/notifications/notifications.component';
+import { AnnouncementsComponent } from './pages/announcements/announcements.component';
 import { NotFoundComponent } from './pages/not-found/not-found.component';
 
 export const routes: Routes = [
@@ -19,6 +22,7 @@ export const routes: Routes = [
   { path: 'register', component: RegisterComponent },
   { path: 'properties', component: PropertyListComponent },
   { path: 'properties/:id', component: PropertyDetailComponent },
+  { path: 'announcements', component: AnnouncementsComponent },
   {
     path: 'dashboard',
     component: DashboardLayoutComponent,
@@ -29,6 +33,8 @@ export const routes: Routes = [
       { path: 'my-properties', component: MyPropertiesComponent },
       { path: 'requests', component: RequestsComponent },
       { path: 'payments', component: PaymentsComponent },
+      { path: 'favorites', component: FavoritesComponent },
+      { path: 'notifications', component: NotificationsComponent },
       { path: 'settings', component: SettingsComponent },
     ]
   },

@@ -1,9 +1,5 @@
-export type AnnouncementType =
-  | 'General'
-  | 'Maintenance'
-  | 'Promotion'
-  | 'PolicyUpdate';
-export type AnnouncementTarget = 'AllUsers' | 'Hosts' | 'Guests' | 'Admins';
+export enum AnnouncementType { General = 0, Maintenance = 1, Promotion = 2, PolicyUpdate = 3 }
+export enum AnnouncementTarget { AllUsers = 0, Hosts = 1, Guests = 2, Admins = 3 }
 
 export interface Announcement {
   id: string;

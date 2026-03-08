@@ -50,6 +50,30 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
             <span>{{ 'nav.payments' | translate }}</span>
           </a>
           <a
+            routerLink="/dashboard/favorites"
+            routerLinkActive="active"
+            class="nav-item"
+          >
+            <span class="nav-icon">❤️</span>
+            <span>Sevimlilar</span>
+          </a>
+          <a
+            routerLink="/dashboard/messages"
+            routerLinkActive="active"
+            class="nav-item"
+          >
+            <span class="nav-icon">💬</span>
+            <span>Xabarlar</span>
+          </a>
+          <a
+            routerLink="/dashboard/notifications"
+            routerLinkActive="active"
+            class="nav-item"
+          >
+            <span class="nav-icon">🔔</span>
+            <span>Bildirishnomalar</span>
+          </a>
+          <a
             routerLink="/dashboard/settings"
             routerLinkActive="active"
             class="nav-item"

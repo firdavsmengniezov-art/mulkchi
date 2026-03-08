@@ -1,16 +1,6 @@
-export type PaymentType =
-  | 'BookingPayment'
-  | 'SecurityDeposit'
-  | 'Refund'
-  | 'PlatformFee';
-export type PaymentStatus =
-  | 'Pending'
-  | 'Processing'
-  | 'Completed'
-  | 'Failed'
-  | 'Refunded'
-  | 'Cancelled';
-export type PaymentMethod = 'Payme' | 'Click' | 'Uzcard' | 'Humo' | 'Cash';
+export enum PaymentType { BookingPayment = 0, SecurityDeposit = 1, Refund = 2, PlatformFee = 3 }
+export enum PaymentStatus { Pending = 0, Processing = 1, Completed = 2, Failed = 3, Refunded = 4, Cancelled = 5 }
+export enum PaymentMethod { Payme = 0, Click = 1, Uzcard = 2, Humo = 3, Cash = 4 }
 
 export interface Payment {
   id: string;

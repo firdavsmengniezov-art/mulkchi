@@ -7,7 +7,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { Property } from '../../../core/models/property.models';
+import { Property, ListingType, PropertyStatus, PropertyType, PropertyCategory, UzbekistanRegion } from '../../../core/models/property.models';
 import { AuthService } from '../../../core/services/auth.service';
 import { LanguageService } from '../../../core/services/language.service';
 import { PropertyService } from '../../../core/services/property.service';
@@ -57,20 +57,20 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
             <div class="form-group">
               <label>Viloyat *</label>
               <select formControlName="region">
-                <option value="ToshkentShahar">Toshkent shahri</option>
-                <option value="ToshkentViloyat">Toshkent viloyati</option>
-                <option value="Samarqand">Samarqand</option>
-                <option value="Buxoro">Buxoro</option>
-                <option value="Andijon">Andijon</option>
-                <option value="Fargona">Farg'ona</option>
-                <option value="Namangan">Namangan</option>
-                <option value="Qashqadaryo">Qashqadaryo</option>
-                <option value="Surxondaryo">Surxondaryo</option>
-                <option value="Xorazm">Xorazm</option>
-                <option value="Navoiy">Navoiy</option>
-                <option value="Jizzax">Jizzax</option>
-                <option value="Sirdaryo">Sirdaryo</option>
-                <option value="Qoraqalpogiston">Qoraqalpog'iston</option>
+                <option [ngValue]="UzbekistanRegion.ToshkentShahar">Toshkent shahri</option>
+                <option [ngValue]="UzbekistanRegion.ToshkentViloyat">Toshkent viloyati</option>
+                <option [ngValue]="UzbekistanRegion.Samarqand">Samarqand</option>
+                <option [ngValue]="UzbekistanRegion.Buxoro">Buxoro</option>
+                <option [ngValue]="UzbekistanRegion.Andijon">Andijon</option>
+                <option [ngValue]="UzbekistanRegion.Fargona">Farg'ona</option>
+                <option [ngValue]="UzbekistanRegion.Namangan">Namangan</option>
+                <option [ngValue]="UzbekistanRegion.Qashqadaryo">Qashqadaryo</option>
+                <option [ngValue]="UzbekistanRegion.Surxondaryo">Surxondaryo</option>
+                <option [ngValue]="UzbekistanRegion.Xorazm">Xorazm</option>
+                <option [ngValue]="UzbekistanRegion.Navoiy">Navoiy</option>
+                <option [ngValue]="UzbekistanRegion.Jizzax">Jizzax</option>
+                <option [ngValue]="UzbekistanRegion.Sirdaryo">Sirdaryo</option>
+                <option [ngValue]="UzbekistanRegion.Qoraqalpogiston">Qoraqalpog'iston</option>
               </select>
             </div>
             <div class="form-group">
@@ -92,22 +92,22 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
             <div class="form-group">
               <label>Mulk turi *</label>
               <select formControlName="type">
-                <option value="Apartment">Kvartira</option>
-                <option value="House">Uy</option>
-                <option value="Villa">Villa</option>
-                <option value="Room">Xona</option>
-                <option value="Office">Ofis</option>
-                <option value="Land">Yer</option>
-                <option value="Commercial">Tijorat joyi</option>
+                <option [ngValue]="PropertyType.Apartment">Kvartira</option>
+                <option [ngValue]="PropertyType.House">Uy</option>
+                <option [ngValue]="PropertyType.Villa">Villa</option>
+                <option [ngValue]="PropertyType.Room">Xona</option>
+                <option [ngValue]="PropertyType.Office">Ofis</option>
+                <option [ngValue]="PropertyType.Land">Yer</option>
+                <option [ngValue]="PropertyType.Commercial">Tijorat joyi</option>
               </select>
             </div>
             <div class="form-group">
               <label>Kategoriya *</label>
               <select formControlName="category">
-                <option value="Residential">Turar joy</option>
-                <option value="Commercial">Tijorat</option>
-                <option value="Industrial">Sanoat</option>
-                <option value="Agricultural">Qishloq xo'jaligi</option>
+                <option [ngValue]="PropertyCategory.Residential">Turar joy</option>
+                <option [ngValue]="PropertyCategory.Commercial">Tijorat</option>
+                <option [ngValue]="PropertyCategory.Industrial">Sanoat</option>
+                <option [ngValue]="PropertyCategory.Agricultural">Qishloq xo'jaligi</option>
               </select>
             </div>
             <div class="form-group">
@@ -158,9 +158,9 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
                 type="button"
                 class="toggle-btn"
                 [class.active]="
-                  propertyForm.get('listingType')?.value === 'Rent'
+                  propertyForm.get('listingType')?.value === ListingType.Rent
                 "
-                (click)="propertyForm.patchValue({ listingType: 'Rent' })"
+                (click)="propertyForm.patchValue({ listingType: ListingType.Rent })"
               >
                 Ijara
               </button>
@@ -168,9 +168,9 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
                 type="button"
                 class="toggle-btn"
                 [class.active]="
-                  propertyForm.get('listingType')?.value === 'Sale'
+                  propertyForm.get('listingType')?.value === ListingType.Sale
                 "
-                (click)="propertyForm.patchValue({ listingType: 'Sale' })"
+                (click)="propertyForm.patchValue({ listingType: ListingType.Sale })"
               >
                 Sotish
               </button>
@@ -178,10 +178,10 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
                 type="button"
                 class="toggle-btn"
                 [class.active]="
-                  propertyForm.get('listingType')?.value === 'ShortTermRent'
+                  propertyForm.get('listingType')?.value === ListingType.ShortTermRent
                 "
                 (click)="
-                  propertyForm.patchValue({ listingType: 'ShortTermRent' })
+                  propertyForm.patchValue({ listingType: ListingType.ShortTermRent })
                 "
               >
                 Qisqa muddatli ijara
@@ -262,6 +262,11 @@ export class MyPropertiesComponent implements OnInit {
   private readonly snackBar = inject(MatSnackBar);
   private readonly langService = inject(LanguageService);
 
+  readonly ListingType = ListingType;
+  readonly PropertyStatus = PropertyStatus;
+  readonly PropertyType = PropertyType;
+  readonly PropertyCategory = PropertyCategory;
+  readonly UzbekistanRegion = UzbekistanRegion;
   properties: Property[] = [];
   showForm = false;
   editingProperty: Property | null = null;
@@ -369,12 +374,12 @@ export class MyPropertiesComponent implements OnInit {
       isVacant: values.isVacant,
       hasWifi: values.hasWifi,
       hasParking: values.hasParking,
-      monthlyRent: values.listingType === 'Rent' ? values.price : undefined,
-      salePrice: values.listingType === 'Sale' ? values.price : undefined,
+      monthlyRent: values.listingType === ListingType.Rent ? values.price : undefined,
+      salePrice: values.listingType === ListingType.Sale ? values.price : undefined,
       pricePerNight:
-        values.listingType === 'ShortTermRent' ? values.price : undefined,
+        values.listingType === ListingType.ShortTermRent ? values.price : undefined,
       hostId: this.authService.getUserId()!,
-      status: 'Active',
+      status: PropertyStatus.Active,
     };
 
     if (this.editingProperty) {
@@ -432,9 +437,9 @@ export class MyPropertiesComponent implements OnInit {
   }
 
   getPropPrice(prop: Property): string {
-    if (prop.listingType === 'Sale')
+    if (prop.listingType === ListingType.Sale)
       return `${(prop.salePrice ?? 0).toLocaleString()} UZS`;
-    if (prop.listingType === 'ShortTermRent')
+    if (prop.listingType === ListingType.ShortTermRent)
       return `${(prop.pricePerNight ?? 0).toLocaleString()} UZS/kecha`;
     return `${(prop.monthlyRent ?? 0).toLocaleString()} UZS/oy`;
   }

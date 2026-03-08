@@ -2,6 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { HomeRequest } from '../../../core/models/home-request.models';
+import { PropertyStatus } from '../../../core/models/property.models';
+import { PaymentStatus } from '../../../core/models/payment.models';
+import { RequestStatus } from '../../../core/models/home-request.models';
 import { AuthService } from '../../../core/services/auth.service';
 import { HomeRequestService } from '../../../core/services/home-request.service';
 import { LanguageService } from '../../../core/services/language.service';
@@ -108,7 +111,7 @@ import { TranslatePipe } from '../../../shared/pipes/translate.pipe';
                 <td>
                   <span
                     class="status-badge"
-                    [class]="'status-' + req.status.toLowerCase()"
+                    [class]="'status-' + req.status"
                   >
                     {{ getStatusLabel(req.status) }}
                   </span>
@@ -154,7 +157,7 @@ export class DashboardOverviewComponent implements OnInit {
     this.propertyService.getAll({ pageSize: 100 }).subscribe({
       next: (result) => {
         this.activeListings = result.items.filter(
-          (p) => p.hostId === userId && p.status === 'Active',
+          (p) => p.hostId === userId && p.status === PropertyStatus.Active,
         ).length;
       },
       error: () => {},
@@ -177,14 +180,14 @@ export class DashboardOverviewComponent implements OnInit {
     });
   }
 
-  getStatusLabel(status: string): string {
-    const labels: Record<string, string> = {
-      Pending: 'Kutilmoqda',
-      Approved: 'Tasdiqlangan',
-      Rejected: 'Rad etilgan',
-      Cancelled: 'Bekor qilingan',
-      Completed: 'Yakunlangan',
+  getStatusLabel(status: RequestStatus): string {
+    const labels: Record<number, string> = {
+      [RequestStatus.Pending]: 'Kutilmoqda',
+      [RequestStatus.Approved]: 'Tasdiqlangan',
+      [RequestStatus.Rejected]: 'Rad etilgan',
+      [RequestStatus.Cancelled]: 'Bekor qilingan',
+      [RequestStatus.Completed]: 'Yakunlangan',
     };
-    return labels[status] ?? status;
+    return labels[status] ?? String(status);
   }
 }
