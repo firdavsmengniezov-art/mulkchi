@@ -34,7 +34,7 @@ public partial class StorageBroker : DbContext, IStorageBroker
 
         if (this.environment.IsDevelopment())
         {
-            this.Database.EnsureCreated();
+            this.Database.Migrate();
         }
         else
         {

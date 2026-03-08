@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Mulkchi.Api.Brokers.DateTimes;
 using Mulkchi.Api.Brokers.Loggings;
 using Mulkchi.Api.Models.Foundations.Messages;
 using Mulkchi.Api.Services.Foundations.Messages;
@@ -11,13 +12,16 @@ public class ChatHub : Hub
 {
     private readonly IMessageService messageService;
     private readonly ILoggingBroker loggingBroker;
+    private readonly IDateTimeBroker dateTimeBroker;
 
     public ChatHub(
         IMessageService messageService,
-        ILoggingBroker loggingBroker)
+        ILoggingBroker loggingBroker,
+        IDateTimeBroker dateTimeBroker)
     {
         this.messageService = messageService;
         this.loggingBroker = loggingBroker;
+        this.dateTimeBroker = dateTimeBroker;
     }
 
     // Send message to specific user and save to DB
@@ -37,8 +41,8 @@ public class ChatHub : Hub
                 Content = content,
                 Type = MessageType.Text,
                 IsRead = false,
-                CreatedDate = DateTimeOffset.UtcNow,
-                UpdatedDate = DateTimeOffset.UtcNow
+                CreatedDate = this.dateTimeBroker.GetCurrentDateTimeOffset(),
+                UpdatedDate = this.dateTimeBroker.GetCurrentDateTimeOffset()
             };
 
             Message savedMessage = await this.messageService.AddMessageAsync(message);

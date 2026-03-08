@@ -25,6 +25,11 @@ public class PaymentsController : ControllerBase
     {
         try
         {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdClaim is null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
+                return Unauthorized();
+
+            payment.PayerId = currentUserId;
             Payment addedPayment = await this.paymentService.AddPaymentAsync(payment);
             return Created("payment", addedPayment);
         }

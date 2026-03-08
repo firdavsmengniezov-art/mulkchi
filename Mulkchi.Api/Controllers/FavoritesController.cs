@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mulkchi.Api.Models.Foundations.Common;
@@ -24,6 +25,11 @@ public class FavoritesController : ControllerBase
     {
         try
         {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdClaim is null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
+                return Unauthorized();
+
+            favorite.UserId = currentUserId;
             Favorite addedFavorite = await this.favoriteService.AddFavoriteAsync(favorite);
             // TODO: FavoritesCount increment should be handled by an Orchestration service
             return Created("favorite", addedFavorite);

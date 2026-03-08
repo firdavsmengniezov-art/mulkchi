@@ -83,6 +83,14 @@ public class UsersController : ControllerBase
     {
         try
         {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdClaim is null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
+                return Unauthorized();
+
+            bool isAdmin = User.IsInRole("Admin");
+            if (!isAdmin && user.Id != currentUserId)
+                return Forbid();
+
             User modifiedUser = await this.userService.ModifyUserAsync(user);
             return Ok(modifiedUser);
         }

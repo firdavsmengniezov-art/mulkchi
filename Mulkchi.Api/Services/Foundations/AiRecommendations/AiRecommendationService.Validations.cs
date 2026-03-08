@@ -13,7 +13,8 @@ public partial class AiRecommendationService
         (Rule: IsInvalid(aiRecommendation.Id), Parameter: nameof(AiRecommendation.Id)),
         (Rule: IsInvalid(aiRecommendation.UserId), Parameter: nameof(AiRecommendation.UserId)),
         (Rule: IsInvalid(aiRecommendation.Title), Parameter: nameof(AiRecommendation.Title)),
-        (Rule: IsInvalid(aiRecommendation.Description), Parameter: nameof(AiRecommendation.Description)));
+        (Rule: IsInvalid(aiRecommendation.Description), Parameter: nameof(AiRecommendation.Description)),
+        (Rule: IsInvalidScore(aiRecommendation.Score), Parameter: nameof(AiRecommendation.Score)));
     }
 
     private void ValidateAiRecommendationOnModify(AiRecommendation aiRecommendation)
@@ -23,7 +24,8 @@ public partial class AiRecommendationService
         (Rule: IsInvalid(aiRecommendation.Id), Parameter: nameof(AiRecommendation.Id)),
         (Rule: IsInvalid(aiRecommendation.UserId), Parameter: nameof(AiRecommendation.UserId)),
         (Rule: IsInvalid(aiRecommendation.Title), Parameter: nameof(AiRecommendation.Title)),
-        (Rule: IsInvalid(aiRecommendation.Description), Parameter: nameof(AiRecommendation.Description)));
+        (Rule: IsInvalid(aiRecommendation.Description), Parameter: nameof(AiRecommendation.Description)),
+        (Rule: IsInvalidScore(aiRecommendation.Score), Parameter: nameof(AiRecommendation.Score)));
     }
 
     private static void ValidateAiRecommendationId(Guid aiRecommendationId)
@@ -51,6 +53,12 @@ public partial class AiRecommendationService
     {
         Condition = string.IsNullOrWhiteSpace(text),
         Message = "Value is required."
+    };
+
+    private static dynamic IsInvalidScore(decimal score) => new
+    {
+        Condition = score < 0 || score > 100,
+        Message = "Score must be between 0 and 100."
     };
 
     private void Validate(params (dynamic Rule, string Parameter)[] validations)

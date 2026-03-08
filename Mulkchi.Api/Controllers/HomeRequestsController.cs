@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Models.Foundations.HomeRequests;
@@ -24,6 +26,11 @@ public class HomeRequestsController : ControllerBase
     {
         try
         {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdClaim is null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
+                return Unauthorized();
+
+            homeRequest.GuestId = currentUserId;
             HomeRequest addedHomeRequest = await this.homeRequestService.AddHomeRequestAsync(homeRequest);
             return Created("homeRequest", addedHomeRequest);
         }
