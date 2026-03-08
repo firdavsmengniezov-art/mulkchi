@@ -1,0 +1,169 @@
+<!-- HERO SECTION -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-container">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="pulse-dot"></span>
+        O'zbekiston №1 ko'chmas mulk platformasi
+      </div>
+
+      <h1 class="hero-title">
+        Ideal uyingizni <em>toping</em><br>yoki ijaraga bering
+      </h1>
+
+      <p class="hero-desc">
+        12,000+ dan ortiq tasdiqlangan mulklar, ishonchli mulkdorlar va
+        xavfsiz bitimlar bilan qulay uy topish endi oson.
+      </p>
+
+      <div class="hero-actions">
+        <a routerLink="/properties" class="btn-gold hero-btn">Mulklarni ko'rish →</a>
+        <a routerLink="/register" class="btn-ghost hero-btn">Mulk joylashtirish</a>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-num">12,400+</span>
+          <span class="stat-label">Aktiv e'lonlar</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num">8,200+</span>
+          <span class="stat-label">Muvaffaqiyatli bitimlar</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num">14</span>
+          <span class="stat-label">Viloyat</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="floating-card card-1">
+        <div class="mini-card-image">🏠</div>
+        <div class="mini-card-info">
+          <span class="mini-price">3,500,000 UZS/oy</span>
+          <span class="mini-loc">📍 Yunusobod, Toshkent</span>
+        </div>
+      </div>
+      <div class="floating-card card-2">
+        <div class="mini-card-image">🏡</div>
+        <div class="mini-card-info">
+          <span class="mini-price">450,000,000 UZS</span>
+          <span class="mini-loc">📍 Samarqand</span>
+        </div>
+      </div>
+      <div class="floating-card card-3">
+        <div class="mini-card-image">🏢</div>
+        <div class="mini-card-info">
+          <span class="mini-price">1,200,000 UZS/oy</span>
+          <span class="mini-loc">📍 Chilonzor, Toshkent</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SEARCH BAR -->
+<section class="search-section">
+  <div class="search-container">
+    <div class="search-bar">
+      <div class="search-field">
+        <label>📍 Joylashuv</label>
+        <input type="text" placeholder="Shahar yoki tuman" [(ngModel)]="searchLocation">
+      </div>
+      <div class="search-divider"></div>
+      <div class="search-field">
+        <label>🏠 Mulk turi</label>
+        <select [(ngModel)]="searchType">
+          <option value="">Barchasi</option>
+          <option value="Apartment">Kvartira</option>
+          <option value="House">Uy</option>
+          <option value="Villa">Villa</option>
+          <option value="Room">Xona</option>
+          <option value="Office">Ofis</option>
+        </select>
+      </div>
+      <div class="search-divider"></div>
+      <div class="search-field">
+        <label>🎯 Maqsad</label>
+        <select [(ngModel)]="searchPurpose">
+          <option value="">Barchasi</option>
+          <option value="Rent">Ijaraga olish</option>
+          <option value="Sale">Sotib olish</option>
+          <option value="ShortTermRent">Qisqa muddatli</option>
+        </select>
+      </div>
+      <div class="search-divider"></div>
+      <div class="search-field">
+        <label>🛏 Xonalar</label>
+        <select [(ngModel)]="searchRooms">
+          <option value="">Barchasi</option>
+          <option value="1">1 xona</option>
+          <option value="2">2 xona</option>
+          <option value="3">3 xona</option>
+          <option value="4">4+ xona</option>
+        </select>
+      </div>
+      <button class="btn-gold search-btn" (click)="onSearch()">Qidirish</button>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED LISTINGS -->
+<section class="featured-section">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <p class="section-tag">Tanlangan mulklar</p>
+        <h2 class="section-title">Premium e'lonlar</h2>
+      </div>
+      <a routerLink="/properties" class="see-all-link">Barchasini ko'rish →</a>
+    </div>
+
+    <div class="properties-grid">
+      <app-property-card
+        *ngFor="let property of sampleProperties"
+        [property]="property">
+      </app-property-card>
+    </div>
+
+    <div class="map-cta">
+      <button class="btn-outline-gold">🗺️ Xaritada ko'rish</button>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES SECTION -->
+<section class="features-section">
+  <div class="container">
+    <div class="section-header centered">
+      <p class="section-tag">Nima uchun Mulkchi?</p>
+      <h2 class="section-title">Platforma afzalliklari</h2>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card card-dark" *ngFor="let feature of features">
+        <div class="feature-icon">{{ feature.icon }}</div>
+        <h3>{{ feature.title }}</h3>
+        <p>{{ feature.desc }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA SECTION -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-card card-dark">
+      <h2>Mulkingizni ijaraga bering yoki soting</h2>
+      <p>Minlab potentsial ijarachilar va xaridorlar bilan bog'laning</p>
+      <div class="cta-actions">
+        <a routerLink="/register" class="btn-gold">Hoziroq boshlash →</a>
+        <a routerLink="/properties" class="btn-outline-gold">Ko'proq ma'lumot</a>
+      </div>
+    </div>
+  </div>
+</section>

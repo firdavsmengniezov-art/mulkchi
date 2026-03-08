@@ -1,0 +1,100 @@
+<div class="list-page page-wrapper">
+  <div class="list-container">
+    <!-- Sidebar Filters -->
+    <aside class="filters-sidebar">
+      <div class="filters-header">
+        <h3>Filtrlar</h3>
+        <button class="clear-btn" (click)="filterCity=''; filterListingType=''; filterMinPrice=null; filterMaxPrice=null; filterBedrooms=null; applyFilters()">
+          Tozalash
+        </button>
+      </div>
+
+      <div class="filter-section">
+        <label>📍 Joylashuv</label>
+        <input type="text" placeholder="Shahar yoki tuman" [(ngModel)]="filterCity">
+      </div>
+
+      <div class="filter-section">
+        <label>🎯 E'lon turi</label>
+        <div class="toggle-group">
+          <button
+            class="toggle-btn"
+            [class.active]="filterListingType === ''"
+            (click)="setListingType('')">
+            Hammasi
+          </button>
+          <button
+            class="toggle-btn"
+            [class.active]="filterListingType === 'Rent'"
+            (click)="setListingType('Rent')">
+            Ijara
+          </button>
+          <button
+            class="toggle-btn"
+            [class.active]="filterListingType === 'Sale'"
+            (click)="setListingType('Sale')">
+            Sotish
+          </button>
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <label>💰 Narx oralig'i (UZS)</label>
+        <div class="price-range">
+          <input type="number" placeholder="Min" [(ngModel)]="filterMinPrice">
+          <span>—</span>
+          <input type="number" placeholder="Max" [(ngModel)]="filterMaxPrice">
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <label>🛏 Xonalar soni</label>
+        <div class="chips-group">
+          <button class="chip" [class.active]="filterBedrooms === null" (click)="setBedrooms(null)">Barchasi</button>
+          <button class="chip" [class.active]="filterBedrooms === 1" (click)="setBedrooms(1)">1</button>
+          <button class="chip" [class.active]="filterBedrooms === 2" (click)="setBedrooms(2)">2</button>
+          <button class="chip" [class.active]="filterBedrooms === 3" (click)="setBedrooms(3)">3</button>
+          <button class="chip" [class.active]="filterBedrooms === 4" (click)="setBedrooms(4)">4+</button>
+        </div>
+      </div>
+
+      <button class="btn-gold filter-btn" (click)="applyFilters()">Filtrlash</button>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="list-main">
+      <div class="list-header">
+        <h1>Mulklar</h1>
+        <span class="count" *ngIf="!isLoading">{{ totalCount }} ta e'lon topildi</span>
+      </div>
+
+      <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+      <ng-container *ngIf="!isLoading">
+        <p class="empty-state" *ngIf="properties.length === 0">
+          😔 Mulklar topilmadi. Filtrlarni o'zgartiring.
+        </p>
+
+        <div class="properties-grid" *ngIf="properties.length > 0">
+          <app-property-card
+            *ngFor="let property of properties"
+            [property]="property">
+          </app-property-card>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" *ngIf="totalPages > 1">
+          <button class="page-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">←</button>
+          <button
+            class="page-btn"
+            *ngFor="let page of pages"
+            [class.active]="page === currentPage"
+            (click)="goToPage(page)">
+            {{ page }}
+          </button>
+          <button class="page-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">→</button>
+        </div>
+      </ng-container>
+    </main>
+  </div>
+</div>

@@ -1,0 +1,160 @@
+.property-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.25s ease;
+
+  &:hover {
+    border-color: rgba(201, 168, 76, 0.35);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  }
+}
+
+.card-image {
+  position: relative;
+  height: 200px;
+
+  .image-gradient {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .property-emoji {
+      font-size: 48px;
+      opacity: 0.6;
+    }
+  }
+
+  .badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+
+    &.badge-rent {
+      background: rgba(76, 175, 130, 0.15);
+      color: var(--green);
+      border: 1px solid rgba(76, 175, 130, 0.3);
+    }
+
+    &.badge-sale {
+      background: rgba(201, 168, 76, 0.15);
+      color: var(--gold);
+      border: 1px solid rgba(201, 168, 76, 0.3);
+    }
+
+    &.badge-short {
+      background: rgba(100, 149, 237, 0.15);
+      color: #6495ed;
+      border: 1px solid rgba(100, 149, 237, 0.3);
+    }
+  }
+
+  .favorite-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(15, 15, 15, 0.7);
+    border: none;
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+
+    &:hover {
+      background: rgba(15, 15, 15, 0.9);
+    }
+  }
+
+  .verified-badge {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: rgba(76, 175, 130, 0.15);
+    border: 1px solid rgba(76, 175, 130, 0.3);
+    color: var(--green);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+}
+
+.card-body {
+  padding: 16px;
+}
+
+.card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-location {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.card-meta {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+
+  span {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+
+  .price {
+    .price-amount {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    .price-currency {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .price-period {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+  }
+
+  .rating {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+}
