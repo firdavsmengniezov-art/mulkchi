@@ -8,4 +8,6 @@ public interface IAuthService
     ValueTask<AuthResponse> RegisterAsync(RegisterRequest request);
     ValueTask<AuthResponse> RefreshTokenAsync(string refreshToken);
     ValueTask LogoutAsync(string refreshToken);
+    ValueTask ForgotPasswordAsync(string email);
+    ValueTask ResetPasswordAsync(string token, string newPassword);
 }

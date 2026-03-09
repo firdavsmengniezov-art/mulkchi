@@ -132,4 +132,53 @@ public class AuthController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
         }
     }
+
+    [HttpPost("forgot-password")]
+    public async ValueTask<ActionResult> ForgotPasswordAsync([FromBody] ForgotPasswordRequest request)
+    {
+        try
+        {
+            await this.authService.ForgotPasswordAsync(request.Email);
+            return Ok(new { message = "If an account with that email exists, a password reset link has been sent." });
+        }
+        catch (AuthValidationException authValidationException)
+        {
+            return BadRequest(new { message = authValidationException.InnerException?.Message ?? "An error occurred." });
+        }
+        catch (AuthDependencyException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+        catch (AuthServiceException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+    }
+
+    [HttpPost("reset-password")]
+    public async ValueTask<ActionResult> ResetPasswordAsync([FromBody] ResetPasswordRequest request)
+    {
+        try
+        {
+            await this.authService.ResetPasswordAsync(request.Token, request.NewPassword);
+            return Ok(new { message = "Password has been reset successfully." });
+        }
+        catch (AuthValidationException authValidationException)
+        {
+            return BadRequest(new { message = authValidationException.InnerException?.Message ?? "An error occurred." });
+        }
+        catch (AuthDependencyValidationException authDependencyValidationException)
+            when (authDependencyValidationException.InnerException is NotFoundPasswordResetTokenException)
+        {
+            return BadRequest(new { message = "Invalid or expired reset token." });
+        }
+        catch (AuthDependencyException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+        catch (AuthServiceException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+    }
 }
