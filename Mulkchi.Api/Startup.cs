@@ -28,6 +28,8 @@ using Mulkchi.Api.Services.Foundations.Announcements;
 using Mulkchi.Api.Services.Foundations.Auth;
 using Mulkchi.Api.Services.Foundations.Bookings;
 using Mulkchi.Api.Middleware;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 namespace Mulkchi.Api;
 
@@ -63,6 +65,11 @@ public class Startup
         
         // Add localization
         services.AddLocalization(options => options.ResourcesPath = "Resources");
+        
+        // Add health checks
+        services.AddHealthChecks()
+            .AddDbContextCheck<StorageBroker>(name: "database")
+            .AddCheck("file-storage", () => HealthCheckResult.Healthy());
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -96,6 +103,24 @@ public class Startup
         app.UseRouting();
         app.UseAuthentication();
         app.UseAuthorization();
+        
+        // Add health check endpoints
+        app.UseHealthChecks("/health", new HealthCheckOptions
+        {
+            ResponseWriter = WriteHealthCheckResponse
+        });
+        
+        app.UseHealthChecks("/health/database", new HealthCheckOptions
+        {
+            Predicate = (check) => check.Name == "database",
+            ResponseWriter = WriteHealthCheckResponse
+        });
+        
+        app.UseHealthChecks("/health/file-storage", new HealthCheckOptions
+        {
+            Predicate = (check) => check.Name == "file-storage",
+            ResponseWriter = WriteHealthCheckResponse
+        });
 
         app.UseEndpoints(endpoints =>
         {
@@ -281,5 +306,26 @@ public class Startup
                 }
             });
         });
+    }
+
+    private static Task WriteHealthCheckResponse(HttpContext context, HealthReport report)
+    {
+        context.Response.ContentType = "application/json";
+
+        var response = new
+        {
+            status = report.Status.ToString(),
+            checks = report.Entries.Select(entry => new
+            {
+                name = entry.Key,
+                status = entry.Value.Status.ToString(),
+                description = entry.Value.Description,
+                duration = entry.Value.Duration.TotalMilliseconds,
+                data = entry.Value.Data
+            }),
+            totalDuration = report.TotalDuration.TotalMilliseconds
+        };
+
+        return context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(response));
     }
 }
