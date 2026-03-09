@@ -30,13 +30,21 @@ public class AnalyticsController : ControllerBase
             var totalForSale = await properties.CountAsync(p => p.ListingType == ListingType.Sale);
             var totalForRent = await properties.CountAsync(p => p.ListingType == ListingType.Rent || p.ListingType == ListingType.ShortTermRent);
             
-            var averageSalePrice = await properties
+            var saleProperties = await properties
                 .Where(p => p.SalePrice.HasValue && p.SalePrice > 0)
-                .AverageAsync(p => p.SalePrice.Value);
+                .ToListAsync();
             
-            var averageRentPrice = await properties
+            var rentProperties = await properties
                 .Where(p => p.MonthlyRent.HasValue && p.MonthlyRent > 0)
-                .AverageAsync(p => p.MonthlyRent.Value);
+                .ToListAsync();
+            
+            var averageSalePrice = saleProperties.Any() 
+                ? saleProperties.Average(p => p.SalePrice.Value)
+                : 0;
+            
+            var averageRentPrice = rentProperties.Any() 
+                ? rentProperties.Average(p => p.MonthlyRent.Value)
+                : 0;
 
             return Ok(new
             {
@@ -58,18 +66,25 @@ public class AnalyticsController : ControllerBase
     {
         try
         {
-            var regionData = await this.storageBroker.Properties
+            var properties = await this.storageBroker.Properties
                 .Where(p => !p.DeletedDate.HasValue)
+                .ToListAsync();
+
+            var regionData = properties
                 .GroupBy(p => p.Region)
                 .Select(g => new
                 {
                     region = g.Key.ToString(),
                     listingsCount = g.Count(),
-                    averageSalePrice = g.Where(p => p.SalePrice.HasValue && p.SalePrice > 0).Average(p => p.SalePrice.Value),
-                    averageRentPrice = g.Where(p => p.MonthlyRent.HasValue && p.MonthlyRent > 0).Average(p => p.MonthlyRent.Value)
+                    averageSalePrice = g.Where(p => p.SalePrice.HasValue && p.SalePrice > 0).Any()
+                        ? g.Where(p => p.SalePrice.HasValue && p.SalePrice > 0).Average(p => p.SalePrice.Value)
+                        : 0,
+                    averageRentPrice = g.Where(p => p.MonthlyRent.HasValue && p.MonthlyRent > 0).Any()
+                        ? g.Where(p => p.MonthlyRent.HasValue && p.MonthlyRent > 0).Average(p => p.MonthlyRent.Value)
+                        : 0
                 })
                 .OrderByDescending(r => r.listingsCount)
-                .ToListAsync();
+                .ToList();
 
             return Ok(regionData);
         }
@@ -86,8 +101,11 @@ public class AnalyticsController : ControllerBase
         {
             var twelveMonthsAgo = DateTimeOffset.UtcNow.AddMonths(-12);
             
-            var priceTrends = await this.storageBroker.Properties
+            var properties = await this.storageBroker.Properties
                 .Where(p => !p.DeletedDate.HasValue && p.CreatedDate >= twelveMonthsAgo)
+                .ToListAsync();
+            
+            var priceTrends = properties
                 .GroupBy(p => new { 
                     Year = p.CreatedDate.Year, 
                     Month = p.CreatedDate.Month 
@@ -95,11 +113,13 @@ public class AnalyticsController : ControllerBase
                 .Select(g => new
                 {
                     month = $"{g.Key.Year}-{g.Key.Month:D2}",
-                    averagePrice = g.Where(p => p.SalePrice.HasValue && p.SalePrice > 0).Average(p => p.SalePrice.Value),
+                    averagePrice = g.Where(p => p.SalePrice.HasValue && p.SalePrice > 0).Any()
+                        ? g.Where(p => p.SalePrice.HasValue && p.SalePrice > 0).Average(p => p.SalePrice.Value)
+                        : 0,
                     listingsCount = g.Count()
                 })
                 .OrderBy(x => x.month)
-                .ToListAsync();
+                .ToList();
 
             return Ok(priceTrends);
         }
