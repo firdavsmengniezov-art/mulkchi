@@ -10,6 +10,7 @@ using Mulkchi.Api.Brokers.Storages;
 using Mulkchi.Api.Models.Foundations.Auth;
 using Mulkchi.Api.Models.Foundations.Auth.Exceptions;
 using Mulkchi.Api.Models.Foundations.Users;
+using Serilog;
 
 namespace Mulkchi.Api.Services.Foundations.Auth;
 
@@ -267,11 +268,11 @@ public partial class AuthService : IAuthService
     private async Task SendPasswordResetEmailAsync(string email, string token)
     {
         // TODO: Implement email sending using IEmailBroker
-        // For now, just log the token (in production, send actual email)
+        // For now, just log token (in production, send actual email)
         var resetUrl = $"https://mulkchi.uz/reset-password?token={token}";
         
         // Log for debugging - remove in production
-        Console.WriteLine($"Password reset link for {email}: {resetUrl}");
+        Log.Information("Password reset link generated for {Email}: {ResetUrl}", email, resetUrl);
         
         // In production:
         // await this.emailBroker.SendEmailAsync(

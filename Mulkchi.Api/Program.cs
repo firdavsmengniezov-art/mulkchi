@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Configuration;
+using Serilog;
 
 namespace Mulkchi.Api;
 
@@ -7,6 +8,17 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        
+        // Configure Serilog
+        Log.Logger = new LoggerConfiguration()
+            .ReadFrom.Configuration(builder.Configuration)
+            .Enrich.FromLogContext()
+            .Enrich.WithProperty("Application", "Mulkchi.Api")
+            .WriteTo.Console()
+            .WriteTo.File("logs/mulkchi-.txt", rollingInterval: RollingInterval.Day)
+            .CreateLogger();
+        
+        builder.Host.UseSerilog();
         
         // Configure configuration to read from environment variables
         builder.Configuration

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Mulkchi.Api.Models.Foundations.Auth.Exceptions;
+using Serilog;
 
 namespace Mulkchi.Api.Middleware;
 
@@ -27,7 +28,7 @@ public class GlobalExceptionMiddleware
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An unhandled exception occurred: {Message}", ex.Message);
+            Log.Error(ex, "An unhandled exception occurred: {Message}", ex.Message);
             await HandleExceptionAsync(context, ex);
         }
     }
