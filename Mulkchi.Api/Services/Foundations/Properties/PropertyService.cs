@@ -4,6 +4,8 @@ using Mulkchi.Api.Brokers.DateTimes;
 using Mulkchi.Api.Brokers.Loggings;
 using Mulkchi.Api.Brokers.Storages;
 using Mulkchi.Api.Services.Foundations.Auth;
+using Microsoft.Extensions.Localization;
+using Mulkchi.Api.Resources;
 
 namespace Mulkchi.Api.Services.Foundations.Properties;
 
@@ -13,17 +15,20 @@ public partial class PropertyService : IPropertyService
     private readonly ILoggingBroker loggingBroker;
     private readonly IDateTimeBroker dateTimeBroker;
     private readonly ICurrentUserService currentUserService;
+    private readonly IStringLocalizer<SharedResource> localizer;
 
     public PropertyService(
         IStorageBroker storageBroker,
         ILoggingBroker loggingBroker,
         IDateTimeBroker dateTimeBroker,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        IStringLocalizer<SharedResource> localizer)
     {
         this.storageBroker = storageBroker;
         this.loggingBroker = loggingBroker;
         this.dateTimeBroker = dateTimeBroker;
         this.currentUserService = currentUserService;
+        this.localizer = localizer;
     }
 
     public ValueTask<Property> AddPropertyAsync(Property property) =>

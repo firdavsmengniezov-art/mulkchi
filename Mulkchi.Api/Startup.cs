@@ -59,6 +59,9 @@ public class Startup
         services.AddSignalR();
         services.AddSingleton<IUserIdProvider, JwtUserIdProvider>();
         AddCors(services);
+        
+        // Add localization
+        services.AddLocalization(options => options.ResourcesPath = "Resources");
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -72,6 +75,20 @@ public class Startup
         app.UseHttpsRedirection();
         app.UseStaticFiles(); // Enable static file serving
         app.UseCors("AllowAngular");
+        
+        // Add request localization
+        var supportedCultures = new[] { "uz", "ru", "en" };
+        app.UseRequestLocalization(new RequestLocalizationOptions
+        {
+            DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("uz"),
+            SupportedCultures = supportedCultures.Select(c => new System.Globalization.CultureInfo(c)).ToList(),
+            SupportedUICultures = supportedCultures.Select(c => new System.Globalization.CultureInfo(c)).ToList(),
+            RequestCultureProviders = new[]
+            {
+                new Microsoft.AspNetCore.Localization.AcceptLanguageHeaderRequestCultureProvider()
+            }
+        });
+        
         app.UseRouting();
         app.UseAuthentication();
         app.UseAuthorization();
