@@ -1,0 +1,174 @@
+<div class="container">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1 class="hero-title">Mulkchi - O'zbekiston ko'chmas mulk platformasi</h1>
+      <p class="hero-subtitle">Eng yaxshi uy-joylarni toping, ijaraga bering yoki soting</p>
+    </div>
+  </section>
+
+  <!-- Search Section -->
+  <section class="search-section">
+    <div class="card">
+      <h2 class="section-title">Mulk qidirish</h2>
+      <div class="search-form">
+        <div class="search-row">
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Hudud</mat-label>
+            <mat-select [(value)]="searchRequest.region">
+              <mat-option value="">Barcha hududlar</mat-option>
+              @for (region of regions; track region) {
+                <mat-option [value]="region">{{ region }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Turi</mat-label>
+            <mat-select [(value)]="searchRequest.propertyType">
+              <mat-option value="">Barcha turlar</mat-option>
+              @for (type of propertyTypes; track type) {
+                <mat-option [value]="type">{{ getPropertyTypeName(type) }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Turkumi</mat-label>
+            <mat-select [(value)]="searchRequest.listingType">
+              <mat-option value="">Barcha turkumlar</mat-option>
+              @for (type of listingTypes; track type) {
+                <mat-option [value]="type">{{ getListingTypeName(type) }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="search-row">
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Minimal narx</mat-label>
+            <mat-input type="number" [(ngModel)]="searchRequest.minPrice" placeholder="Minimal narx"></mat-input>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Maksimal narx</mat-label>
+            <mat-input type="number" [(ngModel)]="searchRequest.maxPrice" placeholder="Maksimal narx"></mat-input>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Xonalar soni</mat-label>
+            <mat-input type="number" [(ngModel)]="searchRequest.bedrooms" placeholder="Xonalar soni"></mat-input>
+          </mat-form-field>
+        </div>
+
+        <div class="search-actions">
+          <button mat-raised-button color="primary" (click)="onSearch()" class="search-btn">
+            <mat-icon>search</mat-icon>
+            Qidirish
+          </button>
+          <button mat-stroked-button (click)="onClearFilters()" class="clear-btn">
+            <mat-icon>clear</mat-icon>
+            Tozalash
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Properties Section -->
+  <section class="properties-section">
+    <div class="section-header">
+      <h2 class="section-title">Mulkklar ({{ totalCount }})</h2>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-spinner" *ngIf="loading">
+      <mat-spinner></mat-spinner>
+    </div>
+
+    <!-- Properties Grid -->
+    <div class="properties-grid" *ngIf="!loading">
+      @for (property of properties; track property.id) {
+        <mat-card class="property-card" (click)="navigateToPropertyDetail(property.id)">
+          <div class="property-image">
+            <img [alt]="property.title" 
+                 [src]="'https://via.placeholder.com/300x200/1976d2/ffffff?text=' + property.title"
+                 [routerLink]="['/property', property.id]">
+          </div>
+          
+          <mat-card-header class="property-header">
+            <mat-card-title>{{ property.title }}</mat-card-title>
+            <mat-card-subtitle>{{ getListingTypeName(property.listingType) }}</mat-card-subtitle>
+          </mat-card-header>
+
+          <mat-card-content class="property-content">
+            <div class="property-info">
+              <div class="info-item">
+                <mat-icon>location_on</mat-icon>
+                <span>{{ property.city }}, {{ property.region }}</span>
+              </div>
+              <div class="info-item">
+                <mat-icon>square_foot</mat-icon>
+                <span>{{ property.area }} m²</span>
+              </div>
+              <div class="info-item">
+                <mat-icon>bed</mat-icon>
+                <span>{{ property.numberOfBedrooms }} xona</span>
+              </div>
+              <div class="info-item">
+                <mat-icon>bathtub</mat-icon>
+                <span>{{ property.numberOfBathrooms }} hammom</span>
+              </div>
+            </div>
+
+            <div class="property-price">
+              @if (property.salePrice) {
+                <span class="price">{{ formatPrice(property.salePrice, property.currency) }}</span>
+              }
+              @if (property.monthlyRent) {
+                <span class="price">{{ formatPrice(property.monthlyRent, property.currency) }}/oy</span>
+              }
+              @if (property.pricePerNight) {
+                <span class="price">{{ formatPrice(property.pricePerNight, property.currency) }}/kun</span>
+              }
+            </div>
+          </mat-card-content>
+
+          <mat-card-actions class="property-actions">
+            <div class="rating">
+              <mat-icon>star</mat-icon>
+              <span>{{ property.averageRating.toFixed(1) }}</span>
+            </div>
+            <div class="views">
+              <mat-icon>visibility</mat-icon>
+              <span>{{ property.viewsCount }}</span>
+            </div>
+            <div class="favorites">
+              <mat-icon>favorite_border</mat-icon>
+              <span>{{ property.favoritesCount }}</span>
+            </div>
+          </mat-card-actions>
+        </mat-card>
+      }
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-container" *ngIf="!loading && totalCount > 0">
+      <mat-paginator
+        [length]="totalCount"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="[6, 12, 24, 48]"
+        (page)="onPageChange($event)"
+        showFirstLastButtons
+        class="paginator">
+      </mat-paginator>
+    </div>
+
+    <!-- No Results -->
+    <div class="no-results" *ngIf="!loading && properties.length === 0">
+      <mat-icon>search_off</mat-icon>
+      <h3>Hech qanday mulk topilmadi</h3>
+      <p>Iltimos, qidirish shartlarini o'zgartiring</p>
+    </div>
+  </section>
+</div>

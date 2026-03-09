@@ -1,0 +1,199 @@
+<div class="container">
+  <div class="page-header">
+    <h1 class="page-title">
+      <mat-icon>psychology</mat-icon>
+      AI Narx Bashorati
+    </h1>
+    <p class="page-subtitle">
+      Mulk narxini sun'iy intellekt yordamida bashorat qiling
+    </p>
+  </div>
+
+  <div class="predictor-content">
+    <div class="form-section">
+      <mat-card class="prediction-card">
+        <mat-card-header>
+          <mat-card-title>Mulk ma'lumotlari</mat-card-title>
+          <mat-card-subtitle>Bashorat uchun mulk xususiyatlarini kiriting</mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          <form [formGroup]="predictionForm" (ngSubmit)="onSubmit()" class="prediction-form">
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Maydon (m²)</mat-label>
+                <mat-input type="number" formControlName="area" placeholder="Maydonni kiriting"></mat-input>
+                <mat-icon matSuffix>square_foot</mat-icon>
+                <mat-error *ngIf="area?.hasError('required') && area?.touched">
+                  Maydon kiritish shart
+                </mat-error>
+                <mat-error *ngIf="area?.hasError('min') && area?.touched">
+                  Maydon kamida 10 m² bo'lishi kerak
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Hudud</mat-label>
+                <mat-select formControlName="region">
+                  @for (region of regions; track region.value) {
+                    <mat-option [value]="region.value">{{ region.name }}</mat-option>
+                  }
+                </mat-select>
+                <mat-icon matSuffix>location_on</mat-icon>
+                <mat-error *ngIf="region?.hasError('required') && region?.touched">
+                  Hududni tanlash shart
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Xonalar soni</mat-label>
+                <mat-input type="number" formControlName="bedrooms" placeholder="Xonalar soni"></mat-input>
+                <mat-icon matSuffix>bed</mat-icon>
+                <mat-error *ngIf="bedrooms?.hasError('required') && bedrooms?.touched">
+                  Xonalar sonini kiritish shart
+                </mat-error>
+                <mat-error *ngIf="bedrooms?.hasError('min') && bedrooms?.touched">
+                  Kamida 1 xona bo'lishi kerak
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Hammomlar soni</mat-label>
+                <mat-input type="number" formControlName="bathrooms" placeholder="Hammomlar soni"></mat-input>
+                <mat-icon matSuffix>bathtub</mat-icon>
+                <mat-error *ngIf="bathrooms?.hasError('required') && bathrooms?.touched">
+                  Hammomlar sonini kiritish shart
+                </mat-error>
+                <mat-error *ngIf="bathrooms?.hasError('min') && bathrooms?.touched">
+                  Kamida 1 hammom bo'lishi kerak
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Shahar markazigacha masofa (km)</mat-label>
+              <mat-input type="number" formControlName="distanceToCityCenter" placeholder="Masofani kiriting"></mat-input>
+              <mat-icon matSuffix>directions_car</mat-icon>
+              <mat-error *ngIf="distanceToCityCenter?.hasError('min') && distanceToCityCenter?.touched">
+                  Masofa manfiy bo'lishi mumkin emas
+              </mat-error>
+            </mat-form-field>
+
+            <div class="features-section">
+              <h3 class="section-title">Qo'shimcha xususiyatlar</h3>
+              <div class="features-grid">
+                <mat-checkbox formControlName="hasWifi" class="feature-checkbox">
+                  <mat-icon>wifi</mat-icon>
+                  Wi-Fi
+                </mat-checkbox>
+                <mat-checkbox formControlName="hasParking" class="feature-checkbox">
+                  <mat-icon>local_parking</mat-icon>
+                  Avtoturargoh
+                </mat-checkbox>
+                <mat-checkbox formControlName="hasPool" class="feature-checkbox">
+                  <mat-icon>pool</mat-icon>
+                  Bassayn
+                </mat-checkbox>
+                <mat-checkbox formControlName="isRenovated" class="feature-checkbox">
+                  <mat-icon>home_repair_service</mat-icon>
+                  Ta'mirlandi
+                </mat-checkbox>
+                <mat-checkbox formControlName="hasElevator" class="feature-checkbox">
+                  <mat-icon>elevator</mat-icon>
+                  Lift
+                </mat-checkbox>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button 
+                mat-raised-button 
+                color="primary" 
+                type="submit"
+                [disabled]="predictionForm.invalid || loading"
+                class="predict-btn">
+                <mat-icon *ngIf="!loading">psychology</mat-icon>
+                <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
+                {{ loading ? 'Bashorat qilinmoqda...' : 'Narxni bashorat qilish' }}
+              </button>
+              <button 
+                mat-stroked-button 
+                type="button"
+                (click)="resetForm()"
+                class="reset-btn">
+                <mat-icon>refresh</mat-icon>
+                Tozalash
+              </button>
+            </div>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Prediction Result -->
+    <div class="result-section" *ngIf="predictionResult">
+      <mat-card class="result-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>trending_up</mat-icon>
+            Bashorat natijalari
+          </mat-card-title>
+          <mat-card-subtitle>
+            {{ predictionResult.basedOnProperties }} ta mulk asosida
+          </mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          <div class="result-main">
+            <div class="predicted-price">
+              <h3>Bashorat qilingan narx</h3>
+              <div class="price-display">
+                <span class="price">{{ formatPrice(predictionResult.predictedPrice) }}</span>
+                <span class="currency">{{ predictionResult.currency }}</span>
+              </div>
+            </div>
+
+            <div class="confidence-level">
+              <h3>Ishonch darajasi</h3>
+              <div class="confidence-display">
+                <span 
+                  class="confidence-text"
+                  [style.color]="getConfidenceColor(predictionResult.confidence)">
+                  {{ getConfidenceText(predictionResult.confidence) }}
+                </span>
+                <div class="confidence-bar">
+                  <div 
+                    class="confidence-fill"
+                    [style.width.%]="(predictionResult.confidence + 1) * 25"
+                    [style.background-color]="getConfidenceColor(predictionResult.confidence)">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="price-range">
+            <h3>Narx oralig'i</h3>
+            <div class="range-display">
+              <div class="range-item">
+                <span class="range-label">Minimal:</span>
+                <span class="range-value">{{ formatPrice(predictionResult.priceRange.min) }}</span>
+              </div>
+              <div class="range-item">
+                <span class="range-label">Maksimal:</span>
+                <span class="range-value">{{ formatPrice(predictionResult.priceRange.max) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="recommendation">
+            <h3>Tavsiya</h3>
+            <p class="recommendation-text">{{ predictionResult.recommendation }}</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,88 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <mat-card class="login-card">
+      <mat-card-header class="card-header">
+        <mat-card-title class="card-title">
+          <mat-icon class="login-icon">login</mat-icon>
+          Tizimga kirish
+        </mat-card-title>
+        <mat-card-subtitle>
+          Mulkchi platformasiga xush kelibsiz!
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content class="card-content">
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Email</mat-label>
+            <mat-input 
+              type="email" 
+              formControlName="email"
+              placeholder="email@example.com"
+              required>
+            </mat-input>
+            <mat-icon matSuffix>email</mat-icon>
+            <mat-error *ngIf="email?.hasError('required') && email?.touched">
+              Email kiritish shart
+            </mat-error>
+            <mat-error *ngIf="email?.hasError('email') && email?.touched">
+              To'g'ri email kiriting
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Parol</mat-label>
+            <mat-input 
+              [type]="hidePassword ? 'password' : 'text'" 
+              formControlName="password"
+              placeholder="Parolni kiriting"
+              required>
+            </mat-input>
+            <button 
+              type="button" 
+              mat-icon-button 
+              matSuffix 
+              (click)="togglePasswordVisibility()"
+              class="password-toggle">
+              <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            <mat-error *ngIf="password?.hasError('required') && password?.touched">
+              Parol kiritish shart
+            </mat-error>
+            <mat-error *ngIf="password?.hasError('minlength') && password?.touched">
+              Parol kamida 6 ta belgidan iborat bo'lishi kerak
+            </mat-error>
+          </mat-form-field>
+
+          <div class="form-actions">
+            <button 
+              mat-raised-button 
+              color="primary" 
+              type="submit"
+              [disabled]="loginForm.invalid || loading"
+              class="submit-btn">
+              <mat-icon *ngIf="!loading">login</mat-icon>
+              <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
+              {{ loading ? 'Kirilmoqda...' : 'Kirish' }}
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+
+      <mat-card-actions class="card-actions">
+        <div class="action-links">
+          <p>Hisobingiz yo'qmi?</p>
+          <a mat-stroked-button routerLink="/register" class="register-link">
+            Ro'yxatdan o'tish
+          </a>
+        </div>
+        
+        <div class="forgot-password">
+          <a routerLink="/forgot-password" class="forgot-link">
+            Parolni unutdingizmi?
+          </a>
+        </div>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>
