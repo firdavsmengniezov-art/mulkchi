@@ -48,6 +48,7 @@ public class Startup
                     System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
             });
         services.AddEndpointsApiExplorer();
+        services.AddHttpContextAccessor(); // Add HttpContextAccessor
         AddSwagger(services);
         AddJwtAuthentication(services);
         AddDbContext(services);
@@ -67,6 +68,7 @@ public class Startup
         }
 
         app.UseHttpsRedirection();
+        app.UseStaticFiles(); // Enable static file serving
         app.UseCors("AllowAngular");
         app.UseRouting();
         app.UseAuthentication();
@@ -167,10 +169,12 @@ public class Startup
     {
         services.AddTransient<ILoggingBroker, LoggingBroker>();
         services.AddTransient<IDateTimeBroker, DateTimeBroker>();
+        services.AddSingleton<IFileStorageBroker, LocalFileStorageBroker>();
     }
 
     private void AddFoundationServices(IServiceCollection services)
     {
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IPropertyService, PropertyService>();
         services.AddScoped<IHomeRequestService, HomeRequestService>();

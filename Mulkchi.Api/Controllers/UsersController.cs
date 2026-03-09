@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Models.Foundations.Users;
 using Mulkchi.Api.Models.Foundations.Users.Exceptions;
 using Mulkchi.Api.Services.Foundations.Users;
@@ -20,12 +21,28 @@ public class UsersController : ControllerBase
 
     [HttpGet]
     [Authorize(Roles = "Admin")]
-    public ActionResult<IQueryable<User>> GetAllUsers()
+    public ActionResult<PagedResult<User>> GetAllUsers([FromQuery] PaginationParams pagination)
     {
         try
         {
-            IQueryable<User> users = this.userService.RetrieveAllUsers();
-            return Ok(users);
+            IQueryable<User> query = this.userService.RetrieveAllUsers();
+            
+            int totalCount = query.Count();
+            
+            var items = query
+                .Skip((pagination.Page - 1) * pagination.PageSize)
+                .Take(pagination.PageSize)
+                .ToList();
+
+            var result = new PagedResult<User>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = pagination.Page,
+                PageSize = pagination.PageSize
+            };
+
+            return Ok(result);
         }
         catch (UserDependencyException)
         {

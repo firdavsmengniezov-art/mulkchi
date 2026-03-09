@@ -16,6 +16,12 @@ public partial class PropertyServiceTests
         inputProperty.UpdatedDate = randomDateTimeOffset;
         Property expectedProperty = inputProperty;
 
+        // Set up CurrentUserService mock to return the property's host ID
+        this.currentUserServiceMock.Setup(x => x.GetCurrentUserId())
+            .Returns(inputProperty.HostId);
+        this.currentUserServiceMock.Setup(x => x.IsInRole("Admin"))
+            .Returns(false);
+
         this.dateTimeBrokerMock.Setup(broker =>
             broker.GetCurrentDateTimeOffset())
                 .Returns(randomDateTimeOffset);

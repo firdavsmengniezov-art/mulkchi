@@ -16,6 +16,17 @@ public partial class FavoriteServiceTests
         inputFavorite.UpdatedDate = randomDateTimeOffset;
         Favorite expectedFavorite = inputFavorite;
 
+        // Set up CurrentUserService mock to return the favorite's user ID
+        this.currentUserServiceMock.Setup(x => x.GetCurrentUserId())
+            .Returns(inputFavorite.UserId);
+        this.currentUserServiceMock.Setup(x => x.IsInRole("Admin"))
+            .Returns(false);
+
+        // Mock the SelectFavoriteByIdAsync call that the authorization check makes
+        this.storageBrokerMock.Setup(broker =>
+            broker.SelectFavoriteByIdAsync(inputFavorite.Id))
+                .ReturnsAsync(randomFavorite);
+
         this.dateTimeBrokerMock.Setup(broker =>
             broker.GetCurrentDateTimeOffset())
                 .Returns(randomDateTimeOffset);
@@ -32,6 +43,10 @@ public partial class FavoriteServiceTests
 
         this.dateTimeBrokerMock.Verify(broker =>
             broker.GetCurrentDateTimeOffset(),
+            Times.Once);
+
+        this.storageBrokerMock.Verify(broker =>
+            broker.SelectFavoriteByIdAsync(inputFavorite.Id),
             Times.Once);
 
         this.storageBrokerMock.Verify(broker =>

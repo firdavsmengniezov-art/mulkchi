@@ -16,6 +16,17 @@ public partial class MessageServiceTests
         inputMessage.UpdatedDate = randomDateTimeOffset;
         Message expectedMessage = inputMessage;
 
+        // Set up CurrentUserService mock to return the message's sender ID
+        this.currentUserServiceMock.Setup(x => x.GetCurrentUserId())
+            .Returns(inputMessage.SenderId);
+        this.currentUserServiceMock.Setup(x => x.IsInRole("Admin"))
+            .Returns(false);
+
+        // Mock the SelectMessageByIdAsync call that the authorization check makes
+        this.storageBrokerMock.Setup(broker =>
+            broker.SelectMessageByIdAsync(inputMessage.Id))
+                .ReturnsAsync(randomMessage);
+
         this.dateTimeBrokerMock.Setup(broker =>
             broker.GetCurrentDateTimeOffset())
                 .Returns(randomDateTimeOffset);
@@ -32,6 +43,10 @@ public partial class MessageServiceTests
 
         this.dateTimeBrokerMock.Verify(broker =>
             broker.GetCurrentDateTimeOffset(),
+            Times.Once);
+
+        this.storageBrokerMock.Verify(broker =>
+            broker.SelectMessageByIdAsync(inputMessage.Id),
             Times.Once);
 
         this.storageBrokerMock.Verify(broker =>

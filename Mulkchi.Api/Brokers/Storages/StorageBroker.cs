@@ -15,6 +15,7 @@ using Mulkchi.Api.Models.Foundations.RentalContracts;
 using Mulkchi.Api.Models.Foundations.Reviews;
 using Mulkchi.Api.Models.Foundations.SavedSearches;
 using Mulkchi.Api.Models.Foundations.Users;
+using Mulkchi.Api.Models.Foundations.Bookings;
 
 namespace Mulkchi.Api.Brokers.Storages;
 
@@ -79,6 +80,11 @@ public partial class StorageBroker : DbContext, IStorageBroker
             entity.Property(p => p.AverageRating).HasPrecision(18, 2);
         });
 
+        modelBuilder.Entity<Booking>(entity =>
+        {
+            entity.Property(p => p.TotalPrice).HasPrecision(18, 2);
+        });
+
         modelBuilder.Entity<RentalContract>(entity =>
         {
             entity.Property(p => p.MonthlyRent).HasPrecision(18, 2);
@@ -118,5 +124,8 @@ public partial class StorageBroker : DbContext, IStorageBroker
         modelBuilder.Entity<SavedSearch>().HasQueryFilter(e => e.DeletedDate == null);
         modelBuilder.Entity<User>().HasQueryFilter(e => e.DeletedDate == null);
         modelBuilder.Entity<UserRefreshToken>().HasQueryFilter(e => e.ExpiresAt > DateTimeOffset.UtcNow);
+        modelBuilder.Entity<Booking>().HasQueryFilter(e => e.DeletedDate == null);
     }
+
+    // DbSet<Booking> Bookings property is defined in StorageBroker.Bookings.cs partial class.
 }

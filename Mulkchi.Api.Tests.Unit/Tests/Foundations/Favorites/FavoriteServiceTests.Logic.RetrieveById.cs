@@ -13,6 +13,12 @@ public partial class FavoriteServiceTests
         Favorite randomFavorite = CreateRandomFavorite();
         Favorite expectedFavorite = randomFavorite;
 
+        // Set up CurrentUserService mock to return the favorite's user ID
+        this.currentUserServiceMock.Setup(x => x.GetCurrentUserId())
+            .Returns(randomFavorite.UserId);
+        this.currentUserServiceMock.Setup(x => x.IsInRole("Admin"))
+            .Returns(false);
+
         this.storageBrokerMock.Setup(broker =>
             broker.SelectFavoriteByIdAsync(randomFavorite.Id))
                 .ReturnsAsync(expectedFavorite);

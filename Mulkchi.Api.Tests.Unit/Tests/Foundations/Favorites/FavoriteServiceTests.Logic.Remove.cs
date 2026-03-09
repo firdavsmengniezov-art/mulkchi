@@ -13,6 +13,17 @@ public partial class FavoriteServiceTests
         Favorite randomFavorite = CreateRandomFavorite();
         Favorite expectedFavorite = randomFavorite;
 
+        // Set up CurrentUserService mock to return the favorite's user ID
+        this.currentUserServiceMock.Setup(x => x.GetCurrentUserId())
+            .Returns(randomFavorite.UserId);
+        this.currentUserServiceMock.Setup(x => x.IsInRole("Admin"))
+            .Returns(false);
+
+        // Mock the SelectFavoriteByIdAsync call that the authorization check makes
+        this.storageBrokerMock.Setup(broker =>
+            broker.SelectFavoriteByIdAsync(randomFavorite.Id))
+                .ReturnsAsync(randomFavorite);
+
         this.storageBrokerMock.Setup(broker =>
             broker.DeleteFavoriteByIdAsync(randomFavorite.Id))
                 .ReturnsAsync(expectedFavorite);
@@ -22,6 +33,10 @@ public partial class FavoriteServiceTests
 
         // then
         actualFavorite.Should().BeEquivalentTo(expectedFavorite);
+
+        this.storageBrokerMock.Verify(broker =>
+            broker.SelectFavoriteByIdAsync(randomFavorite.Id),
+            Times.Once);
 
         this.storageBrokerMock.Verify(broker =>
             broker.DeleteFavoriteByIdAsync(randomFavorite.Id),
