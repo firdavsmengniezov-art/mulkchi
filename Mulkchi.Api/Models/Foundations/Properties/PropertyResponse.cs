@@ -1,8 +1,6 @@
-#nullable disable
-
 namespace Mulkchi.Api.Models.Foundations.Properties;
 
-public class Property
+public class PropertyResponse
 {
     public Guid Id { get; set; }
     public string Title { get; set; }
@@ -11,10 +9,19 @@ public class Property
     public PropertyCategory Category { get; set; }
     public PropertyStatus Status { get; set; }
     public ListingType ListingType { get; set; }
+    
+    // Original prices in property currency
     public decimal? MonthlyRent { get; set; }
     public decimal? SalePrice { get; set; }
     public decimal? PricePerNight { get; set; }
     public decimal? SecurityDeposit { get; set; }
+    
+    // Converted prices in USD
+    public decimal? MonthlyRentUSD { get; set; }
+    public decimal? SalePriceUSD { get; set; }
+    public decimal? PricePerNightUSD { get; set; }
+    public decimal? SecurityDepositUSD { get; set; }
+    
     public double Area { get; set; }
     public int NumberOfBedrooms { get; set; }
     public int NumberOfBathrooms { get; set; }
@@ -34,24 +41,18 @@ public class Property
     public bool IsVacant { get; set; }
     public bool IsFeatured { get; set; }
     public bool IsVerified { get; set; }
-
-    // Infrastructure (Uzbekistan-specific)
     public bool HasMetroNearby { get; set; }
     public bool HasBusStop { get; set; }
     public bool HasMarketNearby { get; set; }
     public bool HasSchoolNearby { get; set; }
     public bool HasHospitalNearby { get; set; }
     public double DistanceToCityCenter { get; set; }
-
-    // Comfort
     public bool HasElevator { get; set; }
     public bool HasSecurity { get; set; }
     public bool HasGenerator { get; set; }
     public bool HasGas { get; set; }
     public bool HasFurniture { get; set; }
     public bool IsRenovated { get; set; }
-
-    // International standard (Airbnb/Booking)
     public bool HasAirConditioning { get; set; }
     public bool HasHeating { get; set; }
     public bool HasWasher { get; set; }
@@ -65,8 +66,8 @@ public class Property
     public int ViewsCount { get; set; }
     public int FavoritesCount { get; set; }
     public Guid HostId { get; set; }
-    public Currency Currency { get; set; } = Currency.UZS;
-    public decimal ExchangeRate { get; set; } = 1.0m;
+    public Currency Currency { get; set; }
+    public decimal ExchangeRate { get; set; }
     public DateTimeOffset CreatedDate { get; set; }
     public DateTimeOffset UpdatedDate { get; set; }
     public DateTimeOffset? DeletedDate { get; set; }

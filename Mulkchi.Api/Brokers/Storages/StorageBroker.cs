@@ -1,4 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 using Mulkchi.Api.Models.Foundations.AIs;
 using Mulkchi.Api.Models.Foundations.Announcements;
 using Mulkchi.Api.Models.Foundations.Auth;
@@ -78,6 +81,7 @@ public partial class StorageBroker : DbContext, IStorageBroker
             entity.Property(p => p.PricePerNight).HasPrecision(18, 2);
             entity.Property(p => p.SecurityDeposit).HasPrecision(18, 2);
             entity.Property(p => p.AverageRating).HasPrecision(18, 2);
+            entity.Property(p => p.ExchangeRate).HasPrecision(18, 6);
         });
 
         modelBuilder.Entity<Booking>(entity =>
