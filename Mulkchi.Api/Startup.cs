@@ -84,6 +84,9 @@ public class Startup
         app.UseStaticFiles(); // Enable static file serving
         app.UseCors("AllowAngular");
         
+        // Add global exception handling middleware
+        app.UseMiddleware<GlobalExceptionMiddleware>();
+        
         // Add rate limiting middleware
         app.UseMiddleware<RateLimitMiddleware>();
         
