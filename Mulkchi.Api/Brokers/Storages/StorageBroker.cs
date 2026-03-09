@@ -82,11 +82,26 @@ public partial class StorageBroker : DbContext, IStorageBroker
             entity.Property(p => p.SecurityDeposit).HasPrecision(18, 2);
             entity.Property(p => p.AverageRating).HasPrecision(18, 2);
             entity.Property(p => p.ExchangeRate).HasPrecision(18, 6);
+            
+            // Add performance indexes
+            entity.HasIndex(p => p.HostId);
+            entity.HasIndex(p => p.Region);
+            entity.HasIndex(p => p.Status);
+            entity.HasIndex(p => p.ListingType);
+            entity.HasIndex(p => p.CreatedDate);
+            entity.HasIndex(p => new { p.Region, p.Status, p.ListingType });
         });
 
         modelBuilder.Entity<Booking>(entity =>
         {
             entity.Property(p => p.TotalPrice).HasPrecision(18, 2);
+            
+            // Add performance indexes
+            entity.HasIndex(p => p.PropertyId);
+            entity.HasIndex(p => p.GuestId);
+            entity.HasIndex(p => p.Status);
+            entity.HasIndex(p => p.CheckInDate);
+            entity.HasIndex(p => p.CheckOutDate);
         });
 
         modelBuilder.Entity<RentalContract>(entity =>
@@ -103,12 +118,33 @@ public partial class StorageBroker : DbContext, IStorageBroker
             entity.Property(p => p.ValueRating).HasPrecision(18, 2);
             entity.Property(p => p.CommunicationRating).HasPrecision(18, 2);
             entity.Property(p => p.AccuracyRating).HasPrecision(18, 2);
+            
+            // Add performance indexes
+            entity.HasIndex(p => p.PropertyId);
+            entity.HasIndex(p => p.ReviewerId);
         });
 
         modelBuilder.Entity<User>(entity =>
         {
             entity.Property(p => p.Rating).HasPrecision(18, 2);
             entity.Property(p => p.ResponseRate).HasPrecision(18, 2);
+            
+            // Add performance indexes
+            entity.HasIndex(p => p.Email).IsUnique();
+            entity.HasIndex(p => p.Role);
+        });
+
+        modelBuilder.Entity<Message>(entity =>
+        {
+            // Add performance indexes
+            entity.HasIndex(p => p.SenderId);
+            entity.HasIndex(p => p.ReceiverId);
+        });
+
+        modelBuilder.Entity<Favorite>(entity =>
+        {
+            // Add performance indexes
+            entity.HasIndex(p => new { p.UserId, p.PropertyId }).IsUnique();
         });
 
         modelBuilder.Entity<AiRecommendation>().HasQueryFilter(e => e.DeletedDate == null);
