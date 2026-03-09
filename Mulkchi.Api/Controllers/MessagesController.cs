@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using Mulkchi.Api.Hubs;
 using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Models.Foundations.Messages;
 using Mulkchi.Api.Models.Foundations.Messages.Exceptions;
@@ -12,10 +14,14 @@ namespace Mulkchi.Api.Controllers;
 public class MessagesController : ControllerBase
 {
     private readonly IMessageService messageService;
+    private readonly IHubContext<ChatHub> chatHub;
 
-    public MessagesController(IMessageService messageService)
+    public MessagesController(
+        IMessageService messageService,
+        IHubContext<ChatHub> chatHub)
     {
         this.messageService = messageService;
+        this.chatHub = chatHub;
     }
 
     [HttpPost]
@@ -25,6 +31,21 @@ public class MessagesController : ControllerBase
         try
         {
             Message addedMessage = await this.messageService.AddMessageAsync(message);
+            
+            // Broadcast message via ChatHub
+            await this.chatHub.Clients.User(message.ReceiverId.ToString())
+                .SendAsync("ReceiveMessage", new
+                {
+                    addedMessage.Id,
+                    addedMessage.SenderId,
+                    addedMessage.ReceiverId,
+                    addedMessage.Content,
+                    addedMessage.Type,
+                    addedMessage.IsRead,
+                    addedMessage.CreatedDate,
+                    Timestamp = DateTime.UtcNow
+                });
+            
             return Created("message", addedMessage);
         }
         catch (MessageValidationException messageValidationException)

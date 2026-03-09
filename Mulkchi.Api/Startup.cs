@@ -128,7 +128,8 @@ public class Startup
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapControllers();
-            endpoints.MapHub<ChatHub>("/hub");
+            endpoints.MapHub<ChatHub>("/hubs/chat");
+            endpoints.MapHub<NotificationHub>("/hubs/notifications");
         });
     }
 
@@ -140,7 +141,26 @@ public class Startup
             {
                 Title = "Mulkchi API",
                 Version = "v1",
-                Description = "Mulkchi Real Estate Platform API"
+                Description = "O'zbekiston ko'chmas mulk platformasi API\n\n" +
+                             "Mulkchi Real Estate Platform API for property listings, bookings, analytics, and user management.\n\n" +
+                             "**Features:**\n" +
+                             "- Property listings with advanced search\n" +
+                             "- User authentication with JWT tokens\n" +
+                             "- Booking management system\n" +
+                             "- Analytics and market insights\n" +
+                             "- Multi-language support (Uzbek, Russian, English)\n" +
+                             "- Rate limiting and security features",
+                Contact = new OpenApiContact
+                {
+                    Name = "Mulkchi Team",
+                    Email = "support@mulkchi.uz",
+                    Url = new Uri("https://mulkchi.uz")
+                },
+                License = new OpenApiLicense
+                {
+                    Name = "MIT License",
+                    Url = new Uri("https://opensource.org/licenses/MIT")
+                }
             });
 
             options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -150,7 +170,9 @@ public class Startup
                 Scheme = "Bearer",
                 BearerFormat = "JWT",
                 In = ParameterLocation.Header,
-                Description = "Enter JWT token"
+                Description = "JWT Authorization header using the Bearer scheme.\n\n" +
+                             "Enter 'Bearer' [space] and then your token in the text input below.\n\n" +
+                             "Example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'"
             });
 
             options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -244,6 +266,7 @@ public class Startup
         services.AddScoped<IAnnouncementService, AnnouncementService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IBookingService, BookingService>();
+        services.AddSingleton<IUserConnectionTracker, UserConnectionTracker>();
         
         // Configure EmailSettings
         services.Configure<EmailSettings>(this.configuration.GetSection("EmailSettings"));
