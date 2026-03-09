@@ -1,59 +1,83 @@
-# MulkchiFrontend
+# Mulkchi Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.9.
+Mulkchi - O'zbekiston ko'chmas mulk platformasi uchun Angular 19 frontend ilovasi.
 
-## Development server
+## Xususiyatlari
 
-To start a local development server, run:
+- 🔐 **JWT autentifikatsiya** - Token bilan kirish va ro'yxatdan o'tish
+- 🏠 **Mulk qidirish** - Filtrlar bilan mulklarni qidirish
+- 🤖 **AI narx bashorati** - ML.NET orqali narxni bashorat qilish
+- 💬 **Real-time chat** - SignalR bilan jonli muloqot
+- 📱 **Responsive dizayn** - Mobil va desktop qurilmalar uchun
+- 🎨 **Angular Material** - Zamonaviy UI komponentlari
+- 🌍 **O'zbek tilida** - To'liq o'zbek tilida interfeys
+
+## Texnologiyalar
+
+- **Angular 19** - Standalone components
+- **Angular Material** - UI component library
+- **SignalR** - Real-time communication
+- **SCSS** - Styling
+- **TypeScript** - Type safety
+
+## Rivojlantirish serveri
+
+Lokal serverni ishga tushirish uchun:
 
 ```bash
+cd Mulkchi.Frontend
+npm install
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Server ishga tushgandan so'ng, brauzerningizda `http://localhost:4200/` manzilini oching.
 
-## Code scaffolding
+## Backend API
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Backend server: `http://localhost:5009`
 
-```bash
-ng generate component component-name
+- **Autentifikatsiya**: `/api/auth/*`
+- **Mulkklar**: `/api/properties/*`
+- **AI bashorat**: `/api/analytics/predict-price`
+- **SignalR hublar**: `/hubs/chat`, `/hubs/notifications`
+
+## Struktura
+
+```
+src/app/
+├── core/
+│   ├── interfaces/     # TypeScript interfeyslari
+│   ├── services/       # API xizmatlari
+│   ├── guards/         # Route guardlar
+│   └── interceptors/   # HTTP interceptorlar
+├── pages/
+│   ├── home/           # Asosiy sahifa
+│   ├── auth/           # Kirish/ro'yxatdan o'tish
+│   ├── ai-predictor/   # AI bashorat
+│   └── ...             # Boshqa sahifalar
+└── app.ts              # Asosiy komponent
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Build
 
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+Ishlab chiqarish uchun build qilish:
 
 ```bash
 ng build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Build fayllari `dist/` papkasida saqlanadi.
 
-## Running unit tests
+## Testlar
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+Unit testlarni ishga tushirish:
 
 ```bash
 ng test
 ```
 
-## Running end-to-end tests
+## Muhim eslatmalar
 
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- Backend server ishga tushirilgan bo'lishi kerak (`http://localhost:5009`)
+- Angular Material v2 bilan moslashgan
+- Standalone components arxitekturasidan foydalanilgan
