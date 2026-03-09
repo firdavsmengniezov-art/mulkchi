@@ -1,7 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Mulkchi.Api.Brokers.Storages;
+using Mulkchi.Api.Models.Foundations.AI;
 using Mulkchi.Api.Models.Foundations.Properties;
+using Mulkchi.Api.Services.Foundations.AI;
 using System.Linq;
 
 namespace Mulkchi.Api.Controllers;
@@ -11,10 +14,14 @@ namespace Mulkchi.Api.Controllers;
 public class AnalyticsController : ControllerBase
 {
     private readonly StorageBroker storageBroker;
+    private readonly IPriceRecommendationService priceRecommendationService;
 
-    public AnalyticsController(StorageBroker storageBroker)
+    public AnalyticsController(
+        StorageBroker storageBroker,
+        IPriceRecommendationService priceRecommendationService)
     {
         this.storageBroker = storageBroker;
+        this.priceRecommendationService = priceRecommendationService;
     }
 
     [HttpGet("market-overview")]
@@ -122,6 +129,57 @@ public class AnalyticsController : ControllerBase
                 .ToList();
 
             return Ok(priceTrends);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+        }
+    }
+
+    [HttpPost("predict-price")]
+    public async Task<ActionResult<PriceRecommendationResponse>> PredictPrice(PriceRecommendationRequest request)
+    {
+        try
+        {
+            var prediction = await this.priceRecommendationService.PredictPriceAsync(request);
+            return Ok(prediction);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+        }
+    }
+
+    [HttpPost("train-model")]
+    [Authorize(Roles = "Admin")] // Only admins can trigger model training
+    public async Task<ActionResult> TrainModel()
+    {
+        try
+        {
+            await this.priceRecommendationService.TrainModelAsync();
+            return Ok(new { message = "Model training completed successfully" });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+        }
+    }
+
+    [HttpGet("model-status")]
+    public async Task<ActionResult> GetModelStatus()
+    {
+        try
+        {
+            var isTrained = await this.priceRecommendationService.IsModelTrainedAsync();
+            var trainingDataCount = await this.priceRecommendationService.GetTrainingDataCountAsync();
+
+            return Ok(new
+            {
+                isTrained,
+                trainingDataCount,
+                minimumRequiredData = 10,
+                needsTraining = trainingDataCount >= 10 && !isTrained
+            });
         }
         catch (Exception ex)
         {

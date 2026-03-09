@@ -27,6 +27,7 @@ using Mulkchi.Api.Services.Foundations.DiscountUsages;
 using Mulkchi.Api.Services.Foundations.Announcements;
 using Mulkchi.Api.Services.Foundations.Auth;
 using Mulkchi.Api.Services.Foundations.Bookings;
+using Mulkchi.Api.Services.Foundations.AI;
 using Mulkchi.Api.Middleware;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -267,6 +268,7 @@ public class Startup
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IBookingService, BookingService>();
         services.AddSingleton<IUserConnectionTracker, UserConnectionTracker>();
+        services.AddSingleton<IPriceRecommendationService, PriceRecommendationService>();
         
         // Configure EmailSettings
         services.Configure<EmailSettings>(this.configuration.GetSection("EmailSettings"));
