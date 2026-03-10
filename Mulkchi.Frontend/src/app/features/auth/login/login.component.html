@@ -1,0 +1,41 @@
+<app-navbar></app-navbar>
+<div class="auth-page">
+  <div class="auth-left">
+    <div class="auth-brand">
+      <span class="brand-icon">🏠</span>
+      <span class="brand-name">Mulkchi</span>
+    </div>
+    <h2>O'zbekistondagi eng ishonchli mulk platformasi</h2>
+    <div class="auth-features">
+      <div class="feat">✅ 12,000+ faol e'lon</div>
+      <div class="feat">✅ Verified mulkdorlar</div>
+      <div class="feat">✅ AI narx tavsiyasi</div>
+      <div class="feat">✅ Real-time chat</div>
+    </div>
+  </div>
+  <div class="auth-right">
+    <div class="auth-card">
+      <h1>Xush kelibsiz!</h1>
+      <p>Akkauntingizga kiring</p>
+      @if (errorMsg) {
+        <div class="error-msg">⚠️ {{ errorMsg }}</div>
+      }
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" [(ngModel)]="email" placeholder="email@example.com">
+      </div>
+      <div class="form-group">
+        <label>Parol</label>
+        <input type="password" [(ngModel)]="password" placeholder="••••••••">
+      </div>
+      <button class="btn-submit" (click)="login()" [disabled]="loading">
+        {{ loading ? 'Kirish...' : 'Kirish' }}
+      </button>
+      <div class="auth-switch">
+        Akkauntingiz yo'qmi?
+        <a routerLink="/register">Ro'yxatdan o'ting</a>
+      </div>
+    </div>
+  </div>
+</div>
+      

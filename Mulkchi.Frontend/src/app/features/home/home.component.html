@@ -1,0 +1,53 @@
+<app-navbar></app-navbar>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <h1>O'zbekistandagi orzuingizdagi uyni toping.</h1>
+    <div class="search-bar">
+      <select [(ngModel)]="searchRegion">
+        <option value="">Viloyat tanlang</option>
+        <option>Toshkent</option><option>Samarqand</option>
+        <option>Buxoro</option><option>Namangan</option>
+        <option>Andijon</option><option>Farg'ona</option>
+      </select>
+      <select [(ngModel)]="searchType">
+        <option value="">Mulk turi</option>
+        <option value="Apartment">Kvartira</option>
+        <option value="House">Uy</option>
+        <option value="Office">Ofis</option>
+      </select>
+      <input type="text" placeholder="Narx oralig'i" [(ngModel)]="searchPrice">
+      <button class="btn-primary" (click)="search()">Qidirish</button>
+    </div>
+  </div>
+</section>
+
+<!-- YANGI E'LONLAR -->
+<section class="listings">
+  <div class="container">
+    <h2>Yangi E'lonlar</h2>
+    @if (loading) { <div class="loading">Yuklanmoqda...</div> }
+    <div class="cards-grid">
+      @for (p of properties; track p.id) {
+        <app-property-card [property]="p"></app-property-card>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- AI BANNER -->
+<section class="ai-banner">
+  <div class="container ai-inner">
+    <div class="ai-left">
+      <span class="ml-badge">ML.NET</span>
+      <h3>Sun'iy Intellekt Narx Bashorati</h3>
+      <p>AI yordamida uyingiz narxini hisoblang</p>
+    </div>
+    <button class="btn-primary" routerLink="/ai-price">Hisoblash</button>
+  </div>
+</section>
+
+<!-- FLOATING CHAT -->
+<button class="chat-float" routerLink="/chat">💬 Chat</button>

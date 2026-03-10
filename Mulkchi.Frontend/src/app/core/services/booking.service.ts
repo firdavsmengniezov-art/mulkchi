@@ -1,31 +1,24 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApiService } from './api.service';
-import { Booking, CreateBookingRequest, BookingWithProperty } from '../interfaces/booking.interface';
+import { environment } from '../../../environments/environment';
+import { Booking, CreateBookingRequest, PagedResult } from '../models';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class BookingService {
-  constructor(private apiService: ApiService) {}
+  private apiUrl = `${environment.apiUrl}/bookings`;
+  
+  constructor(private http: HttpClient) {}
 
-  getBookings(): Observable<Booking[]> {
-    return this.apiService.get<Booking[]>('/bookings', true);
+  getBookings(): Observable<PagedResult<Booking>> { 
+    return this.http.get<PagedResult<Booking>>(this.apiUrl); 
   }
 
-  getBookingById(id: string): Observable<Booking> {
-    return this.apiService.get<Booking>(`/bookings/${id}`, true);
+  createBooking(req: CreateBookingRequest): Observable<Booking> { 
+    return this.http.post<Booking>(this.apiUrl, req); 
   }
 
-  createBooking(bookingData: CreateBookingRequest): Observable<Booking> {
-    return this.apiService.post<Booking>('/bookings', bookingData, true);
-  }
-
-  updateBooking(id: string, bookingData: Partial<Booking>): Observable<Booking> {
-    return this.apiService.put<Booking>(`/bookings/${id}`, bookingData, true);
-  }
-
-  deleteBooking(id: string): Observable<void> {
-    return this.apiService.delete<void>(`/bookings/${id}`, true);
+  cancelBooking(id: string): Observable<void> { 
+    return this.http.delete<void>(`${this.apiUrl}/${id}`); 
   }
 }

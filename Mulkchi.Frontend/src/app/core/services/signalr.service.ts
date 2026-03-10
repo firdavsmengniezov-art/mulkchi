@@ -1,128 +1,51 @@
 import { Injectable } from '@angular/core';
-import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
-import { BehaviorSubject } from 'rxjs';
-import { AuthService } from './auth.service';
-import { Message, Notification } from '../interfaces/common.interface';
+import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
+import { Subject } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { Message } from '../models';
 
-@Injectable({
-  providedIn: 'root'
-})
-export class SignalrService {
-  private chatHubConnection: HubConnection | null = null;
-  private notificationHubConnection: HubConnection | null = null;
+@Injectable({ providedIn: 'root' })
+export class SignalRService {
+  private chatHub!: HubConnection;
+  private notifHub!: HubConnection;
+  private messageSubject = new Subject<any>();
+  private typingSubject = new Subject<string>();
+  private notificationSubject = new Subject<any>();
 
-  private messagesSubject = new BehaviorSubject<Message[]>([]);
-  public messages$ = this.messagesSubject.asObservable();
+  message$ = this.messageSubject.asObservable();
+  typing$ = this.typingSubject.asObservable();
+  notification$ = this.notificationSubject.asObservable();
 
-  private notificationsSubject = new BehaviorSubject<Notification[]>([]);
-  public notifications$ = this.notificationsSubject.asObservable();
+  startConnections(token: string): void {
+    this.chatHub = new HubConnectionBuilder()
+      .withUrl(`${environment.hubUrl}/hubs/chat`, { accessTokenFactory: () => token })
+      .withAutomaticReconnect().build();
 
-  private typingUsersSubject = new BehaviorSubject<Set<string>>(new Set());
-  public typingUsers$ = this.typingUsersSubject.asObservable();
+    this.notifHub = new HubConnectionBuilder()
+      .withUrl(`${environment.hubUrl}/hubs/notifications`, { accessTokenFactory: () => token })
+      .withAutomaticReconnect().build();
 
-  constructor(private authService: AuthService) {}
+    this.chatHub.on('ReceiveMessage', msg => this.messageSubject.next(msg));
+    this.chatHub.on('UserTyping', userId => this.typingSubject.next(userId));
+    this.notifHub.on('ReceiveNotification', n => this.notificationSubject.next(n));
 
-  async initializeChatHub(): Promise<void> {
-    if (!this.authService.isLoggedIn) return;
-
-    this.chatHubConnection = new HubConnectionBuilder()
-      .withUrl('http://localhost:5009/hubs/chat')
-      .configureLogging(LogLevel.Information)
-      .withAutomaticReconnect()
-      .build();
-
-    this.chatHubConnection.on('ReceiveMessage', (message: Message) => {
-      const currentMessages = this.messagesSubject.value;
-      this.messagesSubject.next([...currentMessages, message]);
-    });
-
-    this.chatHubConnection.on('UserTyping', (userId: string) => {
-      const currentTypingUsers = new Set(this.typingUsersSubject.value);
-      currentTypingUsers.add(userId);
-      this.typingUsersSubject.next(currentTypingUsers);
-    });
-
-    this.chatHubConnection.on('UserStoppedTyping', (userId: string) => {
-      const currentTypingUsers = new Set(this.typingUsersSubject.value);
-      currentTypingUsers.delete(userId);
-      this.typingUsersSubject.next(currentTypingUsers);
-    });
-
-    try {
-      await this.chatHubConnection.start();
-      console.log('Chat hub connected');
-    } catch (error) {
-      console.error('Error connecting to chat hub:', error);
-    }
+    this.chatHub.start().catch(console.error);
+    this.notifHub.start().catch(console.error);
   }
 
-  async initializeNotificationHub(): Promise<void> {
-    if (!this.authService.isLoggedIn) return;
-
-    this.notificationHubConnection = new HubConnectionBuilder()
-      .withUrl('http://localhost:5009/hubs/notifications')
-      .configureLogging(LogLevel.Information)
-      .withAutomaticReconnect()
-      .build();
-
-    this.notificationHubConnection.on('ReceiveNotification', (notification: Notification) => {
-      const currentNotifications = this.notificationsSubject.value;
-      this.notificationsSubject.next([notification, ...currentNotifications]);
-    });
-
-    this.notificationHubConnection.on('BroadcastAnnouncement', (message: string) => {
-      const announcement: Notification = {
-        id: Date.now().toString(),
-        userId: this.authService.currentUser?.id || '',
-        title: 'E\'lon',
-        body: message,
-        isRead: false,
-        createdDate: new Date().toISOString()
-      };
-      const currentNotifications = this.notificationsSubject.value;
-      this.notificationsSubject.next([announcement, ...currentNotifications]);
-    });
-
-    try {
-      await this.notificationHubConnection.start();
-      console.log('Notification hub connected');
-    } catch (error) {
-      console.error('Error connecting to notification hub:', error);
-    }
+  joinConversation(conversationId: string): void { 
+    this.chatHub.invoke('JoinConversation', conversationId); 
   }
 
-  async joinConversation(conversationId: string): Promise<void> {
-    if (this.chatHubConnection) {
-      await this.chatHubConnection.invoke('JoinConversation', conversationId);
-    }
+  sendMessage(conversationId: string, message: string): void { 
+    this.chatHub.invoke('SendMessage', conversationId, message); 
   }
 
-  async sendMessage(conversationId: string, message: string): Promise<void> {
-    if (this.chatHubConnection) {
-      await this.chatHubConnection.invoke('SendMessage', conversationId, message);
-    }
+  startTyping(conversationId: string): void { 
+    this.chatHub.invoke('StartTyping', conversationId); 
   }
 
-  async startTyping(conversationId: string): Promise<void> {
-    if (this.chatHubConnection) {
-      await this.chatHubConnection.invoke('StartTyping', conversationId);
-    }
-  }
-
-  async stopTyping(conversationId: string): Promise<void> {
-    if (this.chatHubConnection) {
-      await this.chatHubConnection.invoke('StopTyping', conversationId);
-    }
-  }
-
-  async disconnect(): Promise<void> {
-    if (this.chatHubConnection) {
-      await this.chatHubConnection.stop();
-      this.chatHubConnection = null;
-    }
-    if (this.notificationHubConnection) {
-      await this.notificationHubConnection.stop();
-      this.notificationHubConnection = null;
-    }
+  stopTyping(conversationId: string): void { 
+    this.chatHub.invoke('StopTyping', conversationId); 
   }
 }

@@ -1,39 +1,29 @@
 import { Routes } from '@angular/router';
-import { AuthGuard } from './core/guards/auth.guard';
-import { RoleGuard } from './core/guards/role.guard';
-import { UserRole } from './core/interfaces/auth.interface';
+import { authGuard } from './core/guards/auth.guard';
+import { roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
-  { path: '', redirectTo: '/home', pathMatch: 'full' },
-  { path: 'home', loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent) },
-  { path: 'login', loadComponent: () => import('./pages/auth/login/login.component').then(m => m.LoginComponent) },
-  { path: 'register', loadComponent: () => import('./pages/auth/register/register.component').then(m => m.RegisterComponent) },
-  { path: 'forgot-password', loadComponent: () => import('./pages/auth/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent) },
-  { path: 'reset-password', loadComponent: () => import('./pages/auth/reset-password/reset-password.component').then(m => m.ResetPasswordComponent) },
-  
-  // Protected routes
-  { path: 'property/:id', loadComponent: () => import('./pages/property-detail/property-detail.component').then(m => m.PropertyDetailComponent) },
-  { path: 'profile', loadComponent: () => import('./pages/profile/profile.component').then(m => m.ProfileComponent), canActivate: [AuthGuard] },
-  { path: 'favorites', loadComponent: () => import('./pages/favorites/favorites.component').then(m => m.FavoritesComponent), canActivate: [AuthGuard] },
-  { path: 'chat', loadComponent: () => import('./pages/chat/chat.component').then(m => m.ChatComponent), canActivate: [AuthGuard] },
-  { path: 'ai-predictor', loadComponent: () => import('./pages/ai-predictor/ai-predictor.component').then(m => m.AiPredictorComponent) },
-  
-  // Host routes
+  { path: '', loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent) },
+  { path: 'login', loadComponent: () => import('./features/auth/login/login.component').then(m => m.LoginComponent) },
+  { path: 'register', loadComponent: () => import('./features/auth/register/register.component').then(m => m.RegisterComponent) },
+  { path: 'properties', loadComponent: () => import('./features/properties/property-list/property-list.component').then(m => m.PropertyListComponent) },
+  { path: 'properties/:id', loadComponent: () => import('./features/properties/property-detail/property-detail.component').then(m => m.PropertyDetailComponent) },
   { 
-    path: 'host-dashboard', 
-    loadComponent: () => import('./pages/host-dashboard/host-dashboard.component').then(m => m.HostDashboardComponent), 
-    canActivate: [AuthGuard, RoleGuard],
-    data: { roles: [UserRole.Host, UserRole.Admin] }
+    path: 'dashboard', 
+    canActivate: [authGuard, roleGuard], 
+    data: { roles: ['Host','Admin'] }, 
+    loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) 
   },
-  
-  // Admin routes
   { 
-    path: 'admin-panel', 
-    loadComponent: () => import('./pages/admin-panel/admin-panel.component').then(m => m.AdminPanelComponent), 
-    canActivate: [AuthGuard, RoleGuard],
-    data: { roles: [UserRole.Admin] }
+    path: 'chat', 
+    canActivate: [authGuard], 
+    loadComponent: () => import('./features/chat/chat.component').then(m => m.ChatComponent) 
   },
-  
-  // Fallback
-  { path: '**', redirectTo: '/home' }
+  { path: 'ai-price', loadComponent: () => import('./features/ai-price/ai-price.component').then(m => m.AiPriceComponent) },
+  { 
+    path: 'profile', 
+    canActivate: [authGuard], 
+    loadComponent: () => import('./features/profile/profile.component').then(m => m.ProfileComponent) 
+  },
+  { path: '**', redirectTo: '' }
 ];

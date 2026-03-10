@@ -1,60 +1,38 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApiService } from './api.service';
-import { Property, ListingType, PropertyType, PropertyCategory } from '../interfaces/property.interface';
-import { PagedResult } from '../interfaces/common.interface';
+import { environment } from '../../../environments/environment';
+import { Property, PropertySearchParams, PagedResult } from '../models';
 
-export interface PropertySearchRequest {
-  region?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  bedrooms?: number;
-  listingType?: ListingType;
-  propertyType?: PropertyType;
-  propertyCategory?: PropertyCategory;
-  pageNumber?: number;
-  pageSize?: number;
-}
-
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class PropertyService {
-  constructor(private apiService: ApiService) {}
+  private apiUrl = `${environment.apiUrl}/properties`;
+  
+  constructor(private http: HttpClient) {}
 
-  getProperties(pageNumber: number = 1, pageSize: number = 10): Observable<PagedResult<Property>> {
-    return this.apiService.get<PagedResult<Property>>(`/properties?pageNumber=${pageNumber}&pageSize=${pageSize}`);
+  getProperties(page = 1, size = 10): Observable<PagedResult<Property>> {
+    return this.http.get<PagedResult<Property>>(`${this.apiUrl}?pageNumber=${page}&pageSize=${size}`);
   }
 
-  searchProperties(searchRequest: PropertySearchRequest): Observable<PagedResult<Property>> {
-    const params = new URLSearchParams();
-    
-    if (searchRequest.region) params.append('region', searchRequest.region);
-    if (searchRequest.minPrice) params.append('minPrice', searchRequest.minPrice.toString());
-    if (searchRequest.maxPrice) params.append('maxPrice', searchRequest.maxPrice.toString());
-    if (searchRequest.bedrooms) params.append('bedrooms', searchRequest.bedrooms.toString());
-    if (searchRequest.listingType !== undefined) params.append('listingType', searchRequest.listingType.toString());
-    if (searchRequest.propertyType !== undefined) params.append('propertyType', searchRequest.propertyType.toString());
-    if (searchRequest.propertyCategory !== undefined) params.append('propertyCategory', searchRequest.propertyCategory.toString());
-    if (searchRequest.pageNumber) params.append('pageNumber', searchRequest.pageNumber.toString());
-    if (searchRequest.pageSize) params.append('pageSize', searchRequest.pageSize.toString());
-
-    return this.apiService.get<PagedResult<Property>>(`/properties/search?${params}`);
+  searchProperties(params: PropertySearchParams): Observable<PagedResult<Property>> {
+    let query = Object.entries(params).filter(([,v]) => v != null)
+      .map(([k,v]) => `${k}=${v}`).join('&');
+    return this.http.get<PagedResult<Property>>(`${this.apiUrl}/search?${query}`);
   }
 
-  getPropertyById(id: string): Observable<Property> {
-    return this.apiService.get<Property>(`/properties/${id}`);
+  getProperty(id: string): Observable<Property> {
+    return this.http.get<Property>(`${this.apiUrl}/${id}`);
   }
 
-  createProperty(property: Partial<Property>): Observable<Property> {
-    return this.apiService.post<Property>('/properties', property, true);
+  createProperty(data: any): Observable<Property> {
+    return this.http.post<Property>(this.apiUrl, data);
   }
 
-  updateProperty(id: string, property: Partial<Property>): Observable<Property> {
-    return this.apiService.put<Property>(`/properties/${id}`, property, true);
+  updateProperty(id: string, data: any): Observable<Property> {
+    return this.http.put<Property>(`${this.apiUrl}/${id}`, data);
   }
 
   deleteProperty(id: string): Observable<void> {
-    return this.apiService.delete<void>(`/properties/${id}`, true);
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

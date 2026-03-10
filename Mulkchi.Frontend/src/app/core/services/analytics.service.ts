@@ -1,35 +1,24 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApiService } from './api.service';
-import { PricePredictionRequest, PricePredictionResponse, MarketOverview } from '../interfaces/analytics.interface';
+import { environment } from '../../../environments/environment';
+import { PricePredictionRequest, PricePredictionResponse } from '../models';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class AnalyticsService {
-  constructor(private apiService: ApiService) {}
+  private apiUrl = `${environment.apiUrl}/analytics`;
+  
+  constructor(private http: HttpClient) {}
 
-  getMarketOverview(): Observable<MarketOverview> {
-    return this.apiService.get<MarketOverview>('/analytics/market-overview');
+  getMarketOverview(): Observable<any> { 
+    return this.http.get(`${this.apiUrl}/market-overview`); 
   }
 
-  getAnalyticsByRegion(): Observable<any> {
-    return this.apiService.get<any>('/analytics/by-region');
+  getByRegion(): Observable<any> { 
+    return this.http.get(`${this.apiUrl}/by-region`); 
   }
 
-  getPriceTrends(): Observable<any> {
-    return this.apiService.get<any>('/analytics/price-trends');
-  }
-
-  predictPrice(request: PricePredictionRequest): Observable<PricePredictionResponse> {
-    return this.apiService.post<PricePredictionResponse>('/analytics/predict-price', request);
-  }
-
-  getModelStatus(): Observable<any> {
-    return this.apiService.get<any>('/analytics/model-status');
-  }
-
-  trainModel(): Observable<any> {
-    return this.apiService.post<any>('/analytics/train-model', {}, true);
+  predictPrice(req: PricePredictionRequest): Observable<PricePredictionResponse> {
+    return this.http.post<PricePredictionResponse>(`${this.apiUrl}/predict-price`, req);
   }
 }

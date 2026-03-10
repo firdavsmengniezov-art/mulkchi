@@ -1,0 +1,20 @@
+.navbar {
+  background: #1a3c5e;
+  position: sticky; top: 0; z-index: 1000;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+.nav-inner { display: flex; align-items: center; gap: 32px; height: 64px; }
+.logo { display: flex; align-items: center; gap: 8px; color: white; font-size: 20px; font-weight: 700; }
+.logo-icon { font-size: 24px; }
+.nav-links { display: flex; gap: 28px; list-style: none; margin-left: auto; }
+.nav-links a { color: rgba(255,255,255,0.8); font-size: 14px; font-weight: 500; transition: color 0.2s; }
+.nav-links a:hover { color: #2ecc71; }
+.nav-right { display: flex; align-items: center; gap: 16px; margin-left: auto; }
+.lang-select { color: rgba(255,255,255,0.7); font-size: 14px; cursor: pointer; }
+.btn-nav { background: #2ecc71; color: white; border: none; padding: 9px 18px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.user-menu { position: relative; }
+.avatar { width: 36px; height: 36px; background: #2ecc71; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; cursor: pointer; }
+.dropdown { display: none; position: absolute; top: 44px; right: 0; background: white; border-radius: 10px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); padding: 8px; min-width: 160px; }
+.user-menu:hover .dropdown { display: flex; flex-direction: column; }
+.dropdown a, .dropdown button { padding: 10px 14px; font-size: 14px; color: #1a1a2e; border: none; background: none; text-align: left; cursor: pointer; border-radius: 6px; }
+.dropdown a:hover, .dropdown button:hover { background: #f8fafb; color: #2ecc71; }

@@ -1,93 +1,60 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
-import { ApiService } from './api.service';
-import { AuthResponse, LoginRequest, RegisterRequest, RefreshTokenRequest, User, UserRole } from '../interfaces/auth.interface';
+import { HttpClient } from '@angular/common/http';
+import { Observable, BehaviorSubject, tap } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { LoginRequest, RegisterRequest, AuthResponse, AuthUser, UserRole } from '../models/auth.model';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class AuthService {
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
-  public currentUser$ = this.currentUserSubject.asObservable();
+  private apiUrl = `${environment.apiUrl}/auth`;
+  currentUser$ = new BehaviorSubject<AuthUser | null>(null);
 
-  constructor(private apiService: ApiService) {
-    const storedUser = localStorage.getItem('currentUser');
-    if (storedUser) {
-      this.currentUserSubject.next(JSON.parse(storedUser));
-    }
+  constructor(private http: HttpClient) {
+    const saved = localStorage.getItem('auth_user');
+    if (saved) this.currentUser$.next(JSON.parse(saved));
   }
 
-  login(credentials: LoginRequest): Observable<AuthResponse> {
-    return this.apiService.post<AuthResponse>('/auth/login', credentials).pipe(
-      tap(response => {
-        this.setAuthData(response);
-      })
+  login(req: LoginRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, req).pipe(
+      tap(res => this.saveAuth(res))
     );
   }
 
-  register(userData: RegisterRequest): Observable<AuthResponse> {
-    return this.apiService.post<AuthResponse>('/auth/register', userData).pipe(
-      tap(response => {
-        this.setAuthData(response);
-      })
+  register(req: RegisterRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, req).pipe(
+      tap(res => this.saveAuth(res))
     );
   }
 
-  refreshToken(refreshTokenData: RefreshTokenRequest): Observable<AuthResponse> {
-    return this.apiService.post<AuthResponse>('/auth/refresh-token', refreshTokenData).pipe(
-      tap(response => {
-        this.setAuthData(response);
-      })
+  refreshToken(): Observable<AuthResponse> {
+    const token = localStorage.getItem('refresh_token');
+    return this.http.post<AuthResponse>(`${this.apiUrl}/refresh-token`, { refreshToken: token }).pipe(
+      tap(res => this.saveAuth(res))
     );
   }
 
   forgotPassword(email: string): Observable<any> {
-    return this.apiService.post('/auth/forgot-password', { email });
+    return this.http.post(`${this.apiUrl}/forgot-password`, { email });
   }
 
-  resetPassword(resetData: { email: string; token: string; newPassword: string }): Observable<any> {
-    return this.apiService.post('/auth/reset-password', resetData);
+  private saveAuth(res: AuthResponse): void {
+    localStorage.setItem('access_token', res.token);
+    localStorage.setItem('refresh_token', res.refreshToken);
+    localStorage.setItem('auth_user', JSON.stringify(res.user));
+    this.currentUser$.next(res.user);
   }
 
   logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('currentUser');
-    this.currentUserSubject.next(null);
+    localStorage.clear();
+    this.currentUser$.next(null);
   }
 
-  get isLoggedIn(): boolean {
-    return !!localStorage.getItem('token');
+  getToken(): string | null { return localStorage.getItem('access_token'); }
+  isLoggedIn(): boolean { return !!this.getToken(); }
+  getUserRole(): UserRole | null {
+    const user = this.currentUser$.getValue();
+    return user ? user.role : null;
   }
-
-  get currentUser(): User | null {
-    return this.currentUserSubject.value;
-  }
-
-  get isAdmin(): boolean {
-    return this.currentUser?.role === UserRole.Admin;
-  }
-
-  get isHost(): boolean {
-    return this.currentUser?.role === UserRole.Host;
-  }
-
-  get isGuest(): boolean {
-    return this.currentUser?.role === UserRole.Guest;
-  }
-
-  getToken(): string | null {
-    return localStorage.getItem('token');
-  }
-
-  getRefreshToken(): string | null {
-    return localStorage.getItem('refreshToken');
-  }
-
-  private setAuthData(response: AuthResponse): void {
-    localStorage.setItem('token', response.token);
-    localStorage.setItem('refreshToken', response.refreshToken);
-    localStorage.setItem('currentUser', JSON.stringify(response.user));
-    this.currentUserSubject.next(response.user);
-  }
+  isHost(): boolean { const r = this.getUserRole(); return r === UserRole.Host || r === UserRole.Admin; }
+  isAdmin(): boolean { return this.getUserRole() === UserRole.Admin; }
 }

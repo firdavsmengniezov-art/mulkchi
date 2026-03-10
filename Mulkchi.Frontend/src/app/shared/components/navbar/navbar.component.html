@@ -1,0 +1,32 @@
+<nav class="navbar">
+  <div class="container nav-inner">
+    <a routerLink="/" class="logo">
+      <span class="logo-icon">🏠</span>
+      <span class="logo-text">Mulkchi</span>
+    </a>
+    <ul class="nav-links">
+      <li><a routerLink="/properties" [queryParams]="{listingType:'Sale'}">Sotib olish</a></li>
+      <li><a routerLink="/properties" [queryParams]="{listingType:'Rent'}">Ijaraga olish</a></li>
+      <li><a routerLink="/properties" [queryParams]="{listingType:'DailyRent'}">Kunlik ijara</a></li>
+      <li><a routerLink="/ai-price">AI Narx</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="lang-select">O'z ▾</div>
+      @if (isLoggedIn$ | async) {
+        <div class="user-menu">
+          <span class="avatar">{{ (currentUser$ | async)?.firstName?.charAt(0) }}</span>
+          <div class="dropdown">
+            @if (isHost$ | async) { <a routerLink="/dashboard">Dashboard</a> }
+            @if (isAdmin$ | async) { <a routerLink="/admin">Admin</a> }
+            <a routerLink="/profile">Profil</a>
+            <a routerLink="/chat">Chat</a>
+            <hr>
+            <button (click)="logout()">Chiqish</button>
+          </div>
+        </div>
+      } @else {
+        <button class="btn-nav" routerLink="/login">Kirish / Ro'yxatdan o'tish</button>
+      }
+    </div>
+  </div>
+</nav>
