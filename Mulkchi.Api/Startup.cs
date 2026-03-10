@@ -296,7 +296,13 @@ public class Startup
                 policy
                     .WithOrigins(
                         "http://localhost:4200",
-                        "https://localhost:4200"
+                        "http://localhost:4201",
+                        "http://localhost:4202",
+                        "http://127.0.0.1:4200",
+                        "http://127.0.0.1:4201",
+                        "http://127.0.0.1:3194",
+                        "http://127.0.0.1:1033",
+                        "http://localhost:3000"
                     )
                     .AllowAnyHeader()
                     .AllowAnyMethod()
