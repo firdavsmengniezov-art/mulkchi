@@ -3,6 +3,11 @@
 }
 @if (property && !loading) {
   <div class="detail-page">
+    <div class="back-bar">
+      <div class="container">
+        <button class="btn-back" (click)="goBack()">← Orqaga</button>
+      </div>
+    </div>
     <!-- GALLERY -->
     <div class="gallery">
       <img [src]="getImage()" [alt]="property.title" class="main-img">

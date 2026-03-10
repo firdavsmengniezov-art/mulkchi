@@ -50,7 +50,36 @@ export class AuthService {
   }
 
   getToken(): string | null { return localStorage.getItem('access_token'); }
-  isLoggedIn(): boolean { return !!this.getToken(); }
+
+  isLoggedIn(): boolean {
+    const token = localStorage.getItem('access_token');
+    if (!token) return false;
+    try {
+      // Check token not expired
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const exp = payload.exp * 1000;
+      return Date.now() < exp;
+    } catch {
+      return false;
+    }
+  }
+
+  getCurrentUser(): any {
+    const token = localStorage.getItem('access_token');
+    if (!token) return null;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return {
+        id: payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'],
+        email: payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],
+        role: payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'],
+        firstName: payload['firstName'] || payload['name'] || 'User'
+      };
+    } catch {
+      return null;
+    }
+  }
+
   getUserRole(): UserRole | null {
     const user = this.currentUser$.getValue();
     return user ? user.role : null;

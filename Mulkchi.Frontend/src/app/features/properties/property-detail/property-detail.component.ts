@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-property-detail',
@@ -23,7 +24,8 @@ export class PropertyDetailComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private location: Location
   ) {}
 
   ngOnInit() {
@@ -118,5 +120,9 @@ export class PropertyDetailComponent implements OnInit {
 
   goToChat() {
     this.router.navigate(['/chat']);
+  }
+
+  goBack() {
+    this.location.back();
   }
 }

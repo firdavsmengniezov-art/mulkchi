@@ -11,21 +11,48 @@
       <li><a routerLink="/ai-price">AI Narx</a></li>
     </ul>
     <div class="nav-right">
-      <div class="lang-select">O'z ▾</div>
-      @if (isLoggedIn$ | async) {
-        <div class="user-menu">
-          <span class="avatar">{{ (currentUser$ | async)?.firstName?.charAt(0) }}</span>
-          <div class="dropdown">
-            @if (isHost$ | async) { <a routerLink="/dashboard">Dashboard</a> }
-            @if (isAdmin$ | async) { <a routerLink="/admin">Admin</a> }
-            <a routerLink="/profile">Profil</a>
-            <a routerLink="/chat">Chat</a>
-            <hr>
-            <button (click)="logout()">Chiqish</button>
+      <div class="lang-switcher" (click)="showLangMenu = !showLangMenu">
+        {{ currentLang === 'uz' ? "O'z" : currentLang === 'ru' ? 'Ру' : 'En' }} ▾
+        @if (showLangMenu) {
+          <div class="lang-menu">
+            @for (lang of languages; track lang.code) {
+              <div class="lang-option" 
+                   [class.active]="lang.code === currentLang"
+                   (click)="switchLang(lang.code); $event.stopPropagation()">
+                {{ lang.label }}
+              </div>
+            }
           </div>
+        }
+      </div>
+      
+      @if (isLoggedIn) {
+        <div class="user-menu-wrap">
+          <div class="user-avatar" (click)="showUserMenu = !showUserMenu">
+            {{ currentUser?.firstName?.charAt(0) || 'U' }}
+          </div>
+          @if (showUserMenu) {
+            <div class="user-dropdown">
+              <div class="user-info">
+                <strong>{{ currentUser?.firstName }}</strong>
+                <span>{{ currentUser?.email }}</span>
+              </div>
+              <hr>
+              @if (currentUser?.role === 'Host' || currentUser?.role === 'Admin') {
+                <a routerLink="/dashboard" (click)="showUserMenu=false">🏠 Dashboard</a>
+              }
+              @if (currentUser?.role === 'Admin') {
+                <a routerLink="/admin" (click)="showUserMenu=false">⚙️ Admin panel</a>
+              }
+              <a routerLink="/chat" (click)="showUserMenu=false">💬 Chat</a>
+              <a routerLink="/profile" (click)="showUserMenu=false">👤 Profil</a>
+              <hr>
+              <button class="btn-logout" (click)="logout()">🚪 Chiqish</button>
+            </div>
+          }
         </div>
       } @else {
-        <button class="btn-nav" routerLink="/login">Kirish / Ro'yxatdan o'tish</button>
+        <button class="btn-auth" routerLink="/login">Kirish / Ro'yxatdan o'tish</button>
       }
     </div>
   </div>
