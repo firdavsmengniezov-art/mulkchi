@@ -7,6 +7,7 @@ export interface Property {
   title: string;
   description: string;
   type: PropertyType;
+  category?: string;
   listingType: ListingType;
   status: PropertyStatus;
   monthlyRent?: number;
@@ -44,7 +45,8 @@ export interface Property {
 export interface PropertyImage {
   id: string;
   url: string;
-  isPrimary: boolean;
+  isMain?: boolean;
+  isPrimary?: boolean;
 }
 
 export interface PropertySearchParams {

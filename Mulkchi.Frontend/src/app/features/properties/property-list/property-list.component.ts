@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule, DecimalPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-property-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, DecimalPipe],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './property-list.component.html',
   styleUrls: ['./property-list.component.scss']
 })

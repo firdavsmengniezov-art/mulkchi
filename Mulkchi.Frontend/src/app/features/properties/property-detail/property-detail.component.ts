@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule, DecimalPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Location } from '@angular/common';
@@ -7,7 +7,7 @@ import { Location } from '@angular/common';
 @Component({
   selector: 'app-property-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, DecimalPipe],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './property-detail.component.html',
   styleUrls: ['./property-detail.component.scss']
 })
