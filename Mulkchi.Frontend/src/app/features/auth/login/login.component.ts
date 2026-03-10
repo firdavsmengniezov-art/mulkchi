@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
+import { LoginRequest } from '../../../core/models/auth.model';
 
 @Component({
   selector: 'app-login',
@@ -16,22 +18,34 @@ export class LoginComponent {
   loading = false; 
   errorMsg = '';
 
-  constructor(
-    private router: Router
-  ) {}
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
   login() {
     if (!this.email || !this.password) {
       this.errorMsg = 'Email va parolni kiriting';
       return;
     }
+    
+    const loginRequest: LoginRequest = {
+      email: this.email,
+      password: this.password
+    };
+    
     this.loading = true;
     this.errorMsg = '';
     
-    // Simulate login - replace with actual service call
-    setTimeout(() => {
-      this.loading = false;
-      this.router.navigate(['/']);
-    }, 1000);
+    // Use actual AuthService
+    this.authService.login(loginRequest).subscribe({
+      next: (response) => {
+        this.loading = false;
+        this.router.navigate(['/']);
+      },
+      error: (err) => {
+        this.loading = false;
+        this.errorMsg = 'Login xatolik. Email yoki parol noto\'g\'ri.';
+        console.error('Login error:', err);
+      }
+    });
   }
 }
