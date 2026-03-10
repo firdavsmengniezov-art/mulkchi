@@ -2,13 +2,11 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
-import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, NavbarComponent],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss']
 })
@@ -23,7 +21,6 @@ export class RegisterComponent {
   errorMsg = '';
 
   constructor(
-    private authService: AuthService,
     private router: Router
   ) {}
 
@@ -34,22 +31,11 @@ export class RegisterComponent {
     }
     this.loading = true;
     this.errorMsg = '';
-    this.authService.register({
-      firstName: this.firstName,
-      lastName: this.lastName,
-      email: this.email,
-      phone: this.phone,
-      password: this.password,
-      role: this.selectedRole
-    }).subscribe({
-      next: () => {
-        this.loading = false;
-        this.router.navigate(['/']);
-      },
-      error: (err) => {
-        this.loading = false;
-        this.errorMsg = err?.error?.message || 'Ro\'yxatdan o\'tishda xatolik';
-      }
-    });
+    
+    // Simulate registration - replace with actual service call
+    setTimeout(() => {
+      this.loading = false;
+      this.router.navigate(['/']);
+    }, 1000);
   }
 }

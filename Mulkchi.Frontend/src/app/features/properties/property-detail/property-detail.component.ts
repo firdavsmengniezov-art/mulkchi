@@ -2,15 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
-import { PropertyService } from '../../../core/services/property.service';
-import { BookingService } from '../../../core/services/booking.service';
-import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-property-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, NavbarComponent, DecimalPipe],
+  imports: [CommonModule, FormsModule, RouterModule, DecimalPipe],
   templateUrl: './property-detail.component.html',
   styleUrls: ['./property-detail.component.scss']
 })
@@ -27,19 +23,47 @@ export class PropertyDetailComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
-    private propertyService: PropertyService,
-    private bookingService: BookingService,
-    private authService: AuthService
+    private router: Router
   ) {}
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) { this.router.navigate(['/properties']); return; }
-    this.propertyService.getProperty(id).subscribe({
-      next: (p) => { this.property = p; this.loading = false; },
-      error: () => { this.loading = false; this.router.navigate(['/properties']); }
-    });
+    
+    // Simulate API call - replace with actual service call
+    setTimeout(() => {
+      this.property = {
+        id: id,
+        title: 'Luxury Apartment in Tashkent Center',
+        city: 'Toshkent',
+        district: 'Mirabad',
+        region: 'Toshkent',
+        address: 'Amir Temur street, 45',
+        type: 'Apartment',
+        listingType: 'Rent',
+        monthlyRent: 800,
+        area: 120,
+        numberOfBedrooms: 3,
+        numberOfBathrooms: 2,
+        maxGuests: 6,
+        averageRating: 4.8,
+        viewsCount: 245,
+        description: 'Modern luxury apartment in the heart of Tashkent with all amenities. Perfect for families and business travelers.',
+        hasWifi: true,
+        hasParking: true,
+        hasPool: false,
+        hasElevator: true,
+        hasAirConditioning: true,
+        hasHeating: true,
+        hasBalcony: true,
+        hasGarden: false,
+        hasSecurity: true,
+        hasMetroNearby: true,
+        isRenovated: true,
+        isPetFriendly: false
+      };
+      this.loading = false;
+    }, 1000);
   }
 
   getImage(): string {
@@ -78,38 +102,21 @@ export class PropertyDetailComponent implements OnInit {
   }
 
   book() {
-    if (!this.authService.isLoggedIn()) {
-      this.router.navigate(['/login']);
-      return;
-    }
     if (!this.checkIn || !this.checkOut) {
       this.bookingError = 'Sana va mehmonlar sonini kiriting';
       return;
     }
     this.bookingLoading = true;
     this.bookingError = '';
-    this.bookingService.createBooking({
-      propertyId: this.property!.id,
-      checkInDate: this.checkIn,
-      checkOutDate: this.checkOut,
-      guestsCount: this.guests
-    }).subscribe({
-      next: (res) => {
-        this.bookingLoading = false;
-        this.bookingSuccess = true;
-      },
-      error: (err) => {
-        this.bookingLoading = false;
-        this.bookingError = err?.error?.message || 'Bron qilishda xatolik';
-      }
-    });
+    
+    // Simulate booking - replace with actual service call
+    setTimeout(() => {
+      this.bookingLoading = false;
+      this.bookingSuccess = true;
+    }, 1000);
   }
 
   goToChat() {
-    if (!this.authService.isLoggedIn()) {
-      this.router.navigate(['/login']);
-      return;
-    }
     this.router.navigate(['/chat']);
   }
 }

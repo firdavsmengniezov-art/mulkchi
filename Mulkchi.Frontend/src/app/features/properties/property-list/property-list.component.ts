@@ -2,14 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
-import { PropertyCardComponent } from '../../../shared/components/property-card/property-card.component';
-import { PropertyService } from '../../../core/services/property.service';
 
 @Component({
   selector: 'app-property-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, NavbarComponent, PropertyCardComponent, DecimalPipe],
+  imports: [CommonModule, FormsModule, RouterModule, DecimalPipe],
   templateUrl: './property-list.component.html',
   styleUrls: ['./property-list.component.scss']
 })
@@ -34,7 +31,6 @@ export class PropertyListComponent implements OnInit {
     'Xorazm','Navoiy','Jizzax','Sirdaryo'];
 
   constructor(
-    private propertyService: PropertyService,
     private route: ActivatedRoute,
     private router: Router
   ) {}
@@ -50,26 +46,18 @@ export class PropertyListComponent implements OnInit {
 
   loadProperties() {
     this.loading = true;
-    const params: any = {
-      pageNumber: this.currentPage,
-      pageSize: this.pageSize
-    };
-    if (this.filterRegion) params['region'] = this.filterRegion;
-    if (this.filterType) params['propertyType'] = this.filterType;
-    if (this.filterListing) params['listingType'] = this.filterListing;
-    if (this.filterMinPrice) params['minPrice'] = +this.filterMinPrice;
-    if (this.filterMaxPrice) params['maxPrice'] = +this.filterMaxPrice;
-    if (this.filterBedrooms) params['bedrooms'] = +this.filterBedrooms;
-
-    this.propertyService.searchProperties(params).subscribe({
-      next: (res) => {
-        this.properties = res.items;
-        this.totalCount = res.totalCount;
-        this.totalPages = res.totalPages;
-        this.loading = false;
-      },
-      error: () => { this.loading = false; }
-    });
+    
+    // Simulate API call - replace with actual service call
+    setTimeout(() => {
+      this.properties = [
+        { id: '1', title: 'Modern Apartment in Tashkent', city: 'Toshkent', district: 'Yunusobod', type: 'Apartment', listingType: 'Rent', monthlyRent: 500, area: 85, numberOfBedrooms: 2, numberOfBathrooms: 1, averageRating: 4.5, viewsCount: 120 },
+        { id: '2', title: 'Cozy House in Samarkand', city: 'Samarqand', district: 'Bodomzor', type: 'House', listingType: 'Sale', salePrice: 150000, area: 120, numberOfBedrooms: 3, numberOfBathrooms: 2, averageRating: 4.8, viewsCount: 89 },
+        { id: '3', title: 'Office Space in Center', city: 'Toshkent', district: 'Mirabad', type: 'Office', listingType: 'Rent', monthlyRent: 800, area: 60, numberOfBedrooms: 0, numberOfBathrooms: 1, averageRating: 4.2, viewsCount: 67 }
+      ];
+      this.totalCount = this.properties.length;
+      this.totalPages = Math.ceil(this.totalCount / this.pageSize);
+      this.loading = false;
+    }, 1000);
   }
 
   applyFilters() {

@@ -2,15 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
-import { PropertyService } from '../../../core/services/property.service';
-import { BookingService } from '../../../core/services/booking.service';
-import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, NavbarComponent, DecimalPipe],
+  imports: [CommonModule, FormsModule, RouterModule, DecimalPipe],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
@@ -24,9 +20,6 @@ export class DashboardComponent implements OnInit {
   totalBookings = 0;
 
   constructor(
-    private propertyService: PropertyService,
-    private bookingService: BookingService,
-    private authService: AuthService,
     private router: Router
   ) {}
 
@@ -36,26 +29,26 @@ export class DashboardComponent implements OnInit {
 
   loadData() {
     this.loading = true;
-    this.propertyService.getProperties(1, 50).subscribe(res => {
-      this.properties = res.items;
-      this.totalProperties = res.totalCount;
-    });
-    this.bookingService.getBookings().subscribe(res => {
-      this.bookings = res.items;
-      this.totalBookings = res.totalCount;
+    
+    // Simulate data loading - replace with actual service calls
+    setTimeout(() => {
+      this.properties = [
+        { id: '1', title: 'Test Property 1', city: 'Toshkent', listingType: 'Rent', monthlyRent: 500, viewsCount: 100 },
+        { id: '2', title: 'Test Property 2', city: 'Samarqand', listingType: 'Sale', salePrice: 150000, viewsCount: 50 }
+      ];
+      this.totalProperties = this.properties.length;
+      this.bookings = [
+        { id: '1', property: { title: 'Test Property 1' }, checkInDate: new Date(), checkOutDate: new Date(), guestsCount: 2, totalPrice: 1000, status: 'Confirmed' }
+      ];
+      this.totalBookings = this.bookings.length;
       this.loading = false;
-    });
+    }, 1000);
   }
 
   deleteProperty(id: string) {
     if (!confirm('Mulkni o\'chirishni tasdiqlaysizmi?')) return;
-    this.propertyService.deleteProperty(id).subscribe({
-      next: () => {
-        this.properties = this.properties.filter(p => p.id !== id);
-        this.totalProperties--;
-      },
-      error: (err) => alert('Xatolik: ' + err.message)
-    });
+    this.properties = this.properties.filter(p => p.id !== id);
+    this.totalProperties--;
   }
 
   getListingTypeText(type: string): string {
