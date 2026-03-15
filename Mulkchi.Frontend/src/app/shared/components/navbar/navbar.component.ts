@@ -1,7 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { SignalRService } from '../../../core/services/signalr.service';
 import { Observable, map } from 'rxjs';
 
 @Component({
@@ -11,11 +12,12 @@ import { Observable, map } from 'rxjs';
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.scss'
 })
-export class NavbarComponent {
+export class NavbarComponent implements OnInit {
   isLoggedIn$: Observable<boolean>;
   currentUser$: Observable<any>;
   isHost$: Observable<boolean>;
   isAdmin$: Observable<boolean>;
+  isSignalRConnected = false;
   
   // Language switcher
   languages = [
@@ -29,6 +31,7 @@ export class NavbarComponent {
 
   private authService = inject(AuthService);
   private router = inject(Router);
+  private signalRService = inject(SignalRService);
 
   constructor() {
     this.isLoggedIn$ = this.authService.currentUser$.pipe(map(u => !!u));
@@ -41,6 +44,13 @@ export class NavbarComponent {
     if (savedLang) {
       this.currentLang = savedLang;
     }
+  }
+
+  ngOnInit(): void {
+    // Update SignalR connection status
+    setInterval(() => {
+      this.isSignalRConnected = this.signalRService.getConnectionStatus();
+    }, 1000);
   }
 
   get isLoggedIn(): boolean {

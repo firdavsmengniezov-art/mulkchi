@@ -11,6 +11,55 @@
 .nav-links a:hover { color: #2ecc71; }
 .nav-right { display: flex; align-items: center; gap: 16px; margin-left: auto; }
 
+// Connection Status Indicator
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  
+  &.connected {
+    background: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+    
+    .status-dot {
+      background: #2ecc71;
+      box-shadow: 0 0 6px rgba(46, 204, 113, 0.6);
+    }
+  }
+  
+  &.disconnected {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+    
+    .status-dot {
+      background: #e74c3c;
+      box-shadow: 0 0 6px rgba(231, 76, 60, 0.6);
+    }
+  }
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.status-text {
+  font-weight: 600;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
 // Language switcher
 .lang-switcher { position: relative; cursor: pointer; padding: 6px 12px; border-radius: 6px; color: white; font-weight: 600; user-select: none; }
 .lang-switcher:hover { background: rgba(255,255,255,0.1); }

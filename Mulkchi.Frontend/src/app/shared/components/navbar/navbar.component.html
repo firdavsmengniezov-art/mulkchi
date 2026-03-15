@@ -11,6 +11,14 @@
       <li><a routerLink="/ai-price">AI Narx</a></li>
     </ul>
     <div class="nav-right">
+      <!-- SignalR Connection Status Indicator -->
+      @if (isLoggedIn) {
+        <div class="connection-status" [class.connected]="isSignalRConnected" [class.disconnected]="!isSignalRConnected">
+          <span class="status-dot"></span>
+          <span class="status-text">{{ isSignalRConnected ? 'Online' : 'Offline' }}</span>
+        </div>
+      }
+      
       <div class="lang-switcher" (click)="showLangMenu = !showLangMenu">
         {{ currentLang === 'uz' ? "O'z" : currentLang === 'ru' ? 'Ру' : 'En' }} ▾
         @if (showLangMenu) {
