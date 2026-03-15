@@ -11,6 +11,8 @@
 *.sln.docstates
 *.env
 *.env.example
+**/appsettings.Development.json
+**/appsettings.Local.json
 bin/
 obj/
 logs/

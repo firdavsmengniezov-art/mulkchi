@@ -301,12 +301,45 @@ cd Mulkchi.Api
 dotnet ef database update
 ```
 
-4. **Konfiguratsiya**
+4. **Environment Setup**
+Development uchun quyidagi variantlardan birini tanlang:
+
+**Variant 1: appsettings.Development.json**
+```bash
+# Mulkchi.Api/appsettings.Development.json faylini yarating
+{
+  "JwtSettings": {
+    "Secret": "your-32-character-secret-key-here",
+    "Issuer": "Mulkchi",
+    "Audience": "MulkchiUsers",
+    "ExpiryDays": 7
+  },
+  "EmailSettings": {
+    "SmtpHost": "smtp.gmail.com",
+    "SmtpPort": 587,
+    "SenderEmail": "noreply@mulkchi.uz",
+    "SenderPassword": "your-app-password",
+    "SenderName": "Mulkchi Platform"
+  }
+}
+```
+
+**Variant 2: User Secrets (Tavsiya etilgan)**
+```bash
+cd Mulkchi.Api
+dotnet user-secrets set "JwtSettings:Secret" "your-32-character-secret-key-here"
+dotnet user-secrets set "JwtSettings:Issuer" "Mulkchi"
+dotnet user-secrets set "JwtSettings:Audience" "MulkchiUsers"
+dotnet user-secrets set "EmailSettings:SenderEmail" "your-email@gmail.com"
+dotnet user-secrets set "EmailSettings:SenderPassword" "your-app-password"
+```
+
+5. **Konfiguratsiya**
 - `appsettings.json` faylida database connection stringni sozlang
-- JWT settingsni konfiguratsiya qiling
+- JWT settingsni yuqoridagidek konfiguratsiya qiling
 - Email settingsni sozlang (agar kerak bo'lsa)
 
-5. **Ishga tushirish**
+6. **Ishga tushirish**
 ```bash
 dotnet run --project Mulkchi.Api
 ```
