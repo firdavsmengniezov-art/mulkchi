@@ -31,7 +31,6 @@ public class FavoritesController : ControllerBase
 
             favorite.UserId = currentUserId;
             Favorite addedFavorite = await this.favoriteService.AddFavoriteAsync(favorite);
-            // TODO: FavoritesCount increment should be handled by an Orchestration service
             return Created("favorite", addedFavorite);
         }
         catch (FavoriteValidationException favoriteValidationException)

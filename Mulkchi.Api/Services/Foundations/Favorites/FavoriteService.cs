@@ -43,7 +43,26 @@ public partial class FavoriteService : IFavoriteService
             favorite.CreatedDate = now;
             favorite.UpdatedDate = now;
 
-            return await this.storageBroker.InsertFavoriteAsync(favorite);
+            var addedFavorite = await this.storageBroker.InsertFavoriteAsync(favorite);
+            
+            // Increment FavoritesCount for the property
+            try
+            {
+                var property = await this.storageBroker.SelectPropertyByIdAsync(favorite.PropertyId);
+                if (property != null)
+                {
+                    property.FavoritesCount++;
+                    property.UpdatedDate = now;
+                    await this.storageBroker.UpdatePropertyAsync(property);
+                }
+            }
+            catch (Exception ex)
+            {
+                this.loggingBroker.LogError("Failed to increment FavoritesCount for property {PropertyId}: {Error}", 
+                    favorite.PropertyId, ex.Message);
+            }
+
+            return addedFavorite;
         });
 
     public IQueryable<Favorite> RetrieveAllFavorites() =>
@@ -106,6 +125,26 @@ public partial class FavoriteService : IFavoriteService
                 throw new UnauthorizedAccessException("You can only delete your own favorites.");
             }
             
-            return await this.storageBroker.DeleteFavoriteByIdAsync(favoriteId);
+            var deletedFavorite = await this.storageBroker.DeleteFavoriteByIdAsync(favoriteId);
+            
+            // Decrement FavoritesCount for the property
+            try
+            {
+                var property = await this.storageBroker.SelectPropertyByIdAsync(existingFavorite.PropertyId);
+                if (property != null)
+                {
+                    property.FavoritesCount--;
+                    if (property.FavoritesCount < 0) property.FavoritesCount = 0;
+                    property.UpdatedDate = this.dateTimeBroker.GetCurrentDateTimeOffset();
+                    await this.storageBroker.UpdatePropertyAsync(property);
+                }
+            }
+            catch (Exception ex)
+            {
+                this.loggingBroker.LogError("Failed to decrement FavoritesCount for property {PropertyId}: {Error}", 
+                    existingFavorite.PropertyId, ex.Message);
+            }
+            
+            return deletedFavorite;
         });
 }
