@@ -79,7 +79,7 @@ public class AuthController : ControllerBase
         }
     }
 
-    [HttpPost("refresh")]
+    [HttpPost("refresh-token")]
     public async ValueTask<ActionResult<AuthResponse>> RefreshTokenAsync([FromBody] string refreshToken)
     {
         try
