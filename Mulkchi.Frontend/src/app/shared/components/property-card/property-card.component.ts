@@ -2,11 +2,12 @@ import { Component, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Property } from '../../../core/models';
+import { FavoriteButtonComponent } from '../favorite-button/favorite-button.component';
 
 @Component({
   selector: 'app-property-card',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FavoriteButtonComponent],
   templateUrl: './property-card.component.html',
   styleUrl: './property-card.component.scss'
 })

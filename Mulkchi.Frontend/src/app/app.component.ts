@@ -3,6 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { NotificationService } from './core/services/notification.service';
 import { AuthService } from './core/services/auth.service';
+import { FavoriteService } from './core/services/favorite.service';
 
 @Component({
   selector: 'app-root',
@@ -16,7 +17,8 @@ export class AppComponent implements OnInit {
 
   constructor(
     private notificationService: NotificationService,
-    private authService: AuthService
+    private authService: AuthService,
+    private favoriteService: FavoriteService
   ) {}
 
   ngOnInit(): void {
@@ -24,6 +26,7 @@ export class AppComponent implements OnInit {
     this.authService.currentUser$.subscribe(user => {
       if (user) {
         this.notificationService.startConnection();
+        this.favoriteService.loadUserFavorites();
       }
     });
   }

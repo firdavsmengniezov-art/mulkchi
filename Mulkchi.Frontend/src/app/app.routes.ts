@@ -31,6 +31,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/notifications/notifications-page/notifications-page.component').then(m => m.NotificationsPageComponent) 
   },
   { 
+    path: 'favorites', 
+    canActivate: [authGuard], 
+    loadComponent: () => import('./features/favorites/favorites-page/favorites-page.component').then(m => m.FavoritesPageComponent) 
+  },
+  { 
     path: 'profile', 
     canActivate: [authGuard], 
     loadComponent: () => import('./features/profile/profile.component').then(m => m.ProfileComponent) 
