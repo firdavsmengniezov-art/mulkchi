@@ -36,6 +36,7 @@
       
       @if (isLoggedIn) {
         <div class="user-menu-wrap">
+          <app-notification-bell></app-notification-bell>
           <div class="user-avatar" (click)="showUserMenu = !showUserMenu">
             {{ currentUser?.firstName?.charAt(0) || 'U' }}
           </div>

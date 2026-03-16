@@ -26,6 +26,11 @@ export const routes: Routes = [
   },
   { path: 'ai-price', loadComponent: () => import('./features/ai-price/ai-price.component').then(m => m.AiPriceComponent) },
   { 
+    path: 'notifications', 
+    canActivate: [authGuard], 
+    loadComponent: () => import('./features/notifications/notifications-page/notifications-page.component').then(m => m.NotificationsPageComponent) 
+  },
+  { 
     path: 'profile', 
     canActivate: [authGuard], 
     loadComponent: () => import('./features/profile/profile.component').then(m => m.ProfileComponent) 
