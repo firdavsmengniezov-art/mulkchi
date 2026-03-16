@@ -50,6 +50,11 @@
         <p class="address">📍 {{ property.address }}, {{ property.district }}, {{ property.city }}, {{ property.region }}</p>
       </div>
 
+      <!-- REVIEWS SECTION -->
+      <div class="reviews-section">
+        <app-reviews-list [propertyId]="property.id"></app-reviews-list>
+      </div>
+
       <!-- BOOKING CARD -->
       <div class="booking-card">
         <div class="booking-price">{{ getPrice() }}</div>

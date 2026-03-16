@@ -18,6 +18,12 @@
 .ds strong { font-size: 22px; font-weight: 700; color: #1a1a2e; }
 .ds span { font-size: 12px; color: #6b7280; margin-top: 2px; }
 .detail-left h3 { font-size: 18px; font-weight: 700; margin: 20px 0 10px; color: #1a1a2e; }
+
+.reviews-section {
+  margin-top: 40px;
+  padding-top: 40px;
+  border-top: 1px solid #f3f4f6;
+}
 .desc { font-size: 15px; color: #4b5563; line-height: 1.8; }
 .amenities-grid { display: flex; flex-wrap: wrap; gap: 10px; }
 .amenity-chip { padding: 7px 14px; background: #f0fff4; border: 1px solid #bbf7d0; border-radius: 100px; font-size: 13px; color: #065f46; }

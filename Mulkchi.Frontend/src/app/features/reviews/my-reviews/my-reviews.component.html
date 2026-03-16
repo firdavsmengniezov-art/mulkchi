@@ -1,0 +1,115 @@
+<div class="my-reviews">
+  <div class="page-header">
+    <h1>📝 Mening sharhlarim</h1>
+  </div>
+
+  <mat-tab-group [(selectedIndex)]="activeTab" dynamicHeight="false">
+    <mat-tab label="Barcha sharhlar">
+      <div class="content-section">
+        @if (loading) {
+          <div class="loading-state">
+            <mat-spinner diameter="50"></mat-spinner>
+            <p>Sharhlar yuklanmoqda...</p>
+          </div>
+        } @else if (reviews.length > 0) {
+          <div class="reviews-grid">
+            @for (review of reviews; track review.id) {
+              <div class="review-card">
+                <div class="review-header">
+                  <div class="property-info">
+                    <h3>{{ review.propertyId }}</h3>
+                    <div class="review-date">{{ formatDate(review.createdDate) }}</div>
+                  </div>
+                  <div class="review-rating">
+                    <app-star-rating [rating]="review.overallRating" [readonly]="true">
+                    </app-star-rating>
+                  </div>
+                </div>
+
+                <div class="review-content">
+                  <p class="comment">{{ review.comment }}</p>
+                  
+                  <!-- Category Ratings -->
+                  <div class="category-ratings">
+                    <div class="rating-item">
+                      <span>Tozalik:</span>
+                      <app-star-rating [rating]="review.cleanlinessRating" [readonly]="true">
+                      </app-star-rating>
+                    </div>
+                    <div class="rating-item">
+                      <span>Joylashuv:</span>
+                      <app-star-rating [rating]="review.locationRating" [readonly]="true">
+                      </app-star-rating>
+                    </div>
+                    <div class="rating-item">
+                      <span>Qiymat:</span>
+                      <app-star-rating [rating]="review.valueRating" [readonly]="true">
+                      </app-star-rating>
+                    </div>
+                    <div class="rating-item">
+                      <span>Kommunikatsiya:</span>
+                      <app-star-rating [rating]="review.communicationRating" [readonly]="true">
+                      </app-star-rating>
+                    </div>
+                    <div class="rating-item">
+                      <span>Aniqlik:</span>
+                      <app-star-rating [rating]="review.accuracyRating" [readonly]="true">
+                      </app-star-rating>
+                    </div>
+                  </div>
+
+                  <!-- Host Response -->
+                  @if (review.hostResponse) {
+                    <div class="host-response">
+                      <div class="response-header">
+                        <mat-icon>reply</mat-icon>
+                        <span>Mulk egasi javobi</span>
+                        <span class="response-date">{{ formatDate(review.hostRespondedAt!) }}</span>
+                      </div>
+                      <p class="response-text">{{ review.hostResponse }}</p>
+                    </div>
+                  }
+                </div>
+
+                <!-- Review Actions -->
+                <div class="review-actions">
+                  <button 
+                    mat-icon-button 
+                    (click)="editReview(review, $event)"
+                    matTooltip="Sharhni tahrirlash">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button 
+                    mat-icon-button 
+                    (click)="deleteReview(review, $event)"
+                    matTooltip="Sharhni o'chirish">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="empty-state">
+            <mat-icon>rate_review</mat-icon>
+            <h3>Sharhlar yo'q</h3>
+            <p>Hali hech qanday sharh qoldirmagansiz.</p>
+          </div>
+        }
+
+        <!-- Pagination -->
+        @if (totalCount > pageSize) {
+          <div class="pagination-section">
+            <mat-paginator 
+              [length]="totalCount"
+              [pageSize]="pageSize"
+              [pageSizeOptions]="[5, 10, 20]"
+              [pageIndex]="currentPage - 1"
+              (page)="onPageChange($event)">
+            </mat-paginator>
+          </div>
+        }
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

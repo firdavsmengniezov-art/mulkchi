@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Location } from '@angular/common';
 import { FavoriteButtonComponent } from '../../../shared/components/favorite-button/favorite-button.component';
+import { ReviewsListComponent } from '../../../features/reviews/reviews-list/reviews-list.component';
 
 @Component({
   selector: 'app-property-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, FavoriteButtonComponent],
+  imports: [CommonModule, FormsModule, RouterModule, FavoriteButtonComponent, ReviewsListComponent],
   templateUrl: './property-detail.component.html',
   styleUrls: ['./property-detail.component.scss']
 })
