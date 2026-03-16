@@ -33,13 +33,16 @@ export class DashboardComponent implements OnInit {
     // Simulate data loading - replace with actual service calls
     setTimeout(() => {
       this.properties = [
-        { id: '1', title: 'Test Property 1', city: 'Toshkent', listingType: 'Rent', monthlyRent: 500, viewsCount: 100 },
-        { id: '2', title: 'Test Property 2', city: 'Samarqand', listingType: 'Sale', salePrice: 150000, viewsCount: 50 }
+        { id: '1', title: 'Toshkent shahrida 3 xonali kvartira', listingType: 'Rent', monthlyRent: 500, viewsCount: 45 },
+        { id: '2', title: 'Samarqand viloyatida 2 xonali uy', listingType: 'Sale', salePrice: 120000, viewsCount: 23 }
       ];
-      this.totalProperties = this.properties.length;
+      
       this.bookings = [
-        { id: '1', property: { title: 'Test Property 1' }, checkInDate: new Date(), checkOutDate: new Date(), guestsCount: 2, totalPrice: 1000, status: 'Confirmed' }
+        { id: '1', property: { title: 'Toshkent shahrida 3 xonali kvartira' }, checkInDate: '2024-01-15', checkOutDate: '2024-01-20', guestsCount: 2, totalPrice: 500, status: 'Confirmed' },
+        { id: '2', property: { title: 'Samarqand viloyatida 2 xonali uy' }, checkInDate: '2024-02-10', checkOutDate: '2024-02-15', guestsCount: 3, totalPrice: 800, status: 'Pending' }
       ];
+      
+      this.totalProperties = this.properties.length;
       this.totalBookings = this.bookings.length;
       this.loading = false;
     }, 1000);
@@ -54,12 +57,6 @@ export class DashboardComponent implements OnInit {
   getListingTypeText(type: string): string {
     const map: any = { 'Rent': 'Ijara', 'Sale': 'Sotiladi', 'DailyRent': 'Kunlik' };
     return map[type] || type;
-  }
-
-  getPrice(p: any): string {
-    if (p.listingType === 'Rent') return `$${p.monthlyRent}/oy`;
-    if (p.listingType === 'Sale') return `$${p.salePrice?.toLocaleString()}`;
-    return `$${p.pricePerNight}/kun`;
   }
 
   getStatusClass(status: string): string {
@@ -80,5 +77,12 @@ export class DashboardComponent implements OnInit {
       'Completed': 'Tugallangan'
     };
     return map[status] || status;
+  }
+
+  getPrice(p: any): string {
+    if (p.monthlyRent) return `$${p.monthlyRent}/oy`;
+    if (p.salePrice) return `$${p.salePrice.toLocaleString()}`;
+    if (p.pricePerNight) return `$${p.pricePerNight}/kun`;
+    return 'Narx mavjud emas';
   }
 }
