@@ -1,0 +1,137 @@
+<div class="notifications-page">
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Bildirishnomalar</h1>
+      <div class="header-actions">
+        <button mat-button (click)="markAllAsRead()" [disabled]="unreadCount === 0">
+          <mat-icon>done_all</mat-icon>
+          Barchasini o'qilgan deb belgilash
+        </button>
+      </div>
+    </div>
+    
+    <div class="header-stats">
+      <div class="stat-item">
+        <span class="stat-number">{{ notifications.length }}</span>
+        <span class="stat-label">Jami</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">{{ unreadCount }}</span>
+        <span class="stat-label">O'qilmagan</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="filters-section">
+    <mat-tab-group [(selectedIndex)]="currentTab" (selectedTabChange)="onTabChange($event.index)">
+      <mat-tab label="Barchasi">
+        <div class="tab-content">
+          <div class="filters">
+            <mat-form-field appearance="outline" class="search-field">
+              <mat-label>Qidirish...</mat-label>
+              <input matInput (keyup)="onSearchChange($event)" [value]="searchTerm">
+              <mat-icon matSuffix>search</mat-icon>
+            </mat-form-field>
+            
+            <mat-form-field appearance="outline" class="type-filter">
+              <mat-label>Turi</mat-label>
+              <mat-select [(value)]="selectedType" (selectionChange)="onTypeChange($event.value)">
+                @for (type of getNotificationTypes(); track type.value) {
+                  <mat-option [value]="type.value">{{ type.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+      </mat-tab>
+      
+      <mat-tab label="O'qilmagan">
+        <div class="tab-content">
+          <p class="tab-description">Faqat o'qilmagan bildirishnomalar</p>
+        </div>
+      </mat-tab>
+      
+      <mat-tab label="O'qilgan">
+        <div class="tab-content">
+          <p class="tab-description">O'qilgan bildirishnomalar</p>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+
+  <div class="notifications-list" *ngIf="!loading; else loadingTemplate">
+    <div 
+      *ngFor="let notification of filteredNotifications; trackBy: trackByNotificationId" 
+      class="notification-card"
+      [class.unread]="!notification.isRead"
+      (click)="onNotificationClick(notification)">
+      
+      <mat-card class="card-content">
+        <div class="notification-header">
+          <div class="notification-icon">
+            <mat-icon [color]="getNotificationColor(notification.type)">
+              {{ getNotificationIcon(notification.type) }}
+            </mat-icon>
+          </div>
+          
+          <div class="notification-meta">
+            <div class="notification-type">
+              {{ getNotificationTypeLabel(notification.type) }}
+            </div>
+            <div class="notification-time">
+              {{ notification.createdDate | relativeTime }}
+            </div>
+          </div>
+          
+          <div class="notification-actions">
+            @if (!notification.isRead) {
+              <button mat-icon-button (click)="markAsRead(notification); $event.stopPropagation()" matTooltip="O'qilgan deb belgilash">
+                <mat-icon>mark_as_unread</mat-icon>
+              </button>
+            }
+            <button mat-icon-button (click)="deleteNotification(notification); $event.stopPropagation()" matTooltip="O'chirish">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+        
+        <div class="notification-body">
+          <h3 class="notification-title">
+            {{ getLocalizedTitle(notification) }}
+          </h3>
+          <p class="notification-message">
+            {{ getLocalizedBody(notification) }}
+          </p>
+        </div>
+        
+        @if (notification.actionUrl) {
+          <div class="notification-action">
+            <mat-icon>arrow_forward</mat-icon>
+            <span>Batafsil</span>
+          </div>
+        }
+      </mat-card>
+    </div>
+
+    <div class="empty-state" *ngIf="filteredNotifications.length === 0">
+      <mat-icon>notifications_none</mat-icon>
+      <h3>Bildirishnomalar yo'q</h3>
+      <p>
+        @if (currentTab === 1) {
+          O'qilmagan bildirishnomalar yo'q
+        } @else if (currentTab === 2) {
+          O'qilgan bildirishnomalar yo'q
+        } @else {
+          Hech qanday bildirishnoma topilmadi
+        }
+      </p>
+    </div>
+  </div>
+
+  <ng-template #loadingTemplate>
+    <div class="loading-state">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>Yuklanmoqda...</p>
+    </div>
+  </ng-template>
+</div>
