@@ -58,8 +58,7 @@ public partial class FavoriteService : IFavoriteService
             }
             catch (Exception ex)
             {
-                this.loggingBroker.LogError("Failed to increment FavoritesCount for property {PropertyId}: {Error}", 
-                    favorite.PropertyId, ex.Message);
+                this.loggingBroker.LogError(ex);
             }
 
             return addedFavorite;
@@ -141,8 +140,7 @@ public partial class FavoriteService : IFavoriteService
             }
             catch (Exception ex)
             {
-                this.loggingBroker.LogError("Failed to decrement FavoritesCount for property {PropertyId}: {Error}", 
-                    existingFavorite.PropertyId, ex.Message);
+                this.loggingBroker.LogError(ex);
             }
             
             return deletedFavorite;

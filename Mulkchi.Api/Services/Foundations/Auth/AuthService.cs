@@ -10,6 +10,7 @@ using Mulkchi.Api.Brokers.Storages;
 using Mulkchi.Api.Models.Foundations.Auth;
 using Mulkchi.Api.Models.Foundations.Auth.Exceptions;
 using Mulkchi.Api.Models.Foundations.Users;
+using Mulkchi.Api.Models.Foundations.Users.Exceptions;
 using Serilog;
 
 namespace Mulkchi.Api.Services.Foundations.Auth;
@@ -307,5 +308,71 @@ public partial class AuthService : IAuthService
         var randomBytes = new byte[64];
         RandomNumberGenerator.Fill(randomBytes);
         return Convert.ToBase64String(randomBytes);
+    }
+
+    public async ValueTask<User> RetrieveUserByIdAsync(Guid userId)
+    {
+        ValidateUserId(userId);
+
+        var storageUser = await this.storageBroker.SelectUserByIdAsync(userId);
+        
+        if (storageUser is null)
+            throw new NotFoundUserException(userId);
+
+        return storageUser;
+    }
+
+    public async ValueTask<User> ModifyUserProfileAsync(Guid userId, UpdateProfileRequest request)
+    {
+        ValidateUserId(userId);
+        ValidateUpdateProfileRequest(request);
+
+        var storageUser = await this.storageBroker.SelectUserByIdAsync(userId);
+        
+        if (storageUser is null)
+            throw new NotFoundUserException(userId);
+
+        // Update user properties
+        storageUser.FirstName = request.FirstName;
+        storageUser.LastName = request.LastName;
+        storageUser.Bio = request.Bio;
+        storageUser.Address = request.Address;
+        storageUser.Phone = request.Phone;
+        storageUser.DateOfBirth = request.DateOfBirth;
+        storageUser.Gender = request.Gender;
+        storageUser.AvatarUrl = request.AvatarUrl;
+        storageUser.UpdatedDate = this.dateTimeBroker.GetCurrentDateTimeOffset();
+
+        var updatedUser = await this.storageBroker.UpdateUserAsync(storageUser);
+        
+        return updatedUser;
+    }
+
+    public async ValueTask RemoveUserByIdAsync(Guid userId)
+    {
+        ValidateUserId(userId);
+
+        var storageUser = await this.storageBroker.SelectUserByIdAsync(userId);
+        
+        if (storageUser is null)
+            throw new NotFoundUserException(userId);
+
+        // Soft delete user
+        storageUser.DeletedDate = this.dateTimeBroker.GetCurrentDateTimeOffset();
+        storageUser.UpdatedDate = this.dateTimeBroker.GetCurrentDateTimeOffset();
+
+        await this.storageBroker.UpdateUserAsync(storageUser);
+    }
+
+    private static void ValidateUserId(Guid userId)
+    {
+        if (userId == Guid.Empty)
+            throw new InvalidAuthException("User ID is required.");
+    }
+
+    private static void ValidateUpdateProfileRequest(UpdateProfileRequest request)
+    {
+        if (request == null)
+            throw new InvalidAuthException("Update profile request is required.");
     }
 }
