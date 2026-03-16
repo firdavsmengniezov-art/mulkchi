@@ -31,6 +31,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/notifications/notifications-page/notifications-page.component').then(m => m.NotificationsPageComponent) 
   },
   { 
+    path: 'payments', 
+    canActivate: [authGuard], 
+    loadComponent: () => import('./features/payments/payment-history/payment-history.component').then(m => m.PaymentHistoryComponent) 
+  },
+  { 
     path: 'favorites', 
     canActivate: [authGuard], 
     loadComponent: () => import('./features/favorites/favorites-page/favorites-page.component').then(m => m.FavoritesPageComponent) 
