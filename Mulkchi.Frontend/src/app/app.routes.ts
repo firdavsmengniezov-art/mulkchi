@@ -17,7 +17,12 @@ export const routes: Routes = [
   { 
     path: 'chat', 
     canActivate: [authGuard], 
-    loadComponent: () => import('./features/chat/chat.component').then(m => m.ChatComponent) 
+    loadComponent: () => import('./features/chat/chat/chat.component').then(m => m.ChatComponent) 
+  },
+  { 
+    path: 'chat/:userId', 
+    canActivate: [authGuard], 
+    loadComponent: () => import('./features/chat/chat/chat.component').then(m => m.ChatComponent) 
   },
   { path: 'ai-price', loadComponent: () => import('./features/ai-price/ai-price.component').then(m => m.AiPriceComponent) },
   { 

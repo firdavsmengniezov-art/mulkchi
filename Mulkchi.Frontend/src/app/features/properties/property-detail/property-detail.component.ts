@@ -119,7 +119,9 @@ export class PropertyDetailComponent implements OnInit {
   }
 
   goToChat() {
-    this.router.navigate(['/chat']);
+    // Get property owner ID (mock data - replace with actual property.ownerId)
+    const ownerId = this.property?.ownerId || 'mock-owner-id';
+    this.router.navigate(['/chat', ownerId]);
   }
 
   goBack() {
