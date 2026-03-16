@@ -27,6 +27,8 @@
           <span>📍 {{ property.district }}, {{ property.city }}</span>
           <span>⭐ {{ property.averageRating || 'Yangi' }}</span>
           <span>👁 {{ property.viewsCount }} ko'rishlar</span>
+          <span>❤️ {{ property.favoritesCount || 0 }} kishi sevimliga qo'shgan</span>
+          <app-favorite-button [propertyId]="property.id"></app-favorite-button>
         </div>
         <div class="detail-stats">
           <div class="ds"><strong>{{ property.numberOfBedrooms }}</strong><span>Xona</span></div>

@@ -2,7 +2,10 @@
   <div class="card-image">
     <img [src]="getImage()" [alt]="property.title" loading="lazy">
     <span class="badge" [class]="getBadgeClass()">{{ getBadgeText() }}</span>
-    <button class="fav-btn" (click)="$event.stopPropagation()">♡</button>
+    <app-favorite-button
+      style="position: absolute; top: 8px; right: 8px;"
+      [propertyId]="property.id">
+    </app-favorite-button>
   </div>
   <div class="card-body">
     <div class="price">{{ getPrice() }}</div>
