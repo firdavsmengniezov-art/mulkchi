@@ -1,5 +1,5 @@
 using System;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -7,6 +7,7 @@ using Moq;
 using Mulkchi.Api.Models.Foundations.Properties;
 using Mulkchi.Api.Models.Foundations.Properties.Exceptions;
 using Xunit;
+using Xeptions;
 
 namespace Mulkchi.Api.Tests.Unit.Tests.Foundations.Properties;
 
@@ -20,15 +21,17 @@ public partial class PropertyServiceTests
         SqlException sqlException = CreateSqlException();
 
         var expectedDependencyException =
-            new PropertyDependencyException(sqlException);
+            new PropertyDependencyException("Database error occurred", new Xeption(sqlException.Message));
 
         this.storageBrokerMock.Setup(broker =>
             broker.InsertPropertyAsync(It.IsAny<Property>()))
                 .ThrowsAsync(sqlException);
 
         // Act & Assert
-        await Assert.ThrowsAsync<PropertyDependencyException>(() =>
-            this.propertyService.AddPropertyAsync(someProperty));
+        Func<Task> addPropertyTask = async () =>
+            await this.propertyService.AddPropertyAsync(someProperty);
+
+        await Assert.ThrowsAsync<PropertyDependencyException>(addPropertyTask);
 
         this.loggingBrokerMock.Verify(broker =>
             broker.LogCritical(It.IsAny<PropertyDependencyException>()),
@@ -40,15 +43,17 @@ public partial class PropertyServiceTests
     {
         // Arrange
         Property someProperty = CreateRandomProperty();
-        var duplicateKeyException = new DuplicateKeyException("Duplicate property");
+        var duplicateKeyException = new Exception("Duplicate property");
 
         this.storageBrokerMock.Setup(broker =>
             broker.InsertPropertyAsync(It.IsAny<Property>()))
                 .ThrowsAsync(duplicateKeyException);
 
         // Act & Assert
-        await Assert.ThrowsAsync<PropertyDependencyValidationException>(() =>
-            this.propertyService.AddPropertyAsync(someProperty));
+        Func<Task> addPropertyTask = async () =>
+            await this.propertyService.AddPropertyAsync(someProperty);
+
+        await Assert.ThrowsAsync<PropertyDependencyValidationException>(addPropertyTask);
     }
 
     [Fact]
@@ -63,8 +68,10 @@ public partial class PropertyServiceTests
                 .ReturnsAsync(nullProperty);
 
         // Act & Assert
-        await Assert.ThrowsAsync<NotFoundPropertyException>(() =>
-            this.propertyService.RetrievePropertyByIdAsync(propertyId));
+        Func<Task> retrievePropertyTask = async () =>
+            await this.propertyService.RetrievePropertyByIdAsync(propertyId);
+
+        await Assert.ThrowsAsync<NotFoundPropertyException>(retrievePropertyTask);
     }
 
     [Fact]
@@ -74,8 +81,10 @@ public partial class PropertyServiceTests
         Property nullProperty = null;
 
         // Act & Assert
-        await Assert.ThrowsAsync<PropertyValidationException>(() =>
-            this.propertyService.ModifyPropertyAsync(nullProperty));
+        Func<Task> modifyPropertyTask = async () =>
+            await this.propertyService.ModifyPropertyAsync(nullProperty);
+
+        await Assert.ThrowsAsync<PropertyValidationException>(modifyPropertyTask);
 
         this.storageBrokerMock.Verify(broker =>
             broker.UpdatePropertyAsync(It.IsAny<Property>()),
@@ -94,12 +103,9 @@ public partial class PropertyServiceTests
                 .ReturnsAsync(nullProperty);
 
         // Act & Assert
-        await Assert.ThrowsAsync<NotFoundPropertyException>(() =>
-            this.propertyService.RemovePropertyAsync(propertyId));
-    }
+        Func<Task> removePropertyTask = async () =>
+            await this.propertyService.RemovePropertyByIdAsync(propertyId);
 
-    // SQL exception yaratish helper
-    private static SqlException CreateSqlException() =>
-        (SqlException)FormatterServices.GetUninitializedObject(
-            typeof(SqlException));
+        await Assert.ThrowsAsync<NotFoundPropertyException>(removePropertyTask);
+    }
 }

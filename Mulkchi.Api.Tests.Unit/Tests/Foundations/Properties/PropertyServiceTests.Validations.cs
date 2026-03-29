@@ -17,8 +17,10 @@ public partial class PropertyServiceTests
         Property nullProperty = null;
 
         // Act & Assert
-        await Assert.ThrowsAsync<PropertyValidationException>(() =>
-            this.propertyService.AddPropertyAsync(nullProperty));
+        Func<Task> addPropertyTask = async () =>
+            await this.propertyService.AddPropertyAsync(nullProperty);
+
+        await Assert.ThrowsAsync<PropertyValidationException>(addPropertyTask);
 
         this.storageBrokerMock.Verify(broker =>
             broker.InsertPropertyAsync(It.IsAny<Property>()),
@@ -37,8 +39,10 @@ public partial class PropertyServiceTests
         property.Title = invalidTitle;
 
         // Act & Assert
-        await Assert.ThrowsAsync<PropertyValidationException>(() =>
-            this.propertyService.AddPropertyAsync(property));
+        Func<Task> addPropertyTask = async () =>
+            await this.propertyService.AddPropertyAsync(property);
+
+        await Assert.ThrowsAsync<PropertyValidationException>(addPropertyTask);
     }
 
     [Fact]
@@ -70,15 +74,17 @@ public partial class PropertyServiceTests
     [InlineData(-1)]
     [InlineData(0)]
     public async Task AddPropertyAsync_InvalidArea_ThrowsValidationException(
-        decimal invalidArea)
+        double invalidArea)
     {
         // Arrange
         Property property = CreateRandomProperty();
         property.Area = invalidArea;
 
         // Act & Assert
-        await Assert.ThrowsAsync<PropertyValidationException>(() =>
-            this.propertyService.AddPropertyAsync(property));
+        Func<Task> addPropertyTask = async () =>
+            await this.propertyService.AddPropertyAsync(property);
+
+        await Assert.ThrowsAsync<PropertyValidationException>(addPropertyTask);
     }
 
     [Theory]
@@ -92,8 +98,10 @@ public partial class PropertyServiceTests
         property.MonthlyRent = invalidRent;
 
         // Act & Assert
-        await Assert.ThrowsAsync<PropertyValidationException>(() =>
-            this.propertyService.AddPropertyAsync(property));
+        Func<Task> addPropertyTask = async () =>
+            await this.propertyService.AddPropertyAsync(property);
+
+        await Assert.ThrowsAsync<PropertyValidationException>(addPropertyTask);
     }
 
     [Fact]
@@ -104,7 +112,9 @@ public partial class PropertyServiceTests
         property.ListingType = (ListingType)999; // Invalid enum value
 
         // Act & Assert
-        await Assert.ThrowsAsync<PropertyValidationException>(() =>
-            this.propertyService.AddPropertyAsync(property));
+        Func<Task> addPropertyTask = async () =>
+            await this.propertyService.AddPropertyAsync(property);
+
+        await Assert.ThrowsAsync<PropertyValidationException>(addPropertyTask);
     }
 }
