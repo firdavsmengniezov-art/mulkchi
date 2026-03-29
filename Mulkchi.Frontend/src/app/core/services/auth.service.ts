@@ -11,7 +11,14 @@ export class AuthService {
 
   constructor(private http: HttpClient) {
     const saved = localStorage.getItem('auth_user');
-    if (saved) this.currentUser$.next(JSON.parse(saved));
+    if (saved && saved !== 'undefined' && saved !== 'null') {
+      try {
+        this.currentUser$.next(JSON.parse(saved));
+      } catch (error) {
+        console.warn('Invalid auth_user data in localStorage, clearing...');
+        localStorage.removeItem('auth_user');
+      }
+    }
   }
 
   login(req: LoginRequest): Observable<AuthResponse> {

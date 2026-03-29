@@ -3,12 +3,28 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { RegisterRequest, UserRole } from '../../../core/models/auth.model';
+import { RegisterRequest } from '../../../core/models/auth.model';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    RouterModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    MatProgressSpinnerModule
+  ],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss']
 })
@@ -18,7 +34,6 @@ export class RegisterComponent {
   email = ''; 
   phone = '';
   password = ''; 
-  selectedRole = 0;
   loading = false; 
   errorMsg = '';
 
@@ -31,13 +46,19 @@ export class RegisterComponent {
       return;
     }
     
+    // Generate random email for testing
+    const randomSuffix = Math.random().toString(36).substring(7);
+    const testEmail = this.email.includes('@') 
+      ? this.email.split('@')[0] + '+' + randomSuffix + '@' + this.email.split('@')[1]
+      : this.email;
+    
     const registerRequest: RegisterRequest = {
       firstName: this.firstName,
       lastName: this.lastName,
-      email: this.email,
+      email: testEmail, // Random email
       phone: this.phone,
       password: this.password,
-      role: this.selectedRole === 1 ? UserRole.Host : UserRole.Guest
+      preferredLanguage: 'uz'
     };
     
     this.loading = true;
@@ -51,7 +72,16 @@ export class RegisterComponent {
       },
       error: (err) => {
         this.loading = false;
-        this.errorMsg = 'Ro\'yxatdan o\'tish xatolik. Iltimos, qayta urinib ko\'ring.';
+        
+        // Handle specific error cases
+        if (err.status === 409) {
+          this.errorMsg = 'Bu email allaqachon ro\'yxatdan o\'tgan. Iltimos, boshqa emaildan foydalaning.';
+        } else if (err.status === 400) {
+          this.errorMsg = 'Ma\'lumotlar noto\'g\'ri. Iltimos, barcha maydonlarni to\'g\'ri to\'ldiring.';
+        } else {
+          this.errorMsg = 'Ro\'yxatdan o\'tish xatolik. Iltimos, qayta urinib ko\'ring.';
+        }
+        
         console.error('Registration error:', err);
       }
     });

@@ -11,7 +11,7 @@ export interface RegisterRequest {
   email: string;
   password: string;
   phone: string;
-  role?: UserRole;
+  preferredLanguage?: string; // Backend ga mosladik
 }
 
 export interface AuthUser {

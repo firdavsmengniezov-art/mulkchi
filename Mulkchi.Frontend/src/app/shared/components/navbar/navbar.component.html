@@ -4,12 +4,26 @@
       <span class="logo-icon">🏠</span>
       <span class="logo-text">Mulkchi</span>
     </a>
+    
     <ul class="nav-links">
-      <li><a routerLink="/properties" [queryParams]="{listingType:'Sale'}">Sotib olish</a></li>
-      <li><a routerLink="/properties" [queryParams]="{listingType:'Rent'}">Ijaraga olish</a></li>
-      <li><a routerLink="/properties" [queryParams]="{listingType:'DailyRent'}">Kunlik ijara</a></li>
-      <li><a routerLink="/ai-price">AI Narx</a></li>
+      <li><a routerLink="/properties" [queryParams]="{listingType:'Sale'}" class="nav-link">
+        <span class="nav-emoji">🏡</span>
+        <span>Sotib olish</span>
+      </a></li>
+      <li><a routerLink="/properties" [queryParams]="{listingType:'Rent'}" class="nav-link">
+        <span class="nav-emoji">🏢</span>
+        <span>Ijaraga olish</span>
+      </a></li>
+      <li><a routerLink="/properties" [queryParams]="{listingType:'DailyRent'}" class="nav-link">
+        <span class="nav-emoji">🏨</span>
+        <span>Kunlik ijara</span>
+      </a></li>
+      <li><a routerLink="/ai-price" class="nav-link">
+        <span class="nav-emoji">🤖</span>
+        <span>AI Narx</span>
+      </a></li>
     </ul>
+    
     <div class="nav-right">
       <!-- SignalR Connection Status Indicator -->
       @if (isLoggedIn) {
@@ -20,9 +34,11 @@
       }
       
       <div class="lang-switcher" (click)="showLangMenu = !showLangMenu">
-        {{ currentLang === 'uz' ? "O'z" : currentLang === 'ru' ? 'Ру' : 'En' }} ▾
+        <span class="lang-emoji">🌐</span>
+        <span>{{ currentLang === 'uz' ? "O'z" : currentLang === 'ru' ? 'Ру' : 'En' }}</span>
+        <span class="dropdown-arrow">▼</span>
         @if (showLangMenu) {
-          <div class="lang-menu">
+          <div class="lang-menu animate-fade-in">
             @for (lang of languages; track lang.code) {
               <div class="lang-option" 
                    [class.active]="lang.code === currentLang"
@@ -38,31 +54,49 @@
         <div class="user-menu-wrap">
           <app-notification-bell></app-notification-bell>
           <div class="user-avatar" (click)="showUserMenu = !showUserMenu">
-            {{ currentUser?.firstName?.charAt(0) || 'U' }}
+            <span class="avatar-emoji">👤</span>
           </div>
           @if (showUserMenu) {
-            <div class="user-dropdown">
+            <div class="user-dropdown animate-slide-up">
               <div class="user-info">
-                <strong>{{ currentUser?.firstName }}</strong>
-                <span>{{ currentUser?.email }}</span>
+                <span class="user-emoji">👤</span>
+                <div class="user-details">
+                  <strong>{{ currentUser?.firstName }}</strong>
+                  <span>{{ currentUser?.email }}</span>
+                </div>
               </div>
               <hr>
               @if (currentUser?.role === 'Host' || currentUser?.role === 'Admin') {
-                <a routerLink="/dashboard" (click)="showUserMenu=false">🏠 Dashboard</a>
+                <a routerLink="/dashboard" (click)="showUserMenu=false" class="menu-item">
+                  <span class="menu-emoji">🏠</span> Dashboard
+                </a>
               }
               @if (currentUser?.role === 'Admin') {
-                <a routerLink="/admin" (click)="showUserMenu=false">⚙️ Admin panel</a>
+                <a routerLink="/admin" (click)="showUserMenu=false" class="menu-item">
+                  <span class="menu-emoji">⚙️</span> Admin panel
+                </a>
               }
-              <a routerLink="/chat" (click)="showUserMenu=false">💬 Chat</a>
-              <a routerLink="/favorites" (click)="showUserMenu=false">❤️ Sevimlilar</a>
-              <a routerLink="/profile" (click)="showUserMenu=false">👤 Profil</a>
+              <a routerLink="/chat" (click)="showUserMenu=false" class="menu-item">
+                <span class="menu-emoji">💬</span> Chat
+              </a>
+              <a routerLink="/favorites" (click)="showUserMenu=false" class="menu-item">
+                <span class="menu-emoji">❤️</span> Sevimlilar
+              </a>
+              <a routerLink="/profile" (click)="showUserMenu=false" class="menu-item">
+                <span class="menu-emoji">👤</span> Profil
+              </a>
               <hr>
-              <button class="btn-logout" (click)="logout()">🚪 Chiqish</button>
+              <button class="btn-logout" (click)="logout()">
+                <span class="logout-emoji">🚪</span> Chiqish
+              </button>
             </div>
           }
         </div>
       } @else {
-        <button class="btn-auth" routerLink="/login">Kirish / Ro'yxatdan o'tish</button>
+        <button class="btn-auth" routerLink="/login">
+          <span class="auth-emoji">🔑</span>
+          Kirish / Ro'yxatdan o'tish
+        </button>
       }
     </div>
   </div>
