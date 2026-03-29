@@ -24,10 +24,15 @@ public class RateLimitMiddleware
         var path = context.Request.Path.Value?.ToLower() ?? "";
         var method = context.Request.Method;
 
-        // Check auth endpoints (20 requests per minute for development)
+        // Skip rate limiting for development
+        // TODO: Enable rate limiting for production
+        await _next(context);
+        return;
+
+        // Check auth endpoints (100 requests per minute for development)
         if (path.StartsWith("/api/auth/"))
         {
-            if (IsRateLimited(_authRequests, clientIp, TimeSpan.FromMinutes(1), 20))
+            if (IsRateLimited(_authRequests, clientIp, TimeSpan.FromMinutes(1), 100))
             {
                 context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
                 context.Response.Headers["Retry-After"] = "60";
@@ -36,10 +41,10 @@ public class RateLimitMiddleware
             }
         }
 
-        // Check upload endpoint (5 requests per minute)
+        // Check upload endpoint (50 requests per minute)
         if (path.StartsWith("/api/propertyimages/upload"))
         {
-            if (IsRateLimited(_uploadRequests, clientIp, TimeSpan.FromMinutes(1), 5))
+            if (IsRateLimited(_uploadRequests, clientIp, TimeSpan.FromMinutes(1), 50))
             {
                 context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
                 context.Response.Headers["Retry-After"] = "60";
@@ -48,11 +53,11 @@ public class RateLimitMiddleware
             }
         }
 
-        // Check general requests (200 requests per minute for development)
+        // Check general requests (1000 requests per minute for development)
         if (method == "GET")
         {
             var currentCount = _generalRequests.GetOrAdd(clientIp, 0);
-            if (currentCount >= 200)
+            if (currentCount >= 1000)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
                 context.Response.Headers["Retry-After"] = "60";
