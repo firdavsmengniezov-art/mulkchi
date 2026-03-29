@@ -44,18 +44,24 @@ export class AuthService {
     this.currentUser$.next(res.user);
   }
 
-  logout(): void {
-    localStorage.clear();
-    this.currentUser$.next(null);
+  logout(): Observable<void> {
+    const token = localStorage.getItem('refresh_token');
+    return this.http.post<void>(`${this.apiUrl}/logout`, { refreshToken: token }).pipe(
+      tap(() => {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('auth_user');
+        this.currentUser$.next(null);
+      })
+    );
   }
 
   getToken(): string | null { return localStorage.getItem('access_token'); }
 
-  isLoggedIn(): boolean {
+  isAuthenticated(): boolean {
     const token = localStorage.getItem('access_token');
     if (!token) return false;
     try {
-      // Check token not expired
       const payload = JSON.parse(atob(token.split('.')[1]));
       const exp = payload.exp * 1000;
       return Date.now() < exp;

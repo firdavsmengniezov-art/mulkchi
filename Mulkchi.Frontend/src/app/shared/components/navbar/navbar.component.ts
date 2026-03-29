@@ -55,7 +55,7 @@ export class NavbarComponent implements OnInit {
   }
 
   get isLoggedIn(): boolean {
-    return this.authService.isLoggedIn();
+    return this.authService.isAuthenticated();
   }
 
   get currentUser(): any {

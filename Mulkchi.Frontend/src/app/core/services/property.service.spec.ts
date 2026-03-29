@@ -31,27 +31,29 @@ describe('PropertyService', () => {
 
   it('getProperties — GET so\'rov yuborishi kerak', () => {
     const mockProperties = {
-      success: true,
-      data: [
+      items: [
         { id: '1', title: 'Test kvartira', city: 'Toshkent' }
-      ]
+      ],
+      totalCount: 1,
+      pageNumber: 1,
+      pageSize: 10
     };
 
-    service.getProperties({}).subscribe(res => {
-      expect(res.data.length).toBe(1);
-      expect(res.data[0].city).toBe('Toshkent');
+    service.getProperties(1, 10).subscribe(res => {
+      expect(res.items.length).toBe(1);
+      expect(res.items[0].city).toBe('Toshkent');
     });
 
     const req = httpMock.expectOne(
-      `${environment.apiUrl}/properties`);
+      `${environment.apiUrl}/properties?pageNumber=1&pageSize=10`);
     expect(req.request.method).toBe('GET');
     req.flush(mockProperties);
   });
 
-  it('getPropertyById — to\'g\'ri URL ga so\'rov yuborishi kerak', () => {
+  it('getProperty — to\'g\'ri URL ga so\'rov yuborishi kerak', () => {
     const id = 'test-id-123';
 
-    service.getPropertyById(id).subscribe();
+    service.getProperty(id).subscribe();
 
     const req = httpMock.expectOne(
       `${environment.apiUrl}/properties/${id}`);

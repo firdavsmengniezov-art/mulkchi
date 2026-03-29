@@ -88,7 +88,7 @@ export class FavoriteButtonComponent implements OnInit {
     event.stopPropagation();
     event.preventDefault();
 
-    if (!this.authService.isLoggedIn()) {
+    if (!this.authService.isAuthenticated()) {
       this.snackBar.open('Sevimlilarga qo\'shish uchun tizimga kiring', 'Kirish', { 
         duration: 3000,
         horizontalPosition: 'center',

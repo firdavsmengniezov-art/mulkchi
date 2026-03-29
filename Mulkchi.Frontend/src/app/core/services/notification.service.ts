@@ -1,6 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { HubConnection } from '@microsoft/signalr';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
+import { BehaviorSubject, Observable, Subject, takeUntil } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { LoggingService } from './logging.service';
 import { Notification, NotificationType, PagedResult } from '../models/notification.models';
@@ -124,9 +124,9 @@ export class NotificationService implements OnDestroy {
     this.getAll(pagination)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (result) => {
+        next: (result: PagedResult<Notification>) => {
           this.notifications$.next(result.items);
-          this.unreadCount$.next(result.items.filter(n => !n.isRead).length);
+          this.unreadCount$.next(result.items.filter((n: Notification) => !n.isRead).length);
         },
         error: (err) => {
           this.loggingService.error('Failed to load notifications:', err);
