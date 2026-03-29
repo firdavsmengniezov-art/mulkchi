@@ -16,6 +16,14 @@
       </span>
     </div>
     
+    <!-- Instant Book Badge -->
+    @if (property.isInstantBook) {
+      <div class="instant-book-badge">
+        <span class="instant-emoji">⚡</span>
+        <span>Darhol bron</span>
+      </div>
+    }
+    
     <!-- Favorite Button -->
     <button class="fav-btn" (click)="toggleFavorite($event)" [class.favorited]="isFavorite">
       <span class="fav-emoji">{{ isFavorite ? '❤️' : '🤍' }}</span>

@@ -31,10 +31,13 @@ namespace Mulkchi.Api.Services.Foundations.Bookings
             {
                 ValidateBookingOnAdd(booking);
                 
-                // Get property details for email
+                // Get property details for instant book logic
                 var property = await this.storageBroker.SelectPropertyByIdAsync(booking.PropertyId);
                 
-                // Add the booking
+                // Set booking status based on instant book
+                booking.Status = property.IsInstantBook ? BookingStatus.Confirmed : BookingStatus.Pending;
+                
+                // Add booking
                 var addedBooking = await this.storageBroker.InsertBookingAsync(booking);
                 
                 // Send confirmation email to guest

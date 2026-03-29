@@ -1,48 +1,131 @@
+version: '3.8'
+
 services:
+  # 🗄️ SQL Server Database
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mulkchi-db
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${DB_PASSWORD:-Mulkchi@2024}
+      - MSSQL_PID=Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqldata:/var/opt/mssql
+    networks:
+      - mulkchi-network
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "${DB_PASSWORD:-Mulkchi@2024}", "-Q", "SELECT 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # 🚀 Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: mulkchi-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - mulkchi-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # 🌐 Mulkchi API
   backend:
     build:
       context: .
-      dockerfile: Mulkchi.Api/Dockerfile
+      dockerfile: Dockerfile
+    container_name: mulkchi-api
     ports:
-      - "8080:8080"
+      - "5000:80"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__DefaultConnection=${DB_CONNECTION}
-      - JwtSettings__Secret=${JWT_SECRET}
-      - JwtSettings__Issuer=Mulkchi
-      - JwtSettings__Audience=MulkchiUsers
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
+      - ConnectionStrings__DefaultConnection=Server=db,1433;Database=MulkchiDb;User Id=sa;Password=${DB_PASSWORD:-Mulkchi@2024};TrustServerCertificate=true;
+      - Redis__ConnectionString=redis:6379
+      - JWT__Secret=${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      - JWT__Issuer=Mulkchi
+      - JWT__Audience=MulkchiUsers
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - mulkchi-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     restart: unless-stopped
 
+  # 📱 Frontend (Development only)
   frontend:
     build:
       context: Mulkchi.Frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
+    container_name: mulkchi-frontend
     ports:
-      - "80:80"
+      - "4200:4200"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./Mulkchi.Frontend:/app
+      - /app/node_modules
     depends_on:
       - backend
+    networks:
+      - mulkchi-network
+    profiles:
+      - development
     restart: unless-stopped
 
-  db:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+  # 📊 Monitoring Stack
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: mulkchi-prometheus
     ports:
-      - "1433:1433"
-    environment:
-      - ACCEPT_EULA=Y
-      - SA_PASSWORD=${DB_PASSWORD}
-      - MSSQL_PID=Express
+      - "9090:9090"
     volumes:
-      - sqldata:/var/opt/mssql
-    healthcheck:
-      test: ["CMD", "/opt/mssql-tools/bin/sqlcmd",
-             "-S", "localhost", "-U", "sa",
-             "-P", "${DB_PASSWORD}", "-Q", "SELECT 1"]
-      interval: 10s
-      retries: 5
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - mulkchi-network
+    profiles:
+      - monitoring
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: mulkchi-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - mulkchi-network
+    profiles:
+      - monitoring
     restart: unless-stopped
 
 volumes:
   sqldata:
+    driver: local
+  redis_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  mulkchi-network:
+    driver: bridge

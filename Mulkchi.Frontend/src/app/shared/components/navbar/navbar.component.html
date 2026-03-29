@@ -82,6 +82,14 @@
               <a routerLink="/favorites" (click)="showUserMenu=false" class="menu-item">
                 <span class="menu-emoji">❤️</span> Sevimlilar
               </a>
+              <a routerLink="/my-bookings" (click)="showUserMenu=false" class="menu-item">
+                <span class="menu-emoji">📅</span> Mening bronlarim
+              </a>
+              @if (currentUser?.role === 'Host' || currentUser?.role === 'Admin') {
+                <a routerLink="/host-bookings" (click)="showUserMenu=false" class="menu-item">
+                  <span class="menu-emoji">🏠</span> Uy egasi bronlari
+                </a>
+              }
               <a routerLink="/profile" (click)="showUserMenu=false" class="menu-item">
                 <span class="menu-emoji">👤</span> Profil
               </a>

@@ -46,6 +46,17 @@ export const routes: Routes = [
     loadComponent: () => import('./features/reviews/my-reviews/my-reviews.component').then(m => m.MyReviewsComponent) 
   },
   { 
+    path: 'my-bookings', 
+    canActivate: [authGuard], 
+    loadComponent: () => import('./features/bookings/my-bookings/my-bookings.component').then(m => m.MyBookingsComponent) 
+  },
+  { 
+    path: 'host-bookings', 
+    canActivate: [authGuard, roleGuard], 
+    data: { roles: ['Host','Admin'] }, 
+    loadComponent: () => import('./features/bookings/host-bookings/host-bookings.component').then(m => m.HostBookingsComponent) 
+  },
+  { 
     path: 'profile', 
     canActivate: [authGuard], 
     loadComponent: () => import('./features/profile/profile.component').then(m => m.ProfileComponent) 

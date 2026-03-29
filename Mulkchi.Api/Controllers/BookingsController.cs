@@ -4,6 +4,8 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using Mulkchi.Api.Models.Foundations.Bookings;
 using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Services.Foundations.Bookings;
@@ -20,54 +22,239 @@ namespace Mulkchi.Api.Controllers
             this.bookingService = bookingService;
 
         [HttpGet]
+        [Authorize]
         public ActionResult<PagedResult<Booking>> GetAllBookings([FromQuery] PaginationParams pagination)
         {
-            IQueryable<Booking> query = this.bookingService.RetrieveAllBookings();
-            
-            int totalCount = query.Count();
-            
-            var items = query
-                .Skip((pagination.Page - 1) * pagination.PageSize)
-                .Take(pagination.PageSize)
-                .ToList();
-
-            var result = new PagedResult<Booking>
+            try
             {
-                Items = items,
-                TotalCount = totalCount,
-                Page = pagination.Page,
-                PageSize = pagination.PageSize
-            };
+                IQueryable<Booking> query = this.bookingService.RetrieveAllBookings();
+                
+                int totalCount = query.Count();
+                
+                var items = query
+                    .Skip((pagination.Page - 1) * pagination.PageSize)
+                    .Take(pagination.PageSize)
+                    .ToList();
 
-            return Ok(result);
+                var result = new PagedResult<Booking>
+                {
+                    Items = items,
+                    TotalCount = totalCount,
+                    Page = pagination.Page,
+                    PageSize = pagination.PageSize
+                };
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+            }
+        }
+
+        [HttpGet("my")]
+        [Authorize]
+        public ActionResult<PagedResult<Booking>> GetMyBookings([FromQuery] PaginationParams pagination)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (userIdClaim == null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
+                    return Unauthorized();
+
+                IQueryable<Booking> query = this.bookingService.RetrieveAllBookings()
+                    .Where(b => b.GuestId == currentUserId);
+                
+                int totalCount = query.Count();
+                
+                var items = query
+                    .Skip((pagination.Page - 1) * pagination.PageSize)
+                    .Take(pagination.PageSize)
+                    .ToList();
+
+                var result = new PagedResult<Booking>
+                {
+                    Items = items,
+                    TotalCount = totalCount,
+                    Page = pagination.Page,
+                    PageSize = pagination.PageSize
+                };
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+            }
+        }
+
+        [HttpGet("host")]
+        [Authorize(Roles = "Host,Admin")]
+        public ActionResult<PagedResult<Booking>> GetHostBookings([FromQuery] PaginationParams pagination)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (userIdClaim == null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
+                    return Unauthorized();
+
+                IQueryable<Booking> query = this.bookingService.RetrieveAllBookings()
+                    .Where(b => b.Property.HostId == currentUserId);
+                
+                int totalCount = query.Count();
+                
+                var items = query
+                    .Skip((pagination.Page - 1) * pagination.PageSize)
+                    .Take(pagination.PageSize)
+                    .ToList();
+
+                var result = new PagedResult<Booking>
+                {
+                    Items = items,
+                    TotalCount = totalCount,
+                    Page = pagination.Page,
+                    PageSize = pagination.PageSize
+                };
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+            }
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public async ValueTask<ActionResult<Booking>> GetBookingByIdAsync(Guid id)
         {
-            Booking booking = await this.bookingService.RetrieveBookingByIdAsync(id);
-            return Ok(booking);
+            try
+            {
+                Booking booking = await this.bookingService.RetrieveBookingByIdAsync(id);
+                return Ok(booking);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+            }
         }
 
         [HttpPost]
+        [Authorize]
         public async ValueTask<ActionResult<Booking>> PostBookingAsync(Booking booking)
         {
-            Booking createdBooking = await this.bookingService.AddBookingAsync(booking);
-            return CreatedAtAction(nameof(GetBookingByIdAsync), new { id = createdBooking.Id }, createdBooking);
+            try
+            {
+                var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (userIdClaim == null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
+                    return Unauthorized();
+
+                booking.GuestId = currentUserId;
+                Booking createdBooking = await this.bookingService.AddBookingAsync(booking);
+                
+                return CreatedAtAction(nameof(GetBookingByIdAsync), new { id = createdBooking.Id }, createdBooking);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+            }
+        }
+
+        [HttpPost("{id}/confirm")]
+        [Authorize(Roles = "Host,Admin")]
+        public async ValueTask<ActionResult<Booking>> ConfirmBookingAsync(Guid id)
+        {
+            try
+            {
+                Booking booking = await this.bookingService.RetrieveBookingByIdAsync(id);
+                
+                if (booking.Status != BookingStatus.Pending)
+                    return BadRequest(new { message = "Only pending bookings can be confirmed." });
+
+                booking.Status = BookingStatus.Confirmed;
+                Booking updatedBooking = await this.bookingService.ModifyBookingAsync(booking);
+                
+                return Ok(updatedBooking);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+            }
+        }
+
+        [HttpPost("{id}/cancel")]
+        [Authorize]
+        public async ValueTask<ActionResult<Booking>> CancelBookingAsync(Guid id)
+        {
+            try
+            {
+                Booking booking = await this.bookingService.RetrieveBookingByIdAsync(id);
+                
+                if (booking.Status == BookingStatus.Cancelled)
+                    return BadRequest(new { message = "Booking is already cancelled." });
+
+                if (booking.Status == BookingStatus.Completed)
+                    return BadRequest(new { message = "Completed bookings cannot be cancelled." });
+
+                booking.Status = BookingStatus.Cancelled;
+                Booking updatedBooking = await this.bookingService.ModifyBookingAsync(booking);
+                
+                return Ok(updatedBooking);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+            }
         }
 
         [HttpPut]
+        [Authorize]
         public async ValueTask<ActionResult<Booking>> PutBookingAsync(Booking booking)
         {
-            Booking updatedBooking = await this.bookingService.ModifyBookingAsync(booking);
-            return Ok(updatedBooking);
+            try
+            {
+                Booking updatedBooking = await this.bookingService.ModifyBookingAsync(booking);
+                return Ok(updatedBooking);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+            }
         }
 
         [HttpDelete("{id}")]
+        [Authorize]
         public async ValueTask<ActionResult<Booking>> DeleteBookingAsync(Guid id)
         {
-            Booking deletedBooking = await this.bookingService.RemoveBookingAsync(id);
-            return Ok(deletedBooking);
+            try
+            {
+                Booking deletedBooking = await this.bookingService.RemoveBookingAsync(id);
+                return Ok(deletedBooking);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+            }
         }
     }
 }
