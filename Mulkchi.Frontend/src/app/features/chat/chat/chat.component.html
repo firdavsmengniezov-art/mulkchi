@@ -1,0 +1,147 @@
+<div class="chat-container">
+  <!-- Header -->
+  <div class="chat-header">
+    <div class="header-left">
+      <button mat-icon-button routerLink="/">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <h1>Chat</h1>
+    </div>
+    <div class="header-right">
+      <div class="connection-status">
+        <div class="status-dot" [class.connected]="connectionStatus" [class.disconnected]="!connectionStatus"></div>
+        <span>{{ connectionStatus ? 'Online' : 'Offline' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <mat-sidenav-container class="chat-sidenav-container">
+    <!-- Conversations Sidebar -->
+    <mat-sidenav mode="side" opened class="conversations-sidebar" [fixedInViewport]="true">
+      <div class="conversations-header">
+        <h3>Suhbatlar</h3>
+        <div class="unread-indicator" *ngIf="unreadCount > 0">
+          <span class="badge">{{ unreadCount }}</span>
+        </div>
+      </div>
+      
+      <div class="conversations-list" *ngIf="!loading; else loadingTemplate">
+        <mat-list>
+          <mat-list-item 
+            *ngFor="let conversation of conversations" 
+            (click)="selectConversation(conversation)"
+            [class.selected]="selectedConversation?.otherUserId === conversation.otherUserId"
+            class="conversation-item">
+            
+            <div matListItemTitle class="conversation-title">
+              <div class="user-info">
+                <img 
+                  [src]="conversation.otherUserAvatar || 'https://picsum.photos/seed/' + conversation.otherUserId + '/40/40.jpg'" 
+                  [alt]="conversation.otherUserName"
+                  class="user-avatar"
+                  onerror="this.src='https://picsum.photos/seed/default/40/40.jpg'">
+                <span class="user-name">{{ conversation.otherUserName }}</span>
+              </div>
+              <div class="conversation-meta">
+                <span class="last-message">{{ conversation.lastMessage || 'Xabar yo\'q' }}</span>
+                <span class="last-time">{{ formatMessageDate(conversation.lastMessageDate) }}</span>
+              </div>
+            </div>
+            
+            <div matListItemLine *ngIf="conversation.unreadCount > 0" class="unread-badge">
+              <span class="badge">{{ conversation.unreadCount }}</span>
+            </div>
+          </mat-list-item>
+        </mat-list>
+        
+        <div class="empty-state" *ngIf="conversations.length === 0">
+          <mat-icon>chat_bubble_outline</mat-icon>
+          <p>Hali hech qanday suhbat yo'q</p>
+        </div>
+      </div>
+      
+      <ng-template #loadingTemplate>
+        <div class="loading-state">
+          <mat-spinner diameter="40"></mat-spinner>
+          <p>Yuklanmoqda...</p>
+        </div>
+      </ng-template>
+    </mat-sidenav>
+
+    <!-- Messages Area -->
+    <mat-sidenav-content class="messages-content">
+      <div class="messages-area" *ngIf="selectedConversation; else noConversation">
+        <!-- Messages Header -->
+        <div class="messages-header">
+          <div class="conversation-info">
+            <img 
+              [src]="selectedConversation.otherUserAvatar || 'https://picsum.photos/seed/' + selectedConversation.otherUserId + '/40/40.jpg'" 
+              [alt]="selectedConversation.otherUserName"
+              class="user-avatar"
+              onerror="this.src='https://picsum.photos/seed/default/40/40.jpg'">
+            <div class="user-details">
+              <h3>{{ selectedConversation.otherUserName }}</h3>
+              <span class="online-status">Online</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Messages List -->
+        <div class="messages-list" #messagesContainer>
+          <div 
+            *ngFor="let message of messages" 
+            class="message-item"
+            [class.own-message]="isOwnMessage(message)"
+            [class.other-message]="!isOwnMessage(message)">
+            
+            <div class="message-bubble">
+              <p class="message-content">{{ message.content }}</p>
+              <div class="message-meta">
+                <span class="message-time">{{ formatMessageDate(message.createdDate) }}</span>
+                <mat-icon 
+                  *ngIf="isOwnMessage(message)" 
+                  class="read-status"
+                  [class.read]="message.isRead"
+                  [class.unread]="!message.isRead">
+                  {{ message.isRead ? 'done_all' : 'check' }}
+                </mat-icon>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Message Input -->
+        <div class="message-input-container">
+          <mat-form-field appearance="outline" class="message-input">
+            <mat-label>Xabar yozing...</mat-label>
+            <textarea 
+              matInput 
+              [(ngModel)]="newMessage"
+              (keyup)="onTyping()"
+              (keypress)="onKeyPress($event)"
+              placeholder="Xabar yozing..."
+              rows="1"
+              #messageInput>
+            </textarea>
+            <button 
+              mat-icon-button 
+              matSuffix 
+              (click)="sendMessage()"
+              [disabled]="!newMessage.trim()"
+              matTooltip="Yuborish">
+              <mat-icon>send</mat-icon>
+            </button>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <ng-template #noConversation>
+        <div class="no-conversation">
+          <mat-icon>chat_bubble_outline</mat-icon>
+          <h3>Suhbat tanlang</h3>
+          <p>Chap paneldan suhbatni tanlang yoki yangi suhbat boshlang</p>
+        </div>
+      </ng-template>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

@@ -1,0 +1,125 @@
+<div class="list-page">
+  <div class="list-header">
+    <div class="container">
+      <h1>Mulklar</h1>
+      <p>{{ totalCount }} ta e'lon topildi</p>
+    </div>
+  </div>
+  <div class="container list-body">
+    <!-- FILTERS SIDEBAR -->
+    <div class="filters">
+      <h3>Filterlar</h3>
+      <div class="filter-group">
+        <label>Viloyat</label>
+        <select [(ngModel)]="filterRegion">
+          <option value="">Barchasi</option>
+          @for (r of regions; track r) {
+            <option [value]="r">{{ r }}</option>
+          }
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>E'lon turi</label>
+        <select [(ngModel)]="filterListing">
+          <option value="">Barchasi</option>
+          <option value="Rent">Ijara</option>
+          <option value="Sale">Sotiladi</option>
+          <option value="DailyRent">Kunlik ijara</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Mulk turi</label>
+        <select [(ngModel)]="filterType">
+          <option value="">Barchasi</option>
+          <option value="Apartment">Kvartira</option>
+          <option value="House">Uy</option>
+          <option value="Office">Ofis</option>
+          <option value="Land">Yer</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Min narx ($)</label>
+        <input type="number" [(ngModel)]="filterMinPrice" placeholder="0">
+      </div>
+      <div class="filter-group">
+        <label>Max narx ($)</label>
+        <input type="number" [(ngModel)]="filterMaxPrice" placeholder="999999">
+      </div>
+      <div class="filter-group">
+        <label>Xonalar soni</label>
+        <select [(ngModel)]="filterBedrooms">
+          <option value="">Barchasi</option>
+          <option value="1">1 xona</option>
+          <option value="2">2 xona</option>
+          <option value="3">3 xona</option>
+          <option value="4">4+ xona</option>
+        </select>
+      </div>
+      <button class="btn-filter" (click)="applyFilters()">Filterlash</button>
+      <button class="btn-clear" (click)="clearFilters()">Tozalash</button>
+    </div>
+
+    <!-- PROPERTIES GRID -->
+    <div class="properties-area">
+      @if (loading) {
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>Yuklanmoqda...</p>
+        </div>
+      } @else if (properties.length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">🏠</div>
+          <h3>Mulk topilmadi</h3>
+          <p>Filterni o'zgartirib qayta urinib ko'ring</p>
+          <button class="btn-filter" (click)="clearFilters()">Barcha mulklar</button>
+        </div>
+      } @else {
+        <div class="props-grid">
+          @for (p of properties; track p.id) {
+            <div class="property-card">
+              <div class="property-image">
+                <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400" [alt]="p.title">
+                <div class="property-badge">{{ p.listingType === 'Rent' ? 'Ijara' : 'Sotiladi' }}</div>
+              </div>
+              <div class="property-content">
+                <h3>{{ p.title }}</h3>
+                <p class="property-location">📍 {{ p.city }}, {{ p.district }}</p>
+                <div class="property-features">
+                  <span>🛏️ {{ p.numberOfBedrooms }} xona</span>
+                  <span>🚿 {{ p.numberOfBathrooms }} hammom</span>
+                  <span>📐 {{ p.area }} m²</span>
+                </div>
+                <div class="property-footer">
+                  <div class="property-price">
+                    @if (p.listingType === 'Rent') {
+                      <span class="price">${{ p.monthlyRent }}/oy</span>
+                    } @else {
+                      <span class="price">${{ p.salePrice?.toLocaleString() }}</span>
+                    }
+                  </div>
+                  <div class="property-rating">
+                    ⭐ {{ p.averageRating || 'Yangi' }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+        <!-- PAGINATION -->
+        @if (totalPages > 1) {
+          <div class="pagination">
+            <button (click)="goToPage(currentPage-1)" [disabled]="currentPage === 1">← Oldingi</button>
+            @for (page of [].constructor(totalPages); track $index) {
+              <button
+                [class.active]="currentPage === $index + 1"
+                (click)="goToPage($index + 1)">
+                {{ $index + 1 }}
+              </button>
+            }
+            <button (click)="goToPage(currentPage+1)" [disabled]="currentPage === totalPages">Keyingi →</button>
+          </div>
+        }
+      }
+    </div>
+  </div>
+</div>

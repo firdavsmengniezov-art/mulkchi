@@ -1,0 +1,19 @@
+<div class="property-card" (click)="router.navigate(['/properties', property.id])">
+  <div class="card-image">
+    <img [src]="getImage()" [alt]="property.title" loading="lazy">
+    <span class="badge" [class]="getBadgeClass()">{{ getBadgeText() }}</span>
+    <app-favorite-button
+      style="position: absolute; top: 8px; right: 8px;"
+      [propertyId]="property.id">
+    </app-favorite-button>
+  </div>
+  <div class="card-body">
+    <div class="price">{{ getPrice() }}</div>
+    <div class="feats">
+      <span>🛏 {{ property.numberOfBedrooms }} xona</span>
+      <span>📐 {{ property.area }} m²</span>
+    </div>
+    <div class="location">📍 {{ property.district }}, {{ property.city }}</div>
+    <div class="rating">⭐ {{ property.averageRating || 'Yangi' }}</div>
+  </div>
+</div>

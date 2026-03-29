@@ -1,14 +1,428 @@
+using Microsoft.Extensions.Configuration;
+using Serilog;
+using Mulkchi.Api.Brokers.Storages;
+using Mulkchi.Api.Models.Foundations.Properties;
+
 namespace Mulkchi.Api;
 
 public class Program
 {
-    public static void Main(string[] args)
+    private static ILogger<Program> _logger;
+    
+    public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        
+        // Add User Secrets for development
+        if (builder.Environment.IsDevelopment())
+        {
+            builder.Configuration.AddUserSecrets<Program>();
+        }
+        
+        // Configure Serilog
+        Log.Logger = new LoggerConfiguration()
+            .ReadFrom.Configuration(builder.Configuration)
+            .Enrich.FromLogContext()
+            .Enrich.WithProperty("Application", "Mulkchi.Api")
+            .WriteTo.Console()
+            .WriteTo.File("logs/mulkchi-.txt", rollingInterval: RollingInterval.Day)
+            .CreateLogger();
+        
+        builder.Host.UseSerilog();
+        
+        // Get logger for Program class
+        var loggerFactory = builder.Services.BuildServiceProvider().GetRequiredService<ILoggerFactory>();
+        _logger = loggerFactory.CreateLogger<Program>();
+        
         var startup = new Startup(builder.Configuration);
         startup.ConfigureServices(builder.Services);
         var app = builder.Build();
         startup.Configure(app, app.Environment);
+        
+        // SEED DATA
+        await SeedTestData(app);
+        
         app.Run();
+    }
+
+    static async Task SeedTestData(WebApplication app)
+    {
+        using var scope = app.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<IStorageBroker>();
+        
+        // Check if properties already exist
+        var existing = db.SelectAllProperties();
+        if (existing.Any()) return;
+        
+        // Get host user
+        var host = db.SelectAllUsers().FirstOrDefault();
+        if (host == null) return;
+        
+        var properties = new List<Property>
+        {
+            new Property
+            {
+                Id = Guid.NewGuid(),
+                Title = "Chilonzorda 3 xonali kvartira",
+                Description = "Zamonaviy ta'mirlangan, metroga yaqin, barcha qulayliklar mavjud",
+                Type = PropertyType.Apartment,
+                Category = PropertyCategory.Residential,
+                Status = PropertyStatus.Active,
+                ListingType = ListingType.Rent,
+                MonthlyRent = 750,
+                Area = 85,
+                NumberOfBedrooms = 3,
+                NumberOfBathrooms = 2,
+                MaxGuests = 4,
+                Region = UzbekistanRegion.ToshkentShahar,
+                City = "Toshkent",
+                District = "Chilonzor",
+                Address = "Chilonzor ko'chasi 15",
+                Mahalla = "",
+                Latitude = 41.2995,
+                Longitude = 69.2401,
+                HasWifi = true,
+                HasParking = true,
+                HasPool = false,
+                PetsAllowed = false,
+                IsInstantBook = false,
+                IsVacant = true,
+                IsFeatured = false,
+                IsVerified = false,
+                HasMetroNearby = true,
+                HasBusStop = true,
+                HasMarketNearby = true,
+                HasSchoolNearby = true,
+                HasHospitalNearby = true,
+                DistanceToCityCenter = 5.0,
+                HasElevator = true,
+                HasSecurity = false,
+                HasGenerator = false,
+                HasGas = true,
+                HasFurniture = true,
+                IsRenovated = true,
+                HasAirConditioning = true,
+                HasHeating = true,
+                HasWasher = true,
+                HasKitchen = true,
+                HasTV = true,
+                HasWorkspace = false,
+                IsSelfCheckIn = false,
+                IsChildFriendly = false,
+                IsAccessible = false,
+                Currency = Currency.USD,
+                ExchangeRate = 12500,
+                HostId = host.Id,
+                AverageRating = 4.8m,
+                ViewsCount = 245,
+                FavoritesCount = 12,
+                CreatedDate = DateTimeOffset.UtcNow,
+                UpdatedDate = DateTimeOffset.UtcNow
+            },
+            new Property
+            {
+                Id = Guid.NewGuid(),
+                Title = "Samarqandda 2 qavatli yangi uy",
+                Description = "Katta hovli, bog' va garaj mavjud, shahar markazida",
+                Type = PropertyType.House,
+                Category = PropertyCategory.Residential,
+                Status = PropertyStatus.Active,
+                ListingType = ListingType.Sale,
+                SalePrice = 145000,
+                Area = 210,
+                NumberOfBedrooms = 5,
+                NumberOfBathrooms = 3,
+                MaxGuests = 8,
+                Region = UzbekistanRegion.Samarqand,
+                City = "Samarqand",
+                District = "Markaz",
+                Address = "Registon ko'chasi 8",
+                Mahalla = "",
+                Latitude = 39.6547,
+                Longitude = 66.9758,
+                HasWifi = true,
+                HasParking = true,
+                HasPool = false,
+                PetsAllowed = true,
+                IsInstantBook = false,
+                IsVacant = true,
+                IsFeatured = false,
+                IsVerified = false,
+                HasMetroNearby = false,
+                HasBusStop = true,
+                HasMarketNearby = true,
+                HasSchoolNearby = true,
+                HasHospitalNearby = true,
+                DistanceToCityCenter = 8.0,
+                HasElevator = false,
+                HasSecurity = false,
+                HasGenerator = false,
+                HasGas = true,
+                HasFurniture = true,
+                IsRenovated = true,
+                HasAirConditioning = true,
+                HasHeating = true,
+                HasWasher = true,
+                HasKitchen = true,
+                HasTV = true,
+                HasWorkspace = false,
+                IsSelfCheckIn = false,
+                IsChildFriendly = true,
+                IsAccessible = false,
+                Currency = Currency.USD,
+                ExchangeRate = 12500,
+                HostId = host.Id,
+                AverageRating = 4.9m,
+                ViewsCount = 189,
+                FavoritesCount = 24,
+                CreatedDate = DateTimeOffset.UtcNow,
+                UpdatedDate = DateTimeOffset.UtcNow
+            },
+            new Property
+            {
+                Id = Guid.NewGuid(),
+                Title = "Yunusobodda biznes markaz ofisi",
+                Description = "Premium ofis, to'liq jihozlangan, lift va xavfsizlik mavjud",
+                Type = PropertyType.Office,
+                Category = PropertyCategory.Commercial,
+                Status = PropertyStatus.Active,
+                ListingType = ListingType.Rent,
+                MonthlyRent = 1200,
+                SecurityDeposit = 2400,
+                Area = 120,
+                NumberOfBedrooms = 0,
+                NumberOfBathrooms = 2,
+                MaxGuests = 10,
+                Region = UzbekistanRegion.ToshkentShahar,
+                City = "Toshkent",
+                District = "Yunusobod",
+                Address = "Amir Temur shoh ko'chasi 22",
+                Mahalla = "",
+                Latitude = 41.3111,
+                Longitude = 69.2797,
+                HasWifi = true,
+                HasParking = true,
+                HasPool = false,
+                PetsAllowed = false,
+                IsInstantBook = false,
+                IsVacant = true,
+                IsFeatured = false,
+                IsVerified = false,
+                HasMetroNearby = true,
+                HasBusStop = true,
+                HasMarketNearby = true,
+                HasSchoolNearby = true,
+                HasHospitalNearby = true,
+                DistanceToCityCenter = 2.0,
+                HasElevator = true,
+                HasSecurity = true,
+                HasGenerator = false,
+                HasGas = false,
+                HasFurniture = true,
+                IsRenovated = true,
+                HasAirConditioning = true,
+                HasHeating = true,
+                HasWasher = false,
+                HasKitchen = false,
+                HasTV = true,
+                HasWorkspace = true,
+                IsSelfCheckIn = false,
+                IsChildFriendly = false,
+                IsAccessible = false,
+                Currency = Currency.USD,
+                ExchangeRate = 12500,
+                HostId = host.Id,
+                AverageRating = 4.7m,
+                ViewsCount = 312,
+                FavoritesCount = 8,
+                CreatedDate = DateTimeOffset.UtcNow,
+                UpdatedDate = DateTimeOffset.UtcNow
+            },
+            new Property
+            {
+                Id = Guid.NewGuid(),
+                Title = "Mirzo Ulug'bekda 1 xonali kvartira",
+                Description = "Yangi qurilish, birinchi egasi, zamonaviy dizayn",
+                Type = PropertyType.Apartment,
+                Category = PropertyCategory.Residential,
+                Status = PropertyStatus.Active,
+                ListingType = ListingType.Sale,
+                SalePrice = 62000,
+                Area = 48,
+                NumberOfBedrooms = 1,
+                NumberOfBathrooms = 1,
+                MaxGuests = 2,
+                Region = UzbekistanRegion.ToshkentShahar,
+                City = "Toshkent",
+                District = "Mirzo Ulug'bek",
+                Address = "Mustaqillik ko'chasi 45",
+                Mahalla = "",
+                Latitude = 41.3400,
+                Longitude = 69.3300,
+                HasWifi = true,
+                HasParking = false,
+                HasPool = false,
+                PetsAllowed = false,
+                IsInstantBook = false,
+                IsVacant = true,
+                IsFeatured = false,
+                IsVerified = false,
+                HasMetroNearby = true,
+                HasBusStop = true,
+                HasMarketNearby = true,
+                HasSchoolNearby = true,
+                HasHospitalNearby = true,
+                DistanceToCityCenter = 3.0,
+                HasElevator = true,
+                HasSecurity = false,
+                HasGenerator = false,
+                HasGas = true,
+                HasFurniture = true,
+                IsRenovated = true,
+                HasAirConditioning = true,
+                HasHeating = true,
+                HasWasher = true,
+                HasKitchen = true,
+                HasTV = true,
+                HasWorkspace = false,
+                IsSelfCheckIn = false,
+                IsChildFriendly = false,
+                IsAccessible = false,
+                Currency = Currency.USD,
+                ExchangeRate = 12500,
+                HostId = host.Id,
+                AverageRating = 4.6m,
+                ViewsCount = 156,
+                FavoritesCount = 19,
+                CreatedDate = DateTimeOffset.UtcNow,
+                UpdatedDate = DateTimeOffset.UtcNow
+            },
+            new Property
+            {
+                Id = Guid.NewGuid(),
+                Title = "Buxoroda bog'li hovlili uy",
+                Description = "Katta bog', tinch mahalla, tarixiy shahar yaqinida",
+                Type = PropertyType.House,
+                Category = PropertyCategory.Residential,
+                Status = PropertyStatus.Active,
+                ListingType = ListingType.Rent,
+                MonthlyRent = 900,
+                SecurityDeposit = 1800,
+                Area = 180,
+                NumberOfBedrooms = 4,
+                NumberOfBathrooms = 2,
+                MaxGuests = 6,
+                Region = UzbekistanRegion.Buxoro,
+                City = "Buxoro",
+                District = "Markaz",
+                Address = "Navruz ko'chasi 12",
+                Mahalla = "",
+                Latitude = 39.7747,
+                Longitude = 64.4286,
+                HasWifi = true,
+                HasParking = true,
+                HasPool = false,
+                PetsAllowed = true,
+                IsInstantBook = false,
+                IsVacant = true,
+                IsFeatured = false,
+                IsVerified = false,
+                HasMetroNearby = false,
+                HasBusStop = true,
+                HasMarketNearby = true,
+                HasSchoolNearby = true,
+                HasHospitalNearby = true,
+                DistanceToCityCenter = 0.0,
+                HasElevator = false,
+                HasSecurity = false,
+                HasGenerator = false,
+                HasGas = true,
+                HasFurniture = false,
+                IsRenovated = false,
+                HasAirConditioning = true,
+                HasHeating = true,
+                HasWasher = true,
+                HasKitchen = true,
+                HasTV = true,
+                HasWorkspace = false,
+                IsSelfCheckIn = false,
+                IsChildFriendly = true,
+                IsAccessible = false,
+                Currency = Currency.USD,
+                ExchangeRate = 12500,
+                HostId = host.Id,
+                AverageRating = 4.9m,
+                ViewsCount = 98,
+                FavoritesCount = 31,
+                CreatedDate = DateTimeOffset.UtcNow,
+                UpdatedDate = DateTimeOffset.UtcNow
+            },
+            new Property
+            {
+                Id = Guid.NewGuid(),
+                Title = "Namanganda kunlik ijara kvartira",
+                Description = "Mehmonlar uchun qulay, barcha zamonaviy qulayliklar mavjud",
+                Type = PropertyType.Apartment,
+                Category = PropertyCategory.Residential,
+                Status = PropertyStatus.Active,
+                ListingType = ListingType.ShortTermRent,
+                PricePerNight = 80,
+                MaxGuests = 6,
+                Area = 90,
+                NumberOfBedrooms = 3,
+                NumberOfBathrooms = 2,
+                Region = UzbekistanRegion.Namangan,
+                City = "Namangan",
+                District = "Markaz",
+                Address = "Istiqlol ko'chasi 7",
+                Mahalla = "",
+                Latitude = 41.0011,
+                Longitude = 71.6725,
+                HasWifi = true,
+                HasParking = false,
+                HasPool = false,
+                PetsAllowed = false,
+                IsInstantBook = false,
+                IsVacant = true,
+                IsFeatured = false,
+                IsVerified = false,
+                HasMetroNearby = false,
+                HasBusStop = true,
+                HasMarketNearby = true,
+                HasSchoolNearby = true,
+                HasHospitalNearby = true,
+                DistanceToCityCenter = 0.0,
+                HasElevator = false,
+                HasSecurity = false,
+                HasGenerator = false,
+                HasGas = true,
+                HasFurniture = false,
+                IsRenovated = false,
+                HasAirConditioning = true,
+                HasHeating = true,
+                HasWasher = true,
+                HasKitchen = true,
+                HasTV = true,
+                HasWorkspace = false,
+                IsSelfCheckIn = false,
+                IsChildFriendly = false,
+                IsAccessible = false,
+                Currency = Currency.USD,
+                ExchangeRate = 12500,
+                HostId = host.Id,
+                AverageRating = 4.5m,
+                ViewsCount = 67,
+                FavoritesCount = 5,
+                CreatedDate = DateTimeOffset.UtcNow,
+                UpdatedDate = DateTimeOffset.UtcNow
+            }
+        };
+
+        foreach (var property in properties)
+        {
+            await db.InsertPropertyAsync(property);
+        }
+        
+        _logger.LogInformation("✅ {Count} test properties seeded!", properties.Count);
     }
 }

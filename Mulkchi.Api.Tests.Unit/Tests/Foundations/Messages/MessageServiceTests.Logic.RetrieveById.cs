@@ -13,6 +13,12 @@ public partial class MessageServiceTests
         Message randomMessage = CreateRandomMessage();
         Message expectedMessage = randomMessage;
 
+        // Set up CurrentUserService mock to return the message's sender ID
+        this.currentUserServiceMock.Setup(x => x.GetCurrentUserId())
+            .Returns(expectedMessage.SenderId);
+        this.currentUserServiceMock.Setup(x => x.IsInRole("Admin"))
+            .Returns(false);
+
         this.storageBrokerMock.Setup(broker =>
             broker.SelectMessageByIdAsync(randomMessage.Id))
                 .ReturnsAsync(expectedMessage);

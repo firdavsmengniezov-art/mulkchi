@@ -123,6 +123,35 @@ namespace Mulkchi.Api.Migrations
                     b.ToTable("Announcements");
                 });
 
+            modelBuilder.Entity("Mulkchi.Api.Models.Foundations.Auth.PasswordResetToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("DeletedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Token")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PasswordResetTokens");
+                });
+
             modelBuilder.Entity("Mulkchi.Api.Models.Foundations.Auth.UserRefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -147,6 +176,61 @@ namespace Mulkchi.Api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("UserRefreshTokens");
+                });
+
+            modelBuilder.Entity("Mulkchi.Api.Models.Foundations.Bookings.Booking", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CheckInDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("CheckOutDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("CreatedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("DeletedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("GuestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("NumberOfGuests")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("PropertyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTimeOffset>("UpdatedDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CheckInDate");
+
+                    b.HasIndex("CheckOutDate");
+
+                    b.HasIndex("GuestId");
+
+                    b.HasIndex("PropertyId");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("Bookings");
                 });
 
             modelBuilder.Entity("Mulkchi.Api.Models.Foundations.Discounts.Discount", b =>
@@ -266,6 +350,9 @@ namespace Mulkchi.Api.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("UserId", "PropertyId")
+                        .IsUnique();
+
                     b.ToTable("Favorites");
                 });
 
@@ -369,6 +456,10 @@ namespace Mulkchi.Api.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ReceiverId");
+
+                    b.HasIndex("SenderId");
 
                     b.ToTable("Messages");
                 });
@@ -516,6 +607,9 @@ namespace Mulkchi.Api.Migrations
                     b.Property<DateTimeOffset>("CreatedDate")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<int>("Currency")
+                        .HasColumnType("int");
+
                     b.Property<DateTimeOffset?>("DeletedDate")
                         .HasColumnType("datetimeoffset");
 
@@ -527,6 +621,10 @@ namespace Mulkchi.Api.Migrations
 
                     b.Property<string>("District")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("ExchangeRate")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("decimal(18,6)");
 
                     b.Property<int>("FavoritesCount")
                         .HasColumnType("int");
@@ -674,6 +772,18 @@ namespace Mulkchi.Api.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedDate");
+
+                    b.HasIndex("HostId");
+
+                    b.HasIndex("ListingType");
+
+                    b.HasIndex("Region");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("Region", "Status", "ListingType");
 
                     b.ToTable("Properties");
                 });
@@ -868,6 +978,10 @@ namespace Mulkchi.Api.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("PropertyId");
+
+                    b.HasIndex("ReviewerId");
+
                     b.ToTable("Reviews");
                 });
 
@@ -931,7 +1045,7 @@ namespace Mulkchi.Api.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("FirstName")
                         .HasColumnType("nvarchar(max)");
@@ -982,7 +1096,32 @@ namespace Mulkchi.Api.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasFilter("[Email] IS NOT NULL");
+
+                    b.HasIndex("Role");
+
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("Mulkchi.Api.Models.Foundations.Bookings.Booking", b =>
+                {
+                    b.HasOne("Mulkchi.Api.Models.Foundations.Users.User", "Guest")
+                        .WithMany()
+                        .HasForeignKey("GuestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Mulkchi.Api.Models.Foundations.Properties.Property", "Property")
+                        .WithMany()
+                        .HasForeignKey("PropertyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Guest");
+
+                    b.Navigation("Property");
                 });
 #pragma warning restore 612, 618
         }

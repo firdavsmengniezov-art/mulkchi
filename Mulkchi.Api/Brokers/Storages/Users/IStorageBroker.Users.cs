@@ -10,4 +10,8 @@ public partial interface IStorageBroker
     ValueTask<User?> SelectUserByEmailAsync(string email);
     ValueTask<User> UpdateUserAsync(User user);
     ValueTask<User> DeleteUserByIdAsync(Guid userId);
+    
+    // Admin methods to bypass soft delete filters
+    IQueryable<User> SelectAllUsersIncludingDeleted();
+    ValueTask<User> SelectUserByIdIncludingDeletedAsync(Guid userId);
 }

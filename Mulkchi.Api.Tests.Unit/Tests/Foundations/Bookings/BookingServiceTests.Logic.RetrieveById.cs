@@ -1,0 +1,40 @@
+using FluentAssertions;
+using Moq;
+using Mulkchi.Api.Models.Foundations.Bookings;
+
+namespace Mulkchi.Api.Tests.Unit.Tests.Foundations.Bookings;
+
+public partial class BookingServiceTests
+{
+    [Fact]
+    public async Task ShouldRetrieveBookingByIdAsync()
+    {
+        // given
+        Guid randomBookingId = Guid.NewGuid();
+        Booking randomBooking = CreateRandomBooking();
+        Booking expectedBooking = randomBooking;
+        expectedBooking.Id = randomBookingId;
+
+        // Set up CurrentUserService mock to return the booking's guest ID
+        this.currentUserServiceMock.Setup(x => x.GetCurrentUserId())
+            .Returns(expectedBooking.GuestId);
+        this.currentUserServiceMock.Setup(x => x.IsInRole("Admin"))
+            .Returns(false);
+
+        this.storageBrokerMock.Setup(broker =>
+            broker.SelectBookingByIdAsync(randomBookingId))
+                .ReturnsAsync(expectedBooking);
+
+        // when
+        Booking actualBooking = await this.bookingService.RetrieveBookingByIdAsync(randomBookingId);
+
+        // then
+        actualBooking.Should().BeEquivalentTo(expectedBooking);
+
+        this.storageBrokerMock.Verify(broker =>
+            broker.SelectBookingByIdAsync(randomBookingId),
+            Times.Once);
+
+        this.storageBrokerMock.VerifyNoOtherCalls();
+    }
+}

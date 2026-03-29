@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Mulkchi.Api.Brokers.Storages;
 
@@ -8,34 +10,39 @@ public class StorageBrokerDesignTimeFactory : IDesignTimeDbContextFactory<Storag
 {
     public StorageBroker CreateDbContext(string[] args)
     {
+        var optionsBuilder = new DbContextOptionsBuilder<StorageBroker>();
+        
+        // Use configuration for design time
+        optionsBuilder.UseSqlServer(
+            "Server=(localdb)\\mssqllocaldb;Database=MulkchiDb;Trusted_Connection=true;",
+            options => options.EnableRetryOnFailure());
+
+        // Create configuration
         var configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: true)
-            .AddEnvironmentVariables()
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
             .Build();
 
-        var optionsBuilder = new DbContextOptionsBuilder<StorageBroker>();
+        // Create mock environment
+        var mockEnvironment = new MockWebHostEnvironment();
 
-        var connectionString = configuration.GetConnectionString("DefaultConnection")
-            ?? "Server=localhost;Database=MulkchiDesign;Trusted_Connection=True;TrustServerCertificate=True;";
-
-        optionsBuilder
-            .UseSqlServer(connectionString)
-            .ConfigureWarnings(w =>
-                w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
-
-        var env = new DesignTimeWebHostEnvironment();
-
-        return new StorageBroker(optionsBuilder.Options, configuration, env);
+        return new StorageBroker(optionsBuilder.Options, configuration, mockEnvironment);
     }
 
-    private sealed class DesignTimeWebHostEnvironment : IWebHostEnvironment
+    private class MockWebHostEnvironment : IWebHostEnvironment
     {
-        public string WebRootPath { get; set; } = string.Empty;
-        public IFileProvider WebRootFileProvider { get; set; } = new NullFileProvider();
+        private string _environmentName = "DesignTime";
+        
+        public string EnvironmentName 
+        { 
+            get => _environmentName; 
+            set => _environmentName = value; 
+        }
+        
         public string ApplicationName { get; set; } = "Mulkchi.Api";
-        public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
+        public string WebRootPath { get; set; } = "";
+        public Microsoft.Extensions.FileProviders.IFileProvider WebRootFileProvider { get; set; } = null!;
         public string ContentRootPath { get; set; } = Directory.GetCurrentDirectory();
-        public string EnvironmentName { get; set; } = "DesignTime";
+        public Microsoft.Extensions.FileProviders.IFileProvider ContentRootFileProvider { get; set; } = null!;
     }
 }

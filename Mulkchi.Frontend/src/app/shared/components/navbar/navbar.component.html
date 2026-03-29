@@ -1,0 +1,69 @@
+<nav class="navbar">
+  <div class="container nav-inner">
+    <a routerLink="/" class="logo">
+      <span class="logo-icon">🏠</span>
+      <span class="logo-text">Mulkchi</span>
+    </a>
+    <ul class="nav-links">
+      <li><a routerLink="/properties" [queryParams]="{listingType:'Sale'}">Sotib olish</a></li>
+      <li><a routerLink="/properties" [queryParams]="{listingType:'Rent'}">Ijaraga olish</a></li>
+      <li><a routerLink="/properties" [queryParams]="{listingType:'DailyRent'}">Kunlik ijara</a></li>
+      <li><a routerLink="/ai-price">AI Narx</a></li>
+    </ul>
+    <div class="nav-right">
+      <!-- SignalR Connection Status Indicator -->
+      @if (isLoggedIn) {
+        <div class="connection-status" [class.connected]="isSignalRConnected" [class.disconnected]="!isSignalRConnected">
+          <span class="status-dot"></span>
+          <span class="status-text">{{ isSignalRConnected ? 'Online' : 'Offline' }}</span>
+        </div>
+      }
+      
+      <div class="lang-switcher" (click)="showLangMenu = !showLangMenu">
+        {{ currentLang === 'uz' ? "O'z" : currentLang === 'ru' ? 'Ру' : 'En' }} ▾
+        @if (showLangMenu) {
+          <div class="lang-menu">
+            @for (lang of languages; track lang.code) {
+              <div class="lang-option" 
+                   [class.active]="lang.code === currentLang"
+                   (click)="switchLang(lang.code); $event.stopPropagation()">
+                {{ lang.label }}
+              </div>
+            }
+          </div>
+        }
+      </div>
+      
+      @if (isLoggedIn) {
+        <div class="user-menu-wrap">
+          <app-notification-bell></app-notification-bell>
+          <div class="user-avatar" (click)="showUserMenu = !showUserMenu">
+            {{ currentUser?.firstName?.charAt(0) || 'U' }}
+          </div>
+          @if (showUserMenu) {
+            <div class="user-dropdown">
+              <div class="user-info">
+                <strong>{{ currentUser?.firstName }}</strong>
+                <span>{{ currentUser?.email }}</span>
+              </div>
+              <hr>
+              @if (currentUser?.role === 'Host' || currentUser?.role === 'Admin') {
+                <a routerLink="/dashboard" (click)="showUserMenu=false">🏠 Dashboard</a>
+              }
+              @if (currentUser?.role === 'Admin') {
+                <a routerLink="/admin" (click)="showUserMenu=false">⚙️ Admin panel</a>
+              }
+              <a routerLink="/chat" (click)="showUserMenu=false">💬 Chat</a>
+              <a routerLink="/favorites" (click)="showUserMenu=false">❤️ Sevimlilar</a>
+              <a routerLink="/profile" (click)="showUserMenu=false">👤 Profil</a>
+              <hr>
+              <button class="btn-logout" (click)="logout()">🚪 Chiqish</button>
+            </div>
+          }
+        </div>
+      } @else {
+        <button class="btn-auth" routerLink="/login">Kirish / Ro'yxatdan o'tish</button>
+      }
+    </div>
+  </div>
+</nav>

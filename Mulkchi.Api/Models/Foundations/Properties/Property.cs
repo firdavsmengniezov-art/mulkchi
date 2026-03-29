@@ -65,6 +65,8 @@ public class Property
     public int ViewsCount { get; set; }
     public int FavoritesCount { get; set; }
     public Guid HostId { get; set; }
+    public Currency Currency { get; set; } = Currency.UZS;
+    public decimal ExchangeRate { get; set; } = 1.0m;
     public DateTimeOffset CreatedDate { get; set; }
     public DateTimeOffset UpdatedDate { get; set; }
     public DateTimeOffset? DeletedDate { get; set; }

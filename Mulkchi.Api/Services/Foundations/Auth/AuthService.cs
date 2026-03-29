@@ -10,6 +10,8 @@ using Mulkchi.Api.Brokers.Storages;
 using Mulkchi.Api.Models.Foundations.Auth;
 using Mulkchi.Api.Models.Foundations.Auth.Exceptions;
 using Mulkchi.Api.Models.Foundations.Users;
+using Mulkchi.Api.Models.Foundations.Users.Exceptions;
+using Serilog;
 
 namespace Mulkchi.Api.Services.Foundations.Auth;
 
@@ -195,10 +197,184 @@ public partial class AuthService : IAuthService
         };
     }
 
+    public ValueTask ForgotPasswordAsync(string email) =>
+        TryCatch(async () =>
+        {
+            ValidateEmail(email);
+
+            User? user = await this.storageBroker.SelectUserByEmailAsync(email);
+            
+            // Always return success to prevent email enumeration
+            if (user is null)
+                return;
+
+            // Generate secure token
+            string token = GenerateSecureResetToken();
+            DateTimeOffset now = this.dateTimeBroker.GetCurrentDateTimeOffset();
+            DateTimeOffset expiresAt = now.AddHours(1);
+
+            var passwordResetToken = new PasswordResetToken
+            {
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                Token = token,
+                ExpiresAt = expiresAt,
+                IsUsed = false,
+                CreatedDate = now
+            };
+
+            await this.storageBroker.InsertPasswordResetTokenAsync(passwordResetToken);
+
+            // Send email (for now, just log - in production, use IEmailBroker)
+            await SendPasswordResetEmailAsync(user.Email, token);
+        });
+
+    public ValueTask ResetPasswordAsync(string token, string newPassword) =>
+        TryCatch(async () =>
+        {
+            ValidateResetPasswordRequest(token, newPassword);
+
+            PasswordResetToken? resetToken = await this.storageBroker.SelectPasswordResetTokenByTokenAsync(token);
+
+            if (resetToken is null)
+                throw new NotFoundPasswordResetTokenException();
+
+            if (resetToken.IsUsed || resetToken.ExpiresAt < this.dateTimeBroker.GetCurrentDateTimeOffset())
+                throw new NotFoundPasswordResetTokenException();
+
+            User? user = await this.storageBroker.SelectUserByIdAsync(resetToken.UserId);
+
+            if (user is null)
+                throw new NotFoundUserByEmailException(
+                    message: $"User with ID '{resetToken.UserId}' was not found.");
+
+            // Update password
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            user.UpdatedDate = this.dateTimeBroker.GetCurrentDateTimeOffset();
+
+            await this.storageBroker.UpdateUserAsync(user);
+
+            // Mark token as used
+            resetToken.IsUsed = true;
+            await this.storageBroker.UpdatePasswordResetTokenAsync(resetToken);
+        });
+
+    private static string GenerateSecureResetToken()
+    {
+        var randomBytes = new byte[32];
+        RandomNumberGenerator.Fill(randomBytes);
+        return Convert.ToBase64String(randomBytes).Replace("+", "-").Replace("/", "_").Trim('=');
+    }
+
+    private Task SendPasswordResetEmailAsync(string email, string token)
+    {
+        // TODO: Implement email sending using IEmailBroker
+        // For now, just log token (in production, send actual email)
+        var resetUrl = $"https://mulkchi.uz/reset-password?token={token}";
+        
+        // Log for debugging - remove in production
+        Log.Information("Password reset link generated for {Email}: {ResetUrl}", email, resetUrl);
+        
+        // In production:
+        // this.emailBroker.SendEmailAsync(
+        //     email,
+        //     "Password Reset Request",
+        //     $"<h2>Password Reset</h2><p>Click <a href='{resetUrl}'>here</a> to reset your password.</p><p>This link will expire in 1 hour.</p>");
+        
+        return Task.CompletedTask;
+    }
+
+    private static void ValidateEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            throw new InvalidAuthException("Email is required.");
+
+        if (!email.Contains("@"))
+            throw new InvalidAuthException("Invalid email format.");
+    }
+
+    private static void ValidateResetPasswordRequest(string token, string newPassword)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+            throw new InvalidAuthException("Reset token is required.");
+
+        if (string.IsNullOrWhiteSpace(newPassword))
+            throw new InvalidAuthException("New password is required.");
+
+        if (newPassword.Length < 8)
+            throw new InvalidAuthException("Password must be at least 8 characters long.");
+    }
+
     private static string GenerateSecureRefreshToken()
     {
         var randomBytes = new byte[64];
         RandomNumberGenerator.Fill(randomBytes);
         return Convert.ToBase64String(randomBytes);
+    }
+
+    public async ValueTask<User> RetrieveUserByIdAsync(Guid userId)
+    {
+        ValidateUserId(userId);
+
+        var storageUser = await this.storageBroker.SelectUserByIdAsync(userId);
+        
+        if (storageUser is null)
+            throw new NotFoundUserException(userId);
+
+        return storageUser;
+    }
+
+    public async ValueTask<User> ModifyUserProfileAsync(Guid userId, UpdateProfileRequest request)
+    {
+        ValidateUserId(userId);
+        ValidateUpdateProfileRequest(request);
+
+        var storageUser = await this.storageBroker.SelectUserByIdAsync(userId);
+        
+        if (storageUser is null)
+            throw new NotFoundUserException(userId);
+
+        // Update user properties
+        storageUser.FirstName = request.FirstName;
+        storageUser.LastName = request.LastName;
+        storageUser.Bio = request.Bio;
+        storageUser.Address = request.Address;
+        storageUser.Phone = request.Phone;
+        storageUser.DateOfBirth = request.DateOfBirth;
+        storageUser.Gender = request.Gender;
+        storageUser.AvatarUrl = request.AvatarUrl;
+        storageUser.UpdatedDate = this.dateTimeBroker.GetCurrentDateTimeOffset();
+
+        var updatedUser = await this.storageBroker.UpdateUserAsync(storageUser);
+        
+        return updatedUser;
+    }
+
+    public async ValueTask RemoveUserByIdAsync(Guid userId)
+    {
+        ValidateUserId(userId);
+
+        var storageUser = await this.storageBroker.SelectUserByIdAsync(userId);
+        
+        if (storageUser is null)
+            throw new NotFoundUserException(userId);
+
+        // Soft delete user
+        storageUser.DeletedDate = this.dateTimeBroker.GetCurrentDateTimeOffset();
+        storageUser.UpdatedDate = this.dateTimeBroker.GetCurrentDateTimeOffset();
+
+        await this.storageBroker.UpdateUserAsync(storageUser);
+    }
+
+    private static void ValidateUserId(Guid userId)
+    {
+        if (userId == Guid.Empty)
+            throw new InvalidAuthException("User ID is required.");
+    }
+
+    private static void ValidateUpdateProfileRequest(UpdateProfileRequest request)
+    {
+        if (request == null)
+            throw new InvalidAuthException("Update profile request is required.");
     }
 }

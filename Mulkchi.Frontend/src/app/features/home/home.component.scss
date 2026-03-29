@@ -1,0 +1,21 @@
+.hero {
+  height: 380px;
+  background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+              url('https://images.unsplash.com/photo-1596394723269-b2cbca4e6313?w=1600&q=80') center/cover no-repeat;
+  position: relative; display: flex; align-items: center; justify-content: center;
+}
+.hero-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.5); }
+.hero-content { position: relative; text-align: center; color: white; width: 100%; max-width: 800px; padding: 0 24px; }
+.hero-content h1 { font-size: 28px; font-weight: 700; margin-bottom: 28px; }
+.search-bar { display: flex; gap: 8px; background: white; padding: 8px; border-radius: 10px; }
+.search-bar select, .search-bar input { flex: 1; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 7px; font-size: 14px; outline: none; font-family: inherit; }
+.search-bar button { white-space: nowrap; }
+.listings { padding: 48px 0; }
+.listings h2 { font-size: 22px; font-weight: 700; margin-bottom: 24px; color: #1a1a2e; }
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+.ai-banner { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); padding: 32px 0; }
+.ai-inner { display: flex; align-items: center; justify-content: space-between; }
+.ml-badge { background: #1a3c5e; color: white; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; margin-bottom: 8px; display: inline-block; }
+.ai-left h3 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+.ai-left p { color: #6b7280; font-size: 14px; }
+.chat-float { position: fixed; bottom: 24px; right: 24px; background: #1a3c5e; color: white; border: none; padding: 14px 20px; border-radius: 100px; font-weight: 600; font-size: 14px; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.2); z-index: 999; }
