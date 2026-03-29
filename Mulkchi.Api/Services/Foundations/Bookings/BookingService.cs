@@ -7,6 +7,7 @@ using Mulkchi.Api.Models.Foundations.Bookings;
 using Mulkchi.Api.Brokers.Storages;
 using Mulkchi.Api.Services.Foundations.Auth;
 using Mulkchi.Api.Brokers.Notifications;
+using Microsoft.Extensions.Logging;
 
 namespace Mulkchi.Api.Services.Foundations.Bookings
 {
@@ -15,12 +16,14 @@ namespace Mulkchi.Api.Services.Foundations.Bookings
         private readonly IStorageBroker storageBroker;
         private readonly ICurrentUserService currentUserService;
         private readonly IEmailBroker emailBroker;
+        private readonly ILogger<BookingService> logger;
 
-        public BookingService(IStorageBroker storageBroker, ICurrentUserService currentUserService, IEmailBroker emailBroker)
+        public BookingService(IStorageBroker storageBroker, ICurrentUserService currentUserService, IEmailBroker emailBroker, ILogger<BookingService> logger)
         {
             this.storageBroker = storageBroker;
             this.currentUserService = currentUserService;
             this.emailBroker = emailBroker;
+            this.logger = logger;
         }
 
         public ValueTask<Booking> AddBookingAsync(Booking booking) =>
@@ -125,8 +128,8 @@ namespace Mulkchi.Api.Services.Foundations.Bookings
             }
             catch (Exception ex)
             {
-                // Log error but don't fail the booking process
-                Console.WriteLine($"Failed to send booking confirmation email: {ex.Message}");
+                // Log error but don't fail booking process
+                this.logger.LogWarning(ex, "Failed to send booking confirmation email for booking {BookingId}", booking.Id);
             }
         }
 
@@ -158,7 +161,7 @@ namespace Mulkchi.Api.Services.Foundations.Bookings
             catch (Exception ex)
             {
                 // Log error but don't fail the booking process
-                Console.WriteLine($"Failed to send new booking alert email: {ex.Message}");
+                this.logger.LogWarning(ex, "Failed to send new booking alert email for booking {BookingId}", booking.Id);
             }
         }
     }

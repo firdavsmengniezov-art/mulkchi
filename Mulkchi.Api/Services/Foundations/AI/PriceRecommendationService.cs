@@ -4,12 +4,14 @@ using Microsoft.ML.Data;
 using Mulkchi.Api.Brokers.Storages;
 using Mulkchi.Api.Models.Foundations.AI;
 using Mulkchi.Api.Models.Foundations.Properties;
+using Microsoft.Extensions.Logging;
 
 namespace Mulkchi.Api.Services.Foundations.AI;
 
 public class PriceRecommendationService : IPriceRecommendationService
 {
     private readonly StorageBroker storageBroker;
+    private readonly ILogger<PriceRecommendationService> logger;
     private readonly MLContext mlContext;
     private ITransformer? model;
     private PredictionEngine<PropertyPriceInput, PropertyPricePrediction>? predictionEngine;
@@ -18,9 +20,10 @@ public class PriceRecommendationService : IPriceRecommendationService
     private const int MIN_TRAINING_DATA = 10;
     private const int RETRAIN_THRESHOLD = 50;
 
-    public PriceRecommendationService(StorageBroker storageBroker)
+    public PriceRecommendationService(StorageBroker storageBroker, ILogger<PriceRecommendationService> logger)
     {
         this.storageBroker = storageBroker;
+        this.logger = logger;
         this.mlContext = new MLContext(seed: 0);
     }
 
@@ -88,7 +91,7 @@ public class PriceRecommendationService : IPriceRecommendationService
         catch (Exception ex)
         {
             // Log error but don't throw - service should still work with rule-based predictions
-            Console.WriteLine($"Error training ML model: {ex.Message}");
+            this.logger.LogWarning(ex, "Error training ML model");
         }
     }
 

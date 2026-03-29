@@ -28,7 +28,7 @@ using Mulkchi.Api.Services.Foundations.Announcements;
 using Mulkchi.Api.Services.Foundations.Auth;
 using Mulkchi.Api.Services.Foundations.Bookings;
 using Mulkchi.Api.Services.Foundations.AI;
-using Mulkchi.Api.Middleware;
+using Mulkchi.Api.Middlewares;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
@@ -85,8 +85,8 @@ public class Startup
         app.UseStaticFiles(); // Enable static file serving
         app.UseCors("AllowAngular");
         
-        // Add global exception handling middleware
-        app.UseMiddleware<GlobalExceptionMiddleware>();
+        // Add global exception handling
+        app.UseGlobalExceptionHandling();
         
         // Add rate limiting middleware
         app.UseMiddleware<RateLimitMiddleware>();

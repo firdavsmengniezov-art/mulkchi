@@ -7,6 +7,8 @@ namespace Mulkchi.Api;
 
 public class Program
 {
+    private static ILogger<Program> _logger;
+    
     public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
@@ -27,6 +29,10 @@ public class Program
             .CreateLogger();
         
         builder.Host.UseSerilog();
+        
+        // Get logger for Program class
+        var loggerFactory = builder.Services.BuildServiceProvider().GetRequiredService<ILoggerFactory>();
+        _logger = loggerFactory.CreateLogger<Program>();
         
         var startup = new Startup(builder.Configuration);
         startup.ConfigureServices(builder.Services);
@@ -417,6 +423,6 @@ public class Program
             await db.InsertPropertyAsync(property);
         }
         
-        Console.WriteLine($"✅ {properties.Count} test properties seeded!");
+        _logger.LogInformation("✅ {Count} test properties seeded!", properties.Count);
     }
 }
