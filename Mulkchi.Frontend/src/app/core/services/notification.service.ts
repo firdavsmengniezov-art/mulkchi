@@ -1,11 +1,12 @@
 import { Injectable, OnDestroy } from '@angular/core';
+import { HubConnection } from '@microsoft/signalr';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { LoggingService } from './logging.service';
+import { Notification, NotificationType, PagedResult } from '../models/notification.models';
 import { HttpClient } from '@angular/common/http';
-import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
-import { BehaviorSubject, Observable, Subject, takeUntil } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { environment } from '../../../environments/environment';
-import { Notification, NotificationType, PagedResult } from '../models/notification.models';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService implements OnDestroy {
@@ -17,7 +18,8 @@ export class NotificationService implements OnDestroy {
   constructor(
     private http: HttpClient,
     private snackBar: MatSnackBar,
-    private router: Router
+    private router: Router,
+    private loggingService: LoggingService
   ) {
     this.hubConnection = new HubConnectionBuilder()
       .withUrl(`${environment.hubUrl}/notificationhub`, {
@@ -71,24 +73,24 @@ export class NotificationService implements OnDestroy {
     });
 
     this.hubConnection.onreconnecting(() => {
-      console.log('Notification hub reconnecting...');
+      this.loggingService.log('Notification hub reconnecting...');
     });
 
     this.hubConnection.onreconnected(() => {
-      console.log('Notification hub reconnected');
+      this.loggingService.log('Notification hub reconnected');
     });
 
     this.hubConnection.onclose(() => {
-      console.log('Notification hub connection closed');
+      this.loggingService.log('Notification hub connection closed');
     });
   }
 
   async startConnection(): Promise<void> {
     try {
       await this.hubConnection.start();
-      console.log('Notification hub connection established');
+      this.loggingService.log('Notification hub connection established');
     } catch (err) {
-      console.error('Notification hub connection failed:', err);
+      this.loggingService.error('Notification hub connection failed:', err);
       setTimeout(() => this.startConnection(), 5000);
     }
   }
@@ -127,7 +129,7 @@ export class NotificationService implements OnDestroy {
           this.unreadCount$.next(result.items.filter(n => !n.isRead).length);
         },
         error: (err) => {
-          console.error('Failed to load notifications:', err);
+          this.loggingService.error('Failed to load notifications:', err);
         }
       });
   }
