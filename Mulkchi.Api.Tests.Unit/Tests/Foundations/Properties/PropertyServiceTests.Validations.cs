@@ -49,7 +49,7 @@ public partial class PropertyServiceTests
     public async Task AddPropertyAsync_ValidProperty_ReturnsProperty()
     {
         // Arrange
-        Property randomProperty = CreateRandomProperty();
+        Property randomProperty = CreateValidProperty();
         Property inputProperty = randomProperty;
         Property persistedProperty = randomProperty;
 
@@ -77,7 +77,7 @@ public partial class PropertyServiceTests
         double invalidArea)
     {
         // Arrange
-        Property property = CreateRandomProperty();
+        Property property = CreateValidProperty();
         property.Area = invalidArea;
 
         // Act & Assert
@@ -94,7 +94,7 @@ public partial class PropertyServiceTests
         decimal invalidRent)
     {
         // Arrange
-        Property property = CreateRandomProperty();
+        Property property = CreateValidProperty();
         property.MonthlyRent = invalidRent;
 
         // Act & Assert
@@ -108,7 +108,7 @@ public partial class PropertyServiceTests
     public async Task AddPropertyAsync_InvalidListingType_ThrowsValidationException()
     {
         // Arrange
-        Property property = CreateRandomProperty();
+        Property property = CreateValidProperty();
         property.ListingType = (ListingType)999; // Invalid enum value
 
         // Act & Assert

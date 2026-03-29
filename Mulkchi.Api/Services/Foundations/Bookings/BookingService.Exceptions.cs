@@ -26,8 +26,8 @@ namespace Mulkchi.Api.Services.Foundations.Bookings
             catch (NotFoundBookingException ex) { throw new BookingValidationException(ex); }
             catch (AlreadyExistsBookingException ex) { throw new BookingDependencyValidationException(ex); }
             catch (BookingDependencyValidationException ex) { throw new BookingDependencyValidationException(ex); }
-            catch (BookingDependencyException ex) { throw ex; }
-            catch (BookingServiceException ex) { throw ex; }
+            catch (BookingDependencyException) { throw; }
+            catch (BookingServiceException) { throw; }
             catch (FailedBookingStorageException ex) { throw new BookingDependencyException(ex); }
             catch (FailedBookingServiceException ex) { throw new BookingServiceException(ex); }
             catch (SqlException sqlException)

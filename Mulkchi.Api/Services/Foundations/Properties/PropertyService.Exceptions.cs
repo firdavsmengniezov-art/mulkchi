@@ -25,9 +25,9 @@ public partial class PropertyService
         {
             throw CreateAndLogValidationException(invalidPropertyException);
         }
-        catch (NotFoundPropertyException notFoundPropertyException)
+        catch (NotFoundPropertyException)
         {
-            throw CreateAndLogDependencyValidationException(notFoundPropertyException);
+            throw;
         }
         catch (SqlException sqlException)
         {

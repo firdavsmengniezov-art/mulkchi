@@ -3,6 +3,7 @@ using Microsoft.Data.SqlClient;
 using Moq;
 using Mulkchi.Api.Models.Foundations.Properties;
 using Mulkchi.Api.Models.Foundations.Properties.Exceptions;
+using Xeptions;
 
 namespace Mulkchi.Api.Tests.Unit.Tests.Foundations.Properties;
 
@@ -12,7 +13,7 @@ public partial class PropertyServiceTests
     public async Task ShouldThrowDependencyException_OnAdd_WhenSqlExceptionOccurs()
     {
         // given
-        Property someProperty = CreateRandomProperty();
+        Property someProperty = CreateValidProperty();
         SqlException sqlException = CreateSqlException();
 
         this.storageBrokerMock.Setup(broker =>

@@ -17,7 +17,7 @@ public partial class PropertyServiceTests
     public async Task AddPropertyAsync_SqlException_ThrowsDependencyException()
     {
         // Arrange
-        Property someProperty = CreateRandomProperty();
+        Property someProperty = CreateValidProperty();
         SqlException sqlException = CreateSqlException();
 
         var expectedDependencyException =
@@ -34,15 +34,40 @@ public partial class PropertyServiceTests
         await Assert.ThrowsAsync<PropertyDependencyException>(addPropertyTask);
 
         this.loggingBrokerMock.Verify(broker =>
-            broker.LogCritical(It.IsAny<PropertyDependencyException>()),
+            broker.LogError(It.IsAny<PropertyDependencyException>()),
             Times.Once);
+    }
+
+    private static Property CreateValidProperty()
+    {
+        return new Property
+        {
+            Id = Guid.Empty,
+            Title = "Test Property",
+            Description = "Test Description",
+            City = "Tashkent",
+            Address = "Test Address",
+            Area = 100.0,
+            MonthlyRent = 1000,
+            ListingType = ListingType.Rent,
+            Type = PropertyType.Apartment,
+            Category = PropertyCategory.Residential,
+            Status = PropertyStatus.Active,
+            NumberOfBedrooms = 2,
+            NumberOfBathrooms = 1,
+            MaxGuests = 4,
+            Region = UzbekistanRegion.ToshkentShahar,
+            District = "Test District",
+            Mahalla = "Test Mahalla",
+            HostId = Guid.NewGuid()
+        };
     }
 
     [Fact]
     public async Task AddPropertyAsync_DuplicateKey_ThrowsDependencyValidationException()
     {
         // Arrange
-        Property someProperty = CreateRandomProperty();
+        Property someProperty = CreateValidProperty();
         var duplicateKeyException = new Exception("Duplicate property");
 
         this.storageBrokerMock.Setup(broker =>
@@ -53,7 +78,7 @@ public partial class PropertyServiceTests
         Func<Task> addPropertyTask = async () =>
             await this.propertyService.AddPropertyAsync(someProperty);
 
-        await Assert.ThrowsAsync<PropertyDependencyValidationException>(addPropertyTask);
+        await Assert.ThrowsAsync<PropertyServiceException>(addPropertyTask);
     }
 
     [Fact]

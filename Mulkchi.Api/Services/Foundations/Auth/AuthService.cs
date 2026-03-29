@@ -266,7 +266,7 @@ public partial class AuthService : IAuthService
         return Convert.ToBase64String(randomBytes).Replace("+", "-").Replace("/", "_").Trim('=');
     }
 
-    private async Task SendPasswordResetEmailAsync(string email, string token)
+    private Task SendPasswordResetEmailAsync(string email, string token)
     {
         // TODO: Implement email sending using IEmailBroker
         // For now, just log token (in production, send actual email)
@@ -276,10 +276,12 @@ public partial class AuthService : IAuthService
         Log.Information("Password reset link generated for {Email}: {ResetUrl}", email, resetUrl);
         
         // In production:
-        // await this.emailBroker.SendEmailAsync(
+        // this.emailBroker.SendEmailAsync(
         //     email,
         //     "Password Reset Request",
         //     $"<h2>Password Reset</h2><p>Click <a href='{resetUrl}'>here</a> to reset your password.</p><p>This link will expire in 1 hour.</p>");
+        
+        return Task.CompletedTask;
     }
 
     private static void ValidateEmail(string email)

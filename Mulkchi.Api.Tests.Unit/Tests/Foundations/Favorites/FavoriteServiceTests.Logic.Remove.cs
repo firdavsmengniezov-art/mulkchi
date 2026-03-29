@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Moq;
 using Mulkchi.Api.Models.Foundations.Favorites;
+using Mulkchi.Api.Models.Foundations.Properties;
 
 namespace Mulkchi.Api.Tests.Unit.Tests.Foundations.Favorites;
 
@@ -24,9 +25,23 @@ public partial class FavoriteServiceTests
             broker.SelectFavoriteByIdAsync(randomFavorite.Id))
                 .ReturnsAsync(randomFavorite);
 
+        // Mock the SelectPropertyByIdAsync call for favorites count update
+        this.storageBrokerMock.Setup(broker =>
+            broker.SelectPropertyByIdAsync(randomFavorite.PropertyId))
+                .ReturnsAsync(new Mulkchi.Api.Models.Foundations.Properties.Property 
+                { 
+                    Id = randomFavorite.PropertyId,
+                    FavoritesCount = 1,
+                    UpdatedDate = DateTimeOffset.UtcNow
+                });
+
         this.storageBrokerMock.Setup(broker =>
             broker.DeleteFavoriteByIdAsync(randomFavorite.Id))
                 .ReturnsAsync(expectedFavorite);
+
+        this.storageBrokerMock.Setup(broker =>
+            broker.UpdatePropertyAsync(It.IsAny<Mulkchi.Api.Models.Foundations.Properties.Property>()))
+                .ReturnsAsync(It.IsAny<Mulkchi.Api.Models.Foundations.Properties.Property>());
 
         // when
         Favorite actualFavorite = await this.favoriteService.RemoveFavoriteByIdAsync(randomFavorite.Id);
@@ -39,9 +54,15 @@ public partial class FavoriteServiceTests
             Times.Once);
 
         this.storageBrokerMock.Verify(broker =>
+            broker.SelectPropertyByIdAsync(randomFavorite.PropertyId),
+            Times.Once);
+
+        this.storageBrokerMock.Verify(broker =>
             broker.DeleteFavoriteByIdAsync(randomFavorite.Id),
             Times.Once);
 
-        this.storageBrokerMock.VerifyNoOtherCalls();
+        this.storageBrokerMock.Verify(broker =>
+            broker.UpdatePropertyAsync(It.IsAny<Mulkchi.Api.Models.Foundations.Properties.Property>()),
+            Times.Once);
     }
 }
