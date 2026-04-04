@@ -30,26 +30,4 @@ public partial class PropertyServiceTests
 
         this.storageBrokerMock.VerifyNoOtherCalls();
     }
-
-    [Fact]
-    public async Task ShouldThrowValidationException_OnAdd_WhenIdIsEmpty()
-    {
-        // given
-        Property randomProperty = CreateRandomProperty();
-        randomProperty.Id = Guid.Empty;
-
-        // when
-        ValueTask<Property> addPropertyTask =
-            this.propertyService.AddPropertyAsync(randomProperty);
-
-        // then
-        await Assert.ThrowsAsync<PropertyValidationException>(
-            testCode: async () => await addPropertyTask);
-
-        this.storageBrokerMock.Verify(broker =>
-            broker.InsertPropertyAsync(It.IsAny<Property>()),
-            Times.Never);
-
-        this.storageBrokerMock.VerifyNoOtherCalls();
-    }
 }

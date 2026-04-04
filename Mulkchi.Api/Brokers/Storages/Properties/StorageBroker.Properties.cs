@@ -36,4 +36,11 @@ public partial class StorageBroker
         await this.SaveChangesAsync();
         return property;
     }
+
+    // Admin methods to bypass soft delete filters
+    public IQueryable<Property> SelectAllPropertiesIncludingDeleted()
+        => this.Properties.IgnoreQueryFilters().AsQueryable();
+
+    public async ValueTask<Property> SelectPropertyByIdIncludingDeletedAsync(Guid propertyId)
+        => (await this.Properties.IgnoreQueryFilters().FirstOrDefaultAsync(p => p.Id == propertyId))!;
 }

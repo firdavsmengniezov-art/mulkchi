@@ -11,7 +11,7 @@ public partial class PropertyServiceTests
     {
         // given
         DateTimeOffset randomDateTimeOffset = DateTimeOffset.UtcNow;
-        Property randomProperty = CreateRandomProperty();
+        Property randomProperty = CreateValidProperty();
         Property inputProperty = randomProperty;
         inputProperty.CreatedDate = randomDateTimeOffset;
         inputProperty.UpdatedDate = randomDateTimeOffset;

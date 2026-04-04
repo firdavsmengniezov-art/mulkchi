@@ -1,0 +1,83 @@
+<div class="auth-page">
+  <div class="auth-left">
+    <div class="auth-brand">
+      <span class="brand-icon">🏠</span>
+      <span class="brand-name">Mulkchi</span>
+    </div>
+    <h2>Minglab xaridorlar bilan bog'laning</h2>
+    <div class="auth-features">
+      <div class="feat">✅ Bepul ro'yxatdan o'tish</div>
+      <div class="feat">✅ Darhol e'lon berish</div>
+      <div class="feat">✅ Xavfsiz to'lovlar</div>
+      <div class="feat">✅ 24/7 qo'llab-quvvatlash</div>
+    </div>
+  </div>
+  <div class="auth-right">
+    <mat-card class="auth-card animate-slide-up">
+      <mat-card-header>
+        <mat-card-title>Ro'yxatdan o'ting</mat-card-title>
+        <mat-card-subtitle>Yangi akkaunt yarating</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        @if (errorMsg) {
+          <div class="error-msg animate-fade-in">
+            <mat-icon class="error-icon">error</mat-icon>
+            {{ errorMsg }}
+          </div>
+        }
+        
+        <form class="auth-form">
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Ism</mat-label>
+              <input matInput [(ngModel)]="firstName" placeholder="Ismingiz">
+              <mat-icon matPrefix>person</mat-icon>
+            </mat-form-field>
+            
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Familiya</mat-label>
+              <input matInput [(ngModel)]="lastName" placeholder="Familyangiz">
+              <mat-icon matPrefix>person_outline</mat-icon>
+            </mat-form-field>
+          </div>
+          
+          <mat-form-field appearance="outline" class="form-field full-width">
+            <mat-label>Email</mat-label>
+            <input matInput type="email" [(ngModel)]="email" placeholder="email@example.com">
+            <mat-icon matPrefix>email</mat-icon>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline" class="form-field full-width">
+            <mat-label>Telefon</mat-label>
+            <input matInput type="tel" [(ngModel)]="phone" placeholder="+998 90 123 45 67">
+            <mat-icon matPrefix>phone</mat-icon>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline" class="form-field full-width">
+            <mat-label>Parol</mat-label>
+            <input matInput type="password" [(ngModel)]="password" placeholder="Kamida 6 belgi">
+            <mat-icon matPrefix>lock</mat-icon>
+            <mat-hint>Kamida 6 belgidan iborat bo'lishi kerak</mat-hint>
+          </mat-form-field>
+        </form>
+      </mat-card-content>
+      
+      <mat-card-actions class="actions">
+        <button mat-raised-button 
+                color="primary" 
+                (click)="register()" 
+                [disabled]="loading"
+                class="submit-btn">
+          @if (loading) {
+            <mat-spinner diameter="20" class="spinner"></mat-spinner>
+          }
+          Ro'yxatdan o'tish
+        </button>
+        
+        <a mat-button routerLink="/login" class="login-link">
+          Login qilish
+        </a>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>

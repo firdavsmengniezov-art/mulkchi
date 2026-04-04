@@ -11,10 +11,17 @@ public partial class PropertyServiceTests
     {
         // given
         DateTimeOffset randomDateTimeOffset = DateTimeOffset.UtcNow;
-        Property randomProperty = CreateRandomProperty();
+        Property randomProperty = CreateValidProperty();
+        randomProperty.Id = Guid.NewGuid(); // For modify, we need a valid ID
         Property inputProperty = randomProperty;
         inputProperty.UpdatedDate = randomDateTimeOffset;
         Property expectedProperty = inputProperty;
+
+        // Set up CurrentUserService mock to return the property's host ID
+        this.currentUserServiceMock.Setup(x => x.GetCurrentUserId())
+            .Returns(inputProperty.HostId);
+        this.currentUserServiceMock.Setup(x => x.IsInRole("Admin"))
+            .Returns(false);
 
         this.dateTimeBrokerMock.Setup(broker =>
             broker.GetCurrentDateTimeOffset())

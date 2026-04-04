@@ -34,7 +34,10 @@ public partial class AiRecommendationServiceTests
         var filler = new Filler<AiRecommendation>();
         filler.Setup()
             .OnType<DateTimeOffset>().Use(() => DateTimeOffset.UtcNow)
-            .OnType<DateTimeOffset?>().Use(() => (DateTimeOffset?)DateTimeOffset.UtcNow);
+            .OnType<DateTimeOffset?>().Use(() => (DateTimeOffset?)DateTimeOffset.UtcNow)
+            .OnType<Guid>().Use(() => Guid.NewGuid())
+            .OnType<string>().Use(() => "Valid Test String")
+            .OnType<decimal>().Use(() => 50.0m); // Valid score between 0-100
 
         return filler.Create();
     }

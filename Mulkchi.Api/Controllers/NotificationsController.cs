@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using Mulkchi.Api.Hubs;
 using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Models.Foundations.Notifications;
 using Mulkchi.Api.Models.Foundations.Notifications.Exceptions;
@@ -12,10 +14,14 @@ namespace Mulkchi.Api.Controllers;
 public class NotificationsController : ControllerBase
 {
     private readonly INotificationService notificationService;
+    private readonly IHubContext<NotificationHub> notificationHub;
 
-    public NotificationsController(INotificationService notificationService)
+    public NotificationsController(
+        INotificationService notificationService,
+        IHubContext<NotificationHub> notificationHub)
     {
         this.notificationService = notificationService;
+        this.notificationHub = notificationHub;
     }
 
     [HttpPost]
@@ -25,6 +31,24 @@ public class NotificationsController : ControllerBase
         try
         {
             Notification addedNotification = await this.notificationService.AddNotificationAsync(notification);
+            
+            // Send real-time notification to the user
+            await this.notificationHub.Clients.User(notification.UserId.ToString())
+                .SendAsync("ReceiveNotification", new
+                {
+                    addedNotification.Id,
+                    addedNotification.TitleUz,
+                    addedNotification.TitleRu,
+                    addedNotification.TitleEn,
+                    addedNotification.BodyUz,
+                    addedNotification.BodyRu,
+                    addedNotification.BodyEn,
+                    addedNotification.Type,
+                    addedNotification.IsRead,
+                    addedNotification.CreatedDate,
+                    Timestamp = DateTime.UtcNow
+                });
+            
             return Created("notification", addedNotification);
         }
         catch (NotificationValidationException notificationValidationException)

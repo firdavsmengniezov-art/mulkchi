@@ -1,0 +1,136 @@
+<div class="payment-history">
+  <div class="page-header">
+    <h1>💳 To'lovlar tarixi</h1>
+  </div>
+
+  <div class="filters-section">
+    <div class="filter-group">
+      <mat-form-field appearance="outline">
+        <mat-label>Status</mat-label>
+        <mat-select [(value)]="selectedStatus" (selectionChange)="onStatusChange($event.value)">
+          @for (option of getStatusOptions(); track option.value) {
+            <mat-option [value]="option.value">{{ option.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="filter-group">
+      <mat-form-field appearance="outline">
+        <mat-label>To'lov usuli</mat-label>
+        <mat-select [(value)]="selectedMethod" (selectionChange)="onMethodChange($event.value)">
+          @for (method of getMethodOptions(); track method.value) {
+            <mat-option [value]="method.value">{{ method.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <div class="content-section" *ngIf="!loading; else loadingTemplate">
+    @if (pagedResult && pagedResult.items.length > 0) {
+      <div class="summary-cards">
+        <mat-card class="summary-card">
+          <div class="summary-content">
+            <div class="summary-item">
+              <span class="label">Jami to'langan:</span>
+              <span class="value success">{{ getTotalPaid() | number:'uz' }} UZS</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Jami qabul qilingan:</span>
+              <span class="value primary">{{ getTotalReceived() | number:'uz' }} UZS</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Kutilmoqda:</span>
+              <span class="value warning">{{ getPendingAmount() | number:'uz' }} UZS</span>
+            </div>
+          </div>
+        </mat-card>
+      </div>
+
+      <mat-tab-group [(selectedIndex)]="selectedTab" dynamicHeight="false">
+        <mat-tab label="To'lovlar jadvali">
+          <div class="table-container">
+            <table class="payments-table">
+              <thead>
+                <tr>
+                  <th>Sanasi</th>
+                  <th>Bron raqami</th>
+                  <th>Summa</th>
+                  <th>Usul</th>
+                  <th>Status</th>
+                  <th>Amallar</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (payment of payments; track payment.id) {
+                  <tr>
+                    <td>{{ payment.createdDate | date:'short' }}</td>
+                    <td>
+                      <button mat-button color="primary" (click)="viewPaymentDetails(payment)">
+                        #{{ payment.bookingId }}
+                      </button>
+                    </td>
+                    <td>
+                      <span class="amount">{{ payment.amount | number:'uz' }} UZS</span>
+                    </td>
+                    <td>
+                      <div class="method-cell">
+                        <mat-icon>{{ getMethodIcon(payment.method) }}</mat-icon>
+                        <span>{{ getMethodText(payment.method) }}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="status-badge {{ getStatusColor(payment.status) }}">
+                        <mat-icon>{{ getStatusIcon(payment.status) }}</mat-icon>
+                        {{ getStatusText(payment.status) }}
+                      </span>
+                    </td>
+                    <td>
+                      <button 
+                        mat-icon-button 
+                        (click)="cancelPayment(payment, $event)"
+                        [disabled]="payment.status !== 'Pending'"
+                        matTooltip="Bekor qilish">
+                        <mat-icon>cancel</mat-icon>
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    }
+
+    <div class="empty-state" *ngIf="payments.length === 0">
+      <mat-icon>receipt_long</mat-icon>
+      <h3>To'lovlar yo'q</h3>
+      <p>Hali hech qanday to'lov amalga oshirmagansiz.</p>
+      <button mat-raised-button color="primary" routerLink="/properties">
+        <mat-icon>search</mat-icon>
+        Mulklarni ko'rish
+      </button>
+    </div>
+  </div>
+
+  <ng-template #loadingTemplate>
+    <div class="loading-state">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>To'lovlar yuklanmoqda...</p>
+    </div>
+  </ng-template>
+
+  @if (pagedResult && pagedResult.totalCount > pageSize) {
+    <div class="pagination-section">
+      <mat-paginator 
+        [length]="pagedResult.totalCount"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="[5, 10, 25, 50]"
+        [pageIndex]="currentPage - 1"
+        (page)="onPageChange($event)">
+      </mat-paginator>
+    </div>
+  }
+</div>

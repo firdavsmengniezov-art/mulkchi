@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Moq;
 using Mulkchi.Api.Models.Foundations.Favorites;
+using Mulkchi.Api.Models.Foundations.Properties;
 
 namespace Mulkchi.Api.Tests.Unit.Tests.Foundations.Favorites;
 
@@ -31,6 +32,20 @@ public partial class FavoriteServiceTests
             broker.InsertFavoriteAsync(inputFavorite))
                 .ReturnsAsync(expectedFavorite);
 
+        // Mock the SelectPropertyByIdAsync call for favorites count update
+        this.storageBrokerMock.Setup(broker =>
+            broker.SelectPropertyByIdAsync(inputFavorite.PropertyId))
+                .ReturnsAsync(new Property 
+                { 
+                    Id = inputFavorite.PropertyId,
+                    FavoritesCount = 0,
+                    UpdatedDate = DateTimeOffset.UtcNow
+                });
+
+        this.storageBrokerMock.Setup(broker =>
+            broker.UpdatePropertyAsync(It.IsAny<Property>()))
+                .ReturnsAsync(It.IsAny<Property>());
+
         // when
         Favorite actualFavorite = await this.favoriteService.AddFavoriteAsync(inputFavorite);
 
@@ -49,6 +64,12 @@ public partial class FavoriteServiceTests
             broker.InsertFavoriteAsync(inputFavorite),
             Times.Once);
 
-        this.storageBrokerMock.VerifyNoOtherCalls();
+        this.storageBrokerMock.Verify(broker =>
+            broker.SelectPropertyByIdAsync(inputFavorite.PropertyId),
+            Times.Once);
+
+        this.storageBrokerMock.Verify(broker =>
+            broker.UpdatePropertyAsync(It.IsAny<Property>()),
+            Times.Once);
     }
 }

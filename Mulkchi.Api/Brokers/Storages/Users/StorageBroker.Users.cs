@@ -43,4 +43,11 @@ public partial class StorageBroker
         await this.SaveChangesAsync();
         return user;
     }
+
+    // Admin methods to bypass soft delete filters
+    public IQueryable<User> SelectAllUsersIncludingDeleted()
+        => this.Users.IgnoreQueryFilters().AsQueryable();
+
+    public async ValueTask<User> SelectUserByIdIncludingDeletedAsync(Guid userId)
+        => (await this.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == userId))!;
 }

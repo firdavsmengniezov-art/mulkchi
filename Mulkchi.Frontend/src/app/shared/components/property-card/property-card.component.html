@@ -1,0 +1,102 @@
+<div class="property-card animate-slide-up" (click)="navigateToProperty()">
+  <div class="card-image">
+    <img [src]="getImage()" [alt]="property.title" (error)="onImageError($event)">
+    
+    <!-- Status Badge -->
+    <div class="badge badge-{{ property.listingType.toLowerCase() }}">
+      <span class="badge-emoji">
+        @if (property.listingType === 'Sale') { 💰 }
+        @else if (property.listingType === 'Rent') { 🏢 }
+        @else { 🏨 }
+      </span>
+      <span>
+        @if (property.listingType === 'Sale') { Sotuv }
+        @else if (property.listingType === 'Rent') { Ijara }
+        @else { Kunlik }
+      </span>
+    </div>
+    
+    <!-- Instant Book Badge -->
+    @if (property.isInstantBook) {
+      <div class="instant-book-badge">
+        <span class="instant-emoji">⚡</span>
+        <span>Darhol bron</span>
+      </div>
+    }
+    
+    <!-- Favorite Button -->
+    <button class="fav-btn" (click)="toggleFavorite($event)" [class.favorited]="isFavorite">
+      <span class="fav-emoji">{{ isFavorite ? '❤️' : '🤍' }}</span>
+    </button>
+    
+    <!-- Price Display -->
+    <div class="price-overlay">
+      <div class="price">
+        <span class="price-emoji">💵</span>
+        <span>{{ getPrice() }}</span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="card-body">
+    <!-- Title and Location -->
+    <div class="property-header">
+      <h3 class="property-title">{{ property.title || 'Mulk nomi' }}</h3>
+      <div class="location">
+        <span class="location-emoji">📍</span>
+        <span>{{ property.address || 'Manzil ko\'rsatilmagan' }}</span>
+      </div>
+    </div>
+    
+    <!-- Property Features -->
+    <div class="features">
+      @if (property.numberOfBedrooms) {
+        <div class="feature">
+          <span class="feature-emoji">🛏️</span>
+          <span>{{ property.numberOfBedrooms }} xona</span>
+        </div>
+      }
+      @if (property.numberOfBathrooms) {
+        <div class="feature">
+          <span class="feature-emoji">🛁</span>
+          <span>{{ property.numberOfBathrooms }} vann</span>
+        </div>
+      }
+      @if (property.area) {
+        <div class="feature">
+          <span class="feature-emoji">📐</span>
+          <span>{{ property.area }} m²</span>
+        </div>
+      }
+    </div>
+    
+    <!-- Rating and Reviews -->
+    <div class="rating-section">
+      <div class="rating">
+        <span class="star-emoji">⭐</span>
+        <span>{{ property.averageRating || '4.5' }}</span>
+        <span class="rating-count">({{ property.viewsCount || '12' }})</span>
+      </div>
+      
+      <!-- AI Badge -->
+      @if (property.isRenovated) {
+        <div class="ai-badge">
+          <span class="ai-emoji">🔧</span>
+          <span>Ta'mirlandi</span>
+        </div>
+      }
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="card-actions">
+      <button class="contact-btn">
+        <span class="btn-emoji">📞</span>
+        Bog'lanish
+      </button>
+      <button class="details-btn">
+        <span class="btn-emoji">ℹ️</span>
+        Batafsil
+      </button>
+    </div>
+  </div>
+</div>

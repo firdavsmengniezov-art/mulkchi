@@ -17,6 +17,17 @@ public partial class ReviewServiceTests
 
         IQueryable<Review> allReviews = new List<Review>().AsQueryable();
 
+        // Set up CurrentUserService mock to return the review's reviewer ID
+        this.currentUserServiceMock.Setup(x => x.GetCurrentUserId())
+            .Returns(randomReview.ReviewerId);
+        this.currentUserServiceMock.Setup(x => x.IsInRole("Admin"))
+            .Returns(false);
+
+        // Mock the SelectReviewByIdAsync call that the authorization check makes
+        this.storageBrokerMock.Setup(broker =>
+            broker.SelectReviewByIdAsync(randomReview.Id))
+                .ReturnsAsync(randomReview);
+
         this.storageBrokerMock.Setup(broker =>
             broker.DeleteReviewByIdAsync(randomReview.Id))
                 .ReturnsAsync(expectedReview);
@@ -42,6 +53,10 @@ public partial class ReviewServiceTests
 
         // then
         actualReview.Should().BeEquivalentTo(expectedReview);
+
+        this.storageBrokerMock.Verify(broker =>
+            broker.SelectReviewByIdAsync(randomReview.Id),
+            Times.Once);
 
         this.storageBrokerMock.Verify(broker =>
             broker.DeleteReviewByIdAsync(randomReview.Id),

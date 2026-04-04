@@ -1,0 +1,138 @@
+<div class="dashboard">
+  <div class="dash-header">
+    <div class="container dash-header-inner">
+      <div>
+        <h1>Host Dashboard</h1>
+        <p>Mulklaringiz va bronlarni boshqaring</p>
+      </div>
+      <button class="btn-new" routerLink="/properties/create">+ Yangi e'lon</button>
+    </div>
+  </div>
+
+  <div class="container dash-body">
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">🏠</div>
+        <div class="stat-val">{{ totalProperties }}</div>
+        <div class="stat-label">Jami mulklar</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📅</div>
+        <div class="stat-val">{{ totalBookings }}</div>
+        <div class="stat-label">Jami bronlar</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⭐</div>
+        <div class="stat-val">4.8</div>
+        <div class="stat-label">O'rtacha reyting</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">👁</div>
+        <div class="stat-val">{{ properties.length * 50 }}</div>
+        <div class="stat-label">Jami ko'rishlar</div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button [class.active]="activeTab === 'properties'" (click)="activeTab = 'properties'">
+        🏠 Mulklarim
+      </button>
+      <button [class.active]="activeTab === 'bookings'" (click)="activeTab = 'bookings'">
+        📅 Bronlar
+      </button>
+    </div>
+
+    <!-- PROPERTIES TAB -->
+    @if (activeTab === 'properties') {
+      @if (loading) {
+        <div class="loading">Yuklanmoqda...</div>
+      } @else if (properties.length === 0) {
+        <div class="empty">
+          <div style="font-size:48px">🏠</div>
+          <h3>Hali e'lon yo'q</h3>
+          <p>Birinchi mulkingizni qo'shing</p>
+          <button class="btn-new" routerLink="/properties/create">+ Yangi e'lon</button>
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Mulk nomi</th>
+                <th>Tur</th>
+                <th>Narx</th>
+                <th>Ko'rishlar</th>
+                <th>Holat</th>
+                <th>Amallar</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of properties; track p.id) {
+                <tr>
+                  <td>
+                    <div class="prop-name">
+                      <div class="prop-thumb">🏠</div>
+                      <div>
+                        <div class="prop-title">{{ p.title }}</div>
+                        <div class="prop-loc">{{ p.city }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span class="type-tag">{{ getListingTypeText(p.listingType) }}</span></td>
+                  <td class="price-cell">{{ getPrice(p) }}</td>
+                  <td>{{ p.viewsCount || 0 }}</td>
+                  <td><span class="status-dot available">Faol</span></td>
+                  <td>
+                    <div class="action-btns">
+                      <button class="btn-edit" [routerLink]="['/properties', p.id]">Ko'rish</button>
+                      <button class="btn-delete" (click)="deleteProperty(p.id)">O'chirish</button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+
+    <!-- BOOKINGS TAB -->
+    @if (activeTab === 'bookings') {
+      @if (bookings.length === 0) {
+        <div class="empty">
+          <div style="font-size:48px">📅</div>
+          <h3>Hali bron yo'q</h3>
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Mulk</th>
+                <th>Kirish</th>
+                <th>Chiqish</th>
+                <th>Mehmonlar</th>
+                <th>Jami narx</th>
+                <th>Holat</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (b of bookings; track b.id) {
+                <tr>
+                  <td>{{ b.property?.title || 'Mulk' }}</td>
+                  <td>{{ b.checkInDate | date:'dd.MM.yyyy' }}</td>
+                  <td>{{ b.checkOutDate | date:'dd.MM.yyyy' }}</td>
+                  <td>{{ b.guestsCount }}</td>
+                  <td>${{ b.totalPrice }}</td>
+                  <td><span [class]="'status-dot ' + getStatusClass(b.status)">{{ getStatusText(b.status) }}</span></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+  </div>
+</div>

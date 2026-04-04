@@ -9,6 +9,7 @@ using Mulkchi.Api.Brokers.Storages;
 using Mulkchi.Api.Models.Foundations.Properties;
 using Mulkchi.Api.Models.Foundations.Reviews;
 using Mulkchi.Api.Services.Foundations.Reviews;
+using Mulkchi.Api.Services.Foundations.Auth;
 
 namespace Mulkchi.Api.Tests.Unit.Tests.Foundations.Reviews;
 
@@ -17,6 +18,7 @@ public partial class ReviewServiceTests
     private readonly Mock<IStorageBroker> storageBrokerMock;
     private readonly Mock<ILoggingBroker> loggingBrokerMock;
     private readonly Mock<IDateTimeBroker> dateTimeBrokerMock;
+    private readonly Mock<ICurrentUserService> currentUserServiceMock;
     private readonly IReviewService reviewService;
 
     public ReviewServiceTests()
@@ -24,10 +26,12 @@ public partial class ReviewServiceTests
         this.storageBrokerMock = new Mock<IStorageBroker>();
         this.loggingBrokerMock = new Mock<ILoggingBroker>();
         this.dateTimeBrokerMock = new Mock<IDateTimeBroker>();
+        this.currentUserServiceMock = new Mock<ICurrentUserService>();
         this.reviewService = new ReviewService(
             this.storageBrokerMock.Object,
             this.loggingBrokerMock.Object,
-            this.dateTimeBrokerMock.Object);
+            this.dateTimeBrokerMock.Object,
+            this.currentUserServiceMock.Object);
     }
 
     private static Review CreateRandomReview()

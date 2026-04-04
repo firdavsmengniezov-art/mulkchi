@@ -1,0 +1,139 @@
+<app-navbar></app-navbar>
+
+<div class="ai-page">
+  <div class="container">
+    <div class="ai-header">
+      <span class="ml-badge">ML.NET</span>
+      <h1>Sun'iy Intellekt Narx Bashorati</h1>
+      <p>Mulk xususiyatlarini kiriting — AI optimal narxni hisoblaydi</p>
+    </div>
+
+    <div class="ai-grid">
+      <!-- FORM -->
+      <div class="ai-form card">
+        <h3>Mulk ma'lumotlari</h3>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Maydon (m²)</label>
+            <input type="number" [(ngModel)]="area" min="10" max="1000" placeholder="85">
+          </div>
+          <div class="form-group">
+            <label>Xonalar soni</label>
+            <input type="number" [(ngModel)]="bedrooms" min="0" max="20" placeholder="3">
+          </div>
+          <div class="form-group">
+            <label>Hammomlar soni</label>
+            <input type="number" [(ngModel)]="bathrooms" min="1" max="10" placeholder="2">
+          </div>
+          <div class="form-group">
+            <label>Shaharga masofa (km)</label>
+            <input type="number" [(ngModel)]="distance" min="0" max="100" placeholder="5">
+          </div>
+          <div class="form-group full">
+            <label>Viloyat</label>
+            <select [(ngModel)]="region">
+              <option *ngFor="let r of regions" [value]="r">{{ r }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="amenities">
+          <h4>Qulayliklar</h4>
+          <div class="amenity-grid">
+            <label class="amenity-check">
+              <input type="checkbox" [(ngModel)]="hasWifi">
+              <span>📶 Wi-Fi</span>
+            </label>
+            <label class="amenity-check">
+              <input type="checkbox" [(ngModel)]="hasParking">
+              <span>🚗 Parking</span>
+            </label>
+            <label class="amenity-check">
+              <input type="checkbox" [(ngModel)]="hasPool">
+              <span>🏊 Basseyn</span>
+            </label>
+            <label class="amenity-check">
+              <input type="checkbox" [(ngModel)]="isRenovated">
+              <span>🔨 Ta'mirlangan</span>
+            </label>
+            <label class="amenity-check">
+              <input type="checkbox" [(ngModel)]="hasElevator">
+              <span>🏢 Lift</span>
+            </label>
+          </div>
+        </div>
+
+        @if (errorMsg) {
+          <div class="error-msg">⚠️ {{ errorMsg }}</div>
+        }
+
+        <button class="btn-predict" (click)="predictPrice()" [disabled]="loading">
+          @if (loading) { ⏳ Hisoblanmoqda... }
+          @else { 🤖 Narxni hisoblash }
+        </button>
+      </div>
+
+      <!-- RESULT -->
+      <div class="ai-result card" [class.has-result]="result">
+        @if (!result && !loading) {
+          <div class="empty-result">
+            <div class="empty-icon">🤖</div>
+            <h3>Natija bu yerda chiqadi</h3>
+            <p>Chap tarafdagi formani to'ldiring va "Narxni hisoblash" tugmasini bosing</p>
+          </div>
+        }
+
+        @if (loading) {
+          <div class="empty-result">
+            <div class="empty-icon">⏳</div>
+            <h3>Hisoblanmoqda...</h3>
+            <p>AI modelimiz narxni aniqlamoqda</p>
+          </div>
+        }
+
+        @if (result) {
+          <div class="result-content">
+            <div class="result-header">
+              <span class="confidence-badge" [style.background]="getConfidenceColor()">
+                🎯 Ishonch: {{ getConfidenceText() }}
+              </span>
+            </div>
+
+            <div class="result-price">
+              <div class="price-label">Tavsiya narx</div>
+              <div class="price-value">${{ result.predictedPrice | number:'1.0-0' }}</div>
+              <div class="price-period">/oy</div>
+            </div>
+
+            <div class="price-range">
+              <div class="range-labels">
+                <span>${{ result.priceRange.min | number:'1.0-0' }}</span>
+                <span>Narx oralig'i</span>
+                <span>${{ result.priceRange.max | number:'1.0-0' }}</span>
+              </div>
+              <div class="range-bar">
+                <div class="range-fill"></div>
+                <div class="range-dot" [style.left]="getRangePercent() + '%'"></div>
+              </div>
+            </div>
+
+            <div class="result-stats">
+              <div class="stat">
+                <span class="stat-val">{{ result.basedOnProperties }}</span>
+                <span class="stat-label">Ta mulk asosida</span>
+              </div>
+            </div>
+
+            @if (result.recommendation) {
+              <div class="recommendation">
+                <h4>💡 Tavsiya</h4>
+                <p>{{ result.recommendation }}</p>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
