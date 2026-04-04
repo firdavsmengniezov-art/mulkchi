@@ -23,7 +23,7 @@ export class NotificationService implements OnDestroy {
   ) {
     this.hubConnection = new HubConnectionBuilder()
       .withUrl(`${environment.hubUrl}/notificationhub`, {
-        accessTokenFactory: () => localStorage.getItem('access_token') || ''
+        accessTokenFactory: () => sessionStorage.getItem('access_token') || ''
       })
       .withAutomaticReconnect([0, 2000, 5000, 10000])
       .configureLogging(LogLevel.Warning)
@@ -144,7 +144,7 @@ export class NotificationService implements OnDestroy {
       verticalPosition: 'top'
     });
 
-    snackBarRef.onAction().subscribe(() => {
+    snackBarRef.onAction().pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.router.navigate(['/notifications']);
     });
   }

@@ -5,6 +5,7 @@ using Mulkchi.Api.Brokers.Storages;
 using Mulkchi.Api.Models.Foundations.Properties;
 using Mulkchi.Api.Models.Foundations.PropertyImages;
 using Mulkchi.Api.Models.Foundations.PropertyImages.Exceptions;
+using Mulkchi.Api.Services.Foundations.Properties;
 using Mulkchi.Api.Services.Foundations.PropertyImages;
 using System;
 using System.Security.Claims;
@@ -18,13 +19,16 @@ public class PropertyImagesUploadController : ControllerBase
 {
     private readonly IPropertyImageService propertyImageService;
     private readonly IFileStorageBroker fileStorageBroker;
+    private readonly IPropertyService propertyService;
 
     public PropertyImagesUploadController(
         IPropertyImageService propertyImageService,
-        IFileStorageBroker fileStorageBroker)
+        IFileStorageBroker fileStorageBroker,
+        IPropertyService propertyService)
     {
         this.propertyImageService = propertyImageService;
         this.fileStorageBroker = fileStorageBroker;
+        this.propertyService = propertyService;
     }
 
     [HttpPost("upload")]
@@ -37,7 +41,11 @@ public class PropertyImagesUploadController : ControllerBase
             if (userIdClaim is null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
                 return Unauthorized();
 
-            // Upload file
+            ActionResult ownershipResult = await VerifyPropertyOwnershipAsync(propertyId, currentUserId);
+            if (ownershipResult is not OkResult)
+                return ownershipResult;
+
+            // Upload file only after ownership is verified
             string imageUrl = await fileStorageBroker.UploadImageAsync(file, "property-images");
 
             // Create PropertyImage record
@@ -91,6 +99,10 @@ public class PropertyImagesUploadController : ControllerBase
             if (propertyImage == null)
                 return NotFound();
 
+            ActionResult ownershipResult = await VerifyPropertyOwnershipAsync(propertyImage.PropertyId, currentUserId);
+            if (ownershipResult is not OkResult)
+                return ownershipResult;
+
             // Delete file from storage
             await fileStorageBroker.DeleteImageAsync(propertyImage.Url);
 
@@ -115,5 +127,20 @@ public class PropertyImagesUploadController : ControllerBase
         {
             return StatusCode(StatusCodes.Status500InternalServerError, new { message = "A service error occurred." });
         }
+    }
+
+    private async Task<ActionResult> VerifyPropertyOwnershipAsync(Guid propertyId, Guid currentUserId)
+    {
+        if (User.IsInRole("Admin"))
+            return Ok();
+
+        Property property = await this.propertyService.RetrievePropertyByIdAsync(propertyId);
+        if (property is null)
+            return NotFound(new { message = "Property not found." });
+
+        if (property.HostId != currentUserId)
+            return Forbid();
+
+        return Ok();
     }
 }

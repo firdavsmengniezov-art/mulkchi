@@ -40,7 +40,7 @@ export class ChatService implements OnDestroy {
   constructor(private http: HttpClient) {
     this.hubConnection = new HubConnectionBuilder()
       .withUrl(`${environment.hubUrl}/hubs/chat`, {
-        accessTokenFactory: () => localStorage.getItem('access_token') || '',
+        accessTokenFactory: () => sessionStorage.getItem('access_token') || '',
         skipNegotiation: true,
         transport: HttpTransportType.LongPolling
       })
@@ -90,43 +90,30 @@ export class ChatService implements OnDestroy {
 
   async startConnection(): Promise<void> {
     try {
-      // Check if user is authenticated before connecting
-      const token = localStorage.getItem('access_token');
+      const token = sessionStorage.getItem('access_token');
       if (!token) {
         console.warn('No access token found, skipping SignalR connection');
         this.connectionStatus$.next(false);
         return;
       }
 
-      // Temporarily disable SignalR for development
-      console.warn('SignalR chat temporarily disabled for development');
-      this.connectionStatus$.next(false);
-      return;
-
-      // Check if connection is already started
       if (this.hubConnection.state === 'Connected') {
-        console.log('Chat hub already connected');
         this.connectionStatus$.next(true);
         return;
       }
 
-      // Stop connection if it's in a connecting state
       if (this.hubConnection.state === 'Connecting') {
         await this.hubConnection.stop();
       }
 
       await this.hubConnection.start();
       this.connectionStatus$.next(true);
-      console.log('Chat hub connection started');
     } catch (err) {
       console.error('Chat hub connection failed:', err);
       this.connectionStatus$.next(false);
-      // Don't retry if unauthorized or already connected
       if (err instanceof Error && (err.message.includes('401') || err.message.includes('not in the \'Disconnected\' state'))) {
-        console.warn('Connection error, skipping retry:', err.message);
         return;
       }
-      // Retry after 5 seconds for other errors
       setTimeout(() => this.startConnection(), 5000);
     }
   }
@@ -173,11 +160,6 @@ export class ChatService implements OnDestroy {
   }
 
   loadConversations(): void {
-    // Temporarily disable conversations loading for development
-    console.warn('Conversations loading temporarily disabled for development');
-    this.conversations$.next([]);
-    return;
-
     this.http.get<Conversation[]>(`${environment.apiUrl}/messages/conversations`)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
