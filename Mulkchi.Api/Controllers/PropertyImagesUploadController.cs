@@ -5,6 +5,7 @@ using Mulkchi.Api.Brokers.Storages;
 using Mulkchi.Api.Models.Foundations.Properties;
 using Mulkchi.Api.Models.Foundations.PropertyImages;
 using Mulkchi.Api.Models.Foundations.PropertyImages.Exceptions;
+using Mulkchi.Api.Services.Foundations.Properties;
 using Mulkchi.Api.Services.Foundations.PropertyImages;
 using System;
 using System.Security.Claims;
@@ -18,13 +19,16 @@ public class PropertyImagesUploadController : ControllerBase
 {
     private readonly IPropertyImageService propertyImageService;
     private readonly IFileStorageBroker fileStorageBroker;
+    private readonly IPropertyService propertyService;
 
     public PropertyImagesUploadController(
         IPropertyImageService propertyImageService,
-        IFileStorageBroker fileStorageBroker)
+        IFileStorageBroker fileStorageBroker,
+        IPropertyService propertyService)
     {
         this.propertyImageService = propertyImageService;
         this.fileStorageBroker = fileStorageBroker;
+        this.propertyService = propertyService;
     }
 
     [HttpPost("upload")]
@@ -37,7 +41,18 @@ public class PropertyImagesUploadController : ControllerBase
             if (userIdClaim is null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
                 return Unauthorized();
 
-            // Upload file
+            bool isAdmin = User.IsInRole("Admin");
+            if (!isAdmin)
+            {
+                Property property = await this.propertyService.RetrievePropertyByIdAsync(propertyId);
+                if (property is null)
+                    return NotFound(new { message = "Property not found." });
+
+                if (property.HostId != currentUserId)
+                    return Forbid();
+            }
+
+            // Upload file only after ownership is verified
             string imageUrl = await fileStorageBroker.UploadImageAsync(file, "property-images");
 
             // Create PropertyImage record
@@ -90,6 +105,14 @@ public class PropertyImagesUploadController : ControllerBase
             PropertyImage propertyImage = await propertyImageService.RetrievePropertyImageByIdAsync(id);
             if (propertyImage == null)
                 return NotFound();
+
+            bool isAdmin = User.IsInRole("Admin");
+            if (!isAdmin)
+            {
+                Property property = await this.propertyService.RetrievePropertyByIdAsync(propertyImage.PropertyId);
+                if (property is null || property.HostId != currentUserId)
+                    return Forbid();
+            }
 
             // Delete file from storage
             await fileStorageBroker.DeleteImageAsync(propertyImage.Url);

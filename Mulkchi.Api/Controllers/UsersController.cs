@@ -108,6 +108,19 @@ public class UsersController : ControllerBase
             if (!isAdmin && user.Id != currentUserId)
                 return Forbid();
 
+            if (!isAdmin)
+            {
+                User existingUser = await this.userService.RetrieveUserByIdAsync(user.Id);
+                user.Role = existingUser.Role;
+                user.IsVerified = existingUser.IsVerified;
+                user.Badge = existingUser.Badge;
+                user.Rating = existingUser.Rating;
+                user.ResponseRate = existingUser.ResponseRate;
+                user.TotalListings = existingUser.TotalListings;
+                user.TotalBookings = existingUser.TotalBookings;
+                user.CreatedDate = existingUser.CreatedDate;
+            }
+
             User modifiedUser = await this.userService.ModifyUserAsync(user);
             return Ok(modifiedUser);
         }

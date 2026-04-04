@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using Mulkchi.Api.Models.Foundations.Bookings;
 using Mulkchi.Api.Models.Foundations.Common;
@@ -23,38 +24,39 @@ namespace Mulkchi.Api.Controllers
 
         [HttpGet]
         [Authorize]
-        public ActionResult<PagedResult<Booking>> GetAllBookings([FromQuery] PaginationParams pagination)
+        public async Task<ActionResult<PagedResult<Booking>>> GetAllBookings([FromQuery] PaginationParams pagination)
         {
             try
             {
                 IQueryable<Booking> query = this.bookingService.RetrieveAllBookings();
-                
-                int totalCount = query.Count();
-                
-                var items = query
+
+                var countTask = query.CountAsync();
+                var itemsTask = query
                     .Skip((pagination.Page - 1) * pagination.PageSize)
                     .Take(pagination.PageSize)
-                    .ToList();
+                    .ToListAsync();
+
+                await Task.WhenAll(countTask, itemsTask);
 
                 var result = new PagedResult<Booking>
                 {
-                    Items = items,
-                    TotalCount = totalCount,
+                    Items = itemsTask.Result,
+                    TotalCount = countTask.Result,
                     Page = pagination.Page,
                     PageSize = pagination.PageSize
                 };
 
                 return Ok(result);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+                return StatusCode(500, new { message = "Internal server error." });
             }
         }
 
         [HttpGet("my")]
         [Authorize]
-        public ActionResult<PagedResult<Booking>> GetMyBookings([FromQuery] PaginationParams pagination)
+        public async Task<ActionResult<PagedResult<Booking>>> GetMyBookings([FromQuery] PaginationParams pagination)
         {
             try
             {
@@ -64,33 +66,34 @@ namespace Mulkchi.Api.Controllers
 
                 IQueryable<Booking> query = this.bookingService.RetrieveAllBookings()
                     .Where(b => b.GuestId == currentUserId);
-                
-                int totalCount = query.Count();
-                
-                var items = query
+
+                var countTask = query.CountAsync();
+                var itemsTask = query
                     .Skip((pagination.Page - 1) * pagination.PageSize)
                     .Take(pagination.PageSize)
-                    .ToList();
+                    .ToListAsync();
+
+                await Task.WhenAll(countTask, itemsTask);
 
                 var result = new PagedResult<Booking>
                 {
-                    Items = items,
-                    TotalCount = totalCount,
+                    Items = itemsTask.Result,
+                    TotalCount = countTask.Result,
                     Page = pagination.Page,
                     PageSize = pagination.PageSize
                 };
 
                 return Ok(result);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+                return StatusCode(500, new { message = "Internal server error." });
             }
         }
 
         [HttpGet("host")]
         [Authorize(Roles = "Host,Admin")]
-        public ActionResult<PagedResult<Booking>> GetHostBookings([FromQuery] PaginationParams pagination)
+        public async Task<ActionResult<PagedResult<Booking>>> GetHostBookings([FromQuery] PaginationParams pagination)
         {
             try
             {
@@ -100,27 +103,28 @@ namespace Mulkchi.Api.Controllers
 
                 IQueryable<Booking> query = this.bookingService.RetrieveAllBookings()
                     .Where(b => b.Property.HostId == currentUserId);
-                
-                int totalCount = query.Count();
-                
-                var items = query
+
+                var countTask = query.CountAsync();
+                var itemsTask = query
                     .Skip((pagination.Page - 1) * pagination.PageSize)
                     .Take(pagination.PageSize)
-                    .ToList();
+                    .ToListAsync();
+
+                await Task.WhenAll(countTask, itemsTask);
 
                 var result = new PagedResult<Booking>
                 {
-                    Items = items,
-                    TotalCount = totalCount,
+                    Items = itemsTask.Result,
+                    TotalCount = countTask.Result,
                     Page = pagination.Page,
                     PageSize = pagination.PageSize
                 };
 
                 return Ok(result);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+                return StatusCode(500, new { message = "Internal server error." });
             }
         }
 
@@ -137,9 +141,9 @@ namespace Mulkchi.Api.Controllers
             {
                 return Unauthorized(new { message = ex.Message });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+                return StatusCode(500, new { message = "Internal server error." });
             }
         }
 
@@ -155,12 +159,12 @@ namespace Mulkchi.Api.Controllers
 
                 booking.GuestId = currentUserId;
                 Booking createdBooking = await this.bookingService.AddBookingAsync(booking);
-                
+
                 return CreatedAtAction(nameof(GetBookingByIdAsync), new { id = createdBooking.Id }, createdBooking);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+                return StatusCode(500, new { message = "Internal server error." });
             }
         }
 
@@ -171,22 +175,22 @@ namespace Mulkchi.Api.Controllers
             try
             {
                 Booking booking = await this.bookingService.RetrieveBookingByIdAsync(id);
-                
+
                 if (booking.Status != BookingStatus.Pending)
                     return BadRequest(new { message = "Only pending bookings can be confirmed." });
 
                 booking.Status = BookingStatus.Confirmed;
                 Booking updatedBooking = await this.bookingService.ModifyBookingAsync(booking);
-                
+
                 return Ok(updatedBooking);
             }
             catch (UnauthorizedAccessException ex)
             {
                 return Unauthorized(new { message = ex.Message });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+                return StatusCode(500, new { message = "Internal server error." });
             }
         }
 
@@ -197,7 +201,7 @@ namespace Mulkchi.Api.Controllers
             try
             {
                 Booking booking = await this.bookingService.RetrieveBookingByIdAsync(id);
-                
+
                 if (booking.Status == BookingStatus.Cancelled)
                     return BadRequest(new { message = "Booking is already cancelled." });
 
@@ -206,16 +210,16 @@ namespace Mulkchi.Api.Controllers
 
                 booking.Status = BookingStatus.Cancelled;
                 Booking updatedBooking = await this.bookingService.ModifyBookingAsync(booking);
-                
+
                 return Ok(updatedBooking);
             }
             catch (UnauthorizedAccessException ex)
             {
                 return Unauthorized(new { message = ex.Message });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+                return StatusCode(500, new { message = "Internal server error." });
             }
         }
 
@@ -232,9 +236,9 @@ namespace Mulkchi.Api.Controllers
             {
                 return Unauthorized(new { message = ex.Message });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+                return StatusCode(500, new { message = "Internal server error." });
             }
         }
 
@@ -251,9 +255,9 @@ namespace Mulkchi.Api.Controllers
             {
                 return Unauthorized(new { message = ex.Message });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+                return StatusCode(500, new { message = "Internal server error." });
             }
         }
     }

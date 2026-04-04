@@ -131,6 +131,18 @@ public class PaymentsController : ControllerBase
     {
         try
         {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdClaim is null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
+                return Unauthorized();
+
+            bool isAdmin = User.IsInRole("Admin");
+            if (!isAdmin)
+            {
+                Payment existingPayment = await this.paymentService.RetrievePaymentByIdAsync(payment.Id);
+                if (existingPayment.PayerId != currentUserId)
+                    return Forbid();
+            }
+
             Payment modifiedPayment = await this.paymentService.ModifyPaymentAsync(payment);
             return Ok(modifiedPayment);
         }

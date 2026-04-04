@@ -5,13 +5,20 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { environment } from '../../../environments/environment';
 import { Message } from '../models';
 
+export interface NotificationPayload {
+  id: string;
+  type: string;
+  message: string;
+  createdDate: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class SignalRService {
   private chatHub!: HubConnection;
   private notifHub!: HubConnection;
-  private messageSubject = new Subject<any>();
+  private messageSubject = new Subject<Message>();
   private typingSubject = new Subject<string>();
-  private notificationSubject = new Subject<any>();
+  private notificationSubject = new Subject<NotificationPayload>();
   private isConnected = false;
 
   message$ = this.messageSubject.asObservable();
@@ -29,9 +36,9 @@ export class SignalRService {
       .withUrl(`${environment.hubUrl}/hubs/notifications`, { accessTokenFactory: () => token })
       .withAutomaticReconnect().build();
 
-    this.chatHub.on('ReceiveMessage', msg => this.messageSubject.next(msg));
-    this.chatHub.on('UserTyping', userId => this.typingSubject.next(userId));
-    this.notifHub.on('ReceiveNotification', n => this.notificationSubject.next(n));
+    this.chatHub.on('ReceiveMessage', (msg: Message) => this.messageSubject.next(msg));
+    this.chatHub.on('UserTyping', (userId: string) => this.typingSubject.next(userId));
+    this.notifHub.on('ReceiveNotification', (n: NotificationPayload) => this.notificationSubject.next(n));
 
     // Start connections with retry logic
     await this.startHubWithRetry(this.chatHub, 'Chat Hub');

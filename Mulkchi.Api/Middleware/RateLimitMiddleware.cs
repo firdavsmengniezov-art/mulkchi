@@ -1,123 +1,125 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 
 namespace Mulkchi.Api.Middleware;
 
 public class RateLimitMiddleware
 {
     private readonly RequestDelegate _next;
-    private readonly ConcurrentDictionary<string, DateTime> _authRequests = new();
-    private readonly ConcurrentDictionary<string, DateTime> _uploadRequests = new();
-    private readonly ConcurrentDictionary<string, int> _generalRequests = new();
+    private readonly bool _isEnabled;
 
-    public RateLimitMiddleware(RequestDelegate next)
+    // Sliding window: IP -> queue of request timestamps
+    private readonly ConcurrentDictionary<string, Queue<long>> _authRequests = new();
+    private readonly ConcurrentDictionary<string, Queue<long>> _uploadRequests = new();
+    private readonly ConcurrentDictionary<string, Queue<long>> _generalRequests = new();
+
+    // Lock per key to avoid race conditions when mutating the queue
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = new();
+
+    private const int AuthMaxRequests = 20;
+    private const int AuthWindowSeconds = 60;
+    private const int UploadMaxRequests = 30;
+    private const int UploadWindowSeconds = 60;
+    private const int GeneralMaxRequests = 300;
+    private const int GeneralWindowSeconds = 60;
+
+    public RateLimitMiddleware(RequestDelegate next, IConfiguration configuration)
     {
         _next = next;
+        _isEnabled = configuration.GetValue<bool>("RateLimiting:Enabled", true);
     }
 
     public async Task InvokeAsync(HttpContext context)
     {
+        if (!_isEnabled)
+        {
+            await _next(context);
+            return;
+        }
+
         var clientIp = GetClientIp(context);
         var path = context.Request.Path.Value?.ToLower() ?? "";
-        var method = context.Request.Method;
 
-        // Skip rate limiting for development
-        // TODO: Enable rate limiting for production
-        await _next(context);
-        return;
-
-        // Check auth endpoints (100 requests per minute for development)
         if (path.StartsWith("/api/auth/"))
         {
-            if (IsRateLimited(_authRequests, clientIp, TimeSpan.FromMinutes(1), 100))
+            if (await IsRateLimitedAsync(_authRequests, clientIp, AuthWindowSeconds, AuthMaxRequests))
             {
                 context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
-                context.Response.Headers["Retry-After"] = "60";
-                await context.Response.WriteAsync("Rate limit exceeded for auth endpoints");
+                context.Response.Headers["Retry-After"] = AuthWindowSeconds.ToString();
+                await context.Response.WriteAsync("Too many authentication attempts. Please try again later.");
                 return;
             }
         }
-
-        // Check upload endpoint (50 requests per minute)
-        if (path.StartsWith("/api/propertyimages/upload"))
+        else if (path.StartsWith("/api/propertyimagesupload/upload"))
         {
-            if (IsRateLimited(_uploadRequests, clientIp, TimeSpan.FromMinutes(1), 50))
+            if (await IsRateLimitedAsync(_uploadRequests, clientIp, UploadWindowSeconds, UploadMaxRequests))
             {
                 context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
-                context.Response.Headers["Retry-After"] = "60";
-                await context.Response.WriteAsync("Rate limit exceeded for upload endpoint");
+                context.Response.Headers["Retry-After"] = UploadWindowSeconds.ToString();
+                await context.Response.WriteAsync("Too many upload requests. Please try again later.");
                 return;
             }
         }
-
-        // Check general requests (1000 requests per minute for development)
-        if (method == "GET")
+        else
         {
-            var currentCount = _generalRequests.GetOrAdd(clientIp, 0);
-            if (currentCount >= 1000)
+            if (await IsRateLimitedAsync(_generalRequests, clientIp, GeneralWindowSeconds, GeneralMaxRequests))
             {
                 context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
-                context.Response.Headers["Retry-After"] = "60";
-                await context.Response.WriteAsync("Rate limit exceeded for general requests");
+                context.Response.Headers["Retry-After"] = GeneralWindowSeconds.ToString();
+                await context.Response.WriteAsync("Too many requests. Please slow down.");
                 return;
             }
-            _generalRequests.AddOrUpdate(clientIp, 1, (key, value) => value + 1);
-
-            // Reset counter after 1 minute
-            _ = Task.Delay(TimeSpan.FromMinutes(1)).ContinueWith(_ => 
-            {
-                _generalRequests.TryGetValue(clientIp, out var currentCount);
-                if (currentCount <= 1)
-                {
-                    _generalRequests.TryRemove(clientIp, out int _);
-                }
-            });
         }
 
         await _next(context);
     }
 
-    private bool IsRateLimited(ConcurrentDictionary<string, DateTime> requests, string key, TimeSpan period, int maxRequests)
+    private async Task<bool> IsRateLimitedAsync(
+        ConcurrentDictionary<string, Queue<long>> store,
+        string key,
+        int windowSeconds,
+        int maxRequests)
     {
-        var now = DateTime.UtcNow;
-        
-        // Clean old entries
-        var oldEntries = requests.Where(kvp => kvp.Value < now - period).ToList();
-        foreach (var entry in oldEntries)
+        var semaphore = _locks.GetOrAdd(key, _ => new SemaphoreSlim(1, 1));
+        await semaphore.WaitAsync();
+        try
         {
-            requests.TryRemove(entry.Key, out _);
-        }
+            var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            var windowStart = now - windowSeconds;
 
-        // Check if rate limited
-        if (requests.TryGetValue(key, out var lastRequest))
-        {
-            if (now - lastRequest < period)
-            {
+            var queue = store.GetOrAdd(key, _ => new Queue<long>());
+
+            // Evict timestamps outside the current window
+            while (queue.Count > 0 && queue.Peek() <= windowStart)
+                queue.Dequeue();
+
+            if (queue.Count >= maxRequests)
                 return true;
-            }
-        }
 
-        // Update last request time
-        requests.AddOrUpdate(key, now, (k, v) => now);
-        return false;
+            queue.Enqueue(now);
+            return false;
+        }
+        finally
+        {
+            semaphore.Release();
+        }
     }
 
-    private string GetClientIp(HttpContext context)
+    private static string GetClientIp(HttpContext context)
     {
-        var xForwardedFor = context.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+        var xForwardedFor = context.Request.Headers["X-Forwarded-For"].ToString();
         if (!string.IsNullOrEmpty(xForwardedFor))
-        {
             return xForwardedFor.Split(',')[0].Trim();
-        }
 
-        var xRealIp = context.Request.Headers["X-Real-IP"].FirstOrDefault();
+        var xRealIp = context.Request.Headers["X-Real-IP"].ToString();
         if (!string.IsNullOrEmpty(xRealIp))
-        {
             return xRealIp;
-        }
 
         return context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
     }

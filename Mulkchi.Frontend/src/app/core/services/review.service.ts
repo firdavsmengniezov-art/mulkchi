@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { 
@@ -18,7 +18,11 @@ export class ReviewService {
   constructor(private http: HttpClient) {}
 
   getPropertyReviews(propertyId: string, page: number = 1, pageSize: number = 10): Observable<PagedResult<Review>> {
-    return this.http.get<PagedResult<Review>>(`${this.apiUrl}/reviews?propertyId=${propertyId}&page=${page}&pageSize=${pageSize}`);
+    const params = new HttpParams()
+      .set('propertyId', propertyId)
+      .set('page', page.toString())
+      .set('pageSize', pageSize.toString());
+    return this.http.get<PagedResult<Review>>(`${this.apiUrl}/reviews`, { params });
   }
 
   createReview(request: CreateReviewRequest): Observable<Review> {
@@ -34,7 +38,10 @@ export class ReviewService {
   }
 
   getMyReviews(page: number = 1, pageSize: number = 10): Observable<PagedResult<Review>> {
-    return this.http.get<PagedResult<Review>>(`${this.apiUrl}/reviews/my?page=${page}&pageSize=${pageSize}`);
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('pageSize', pageSize.toString());
+    return this.http.get<PagedResult<Review>>(`${this.apiUrl}/reviews/my`, { params });
   }
 
   getReviewById(id: string): Observable<Review> {

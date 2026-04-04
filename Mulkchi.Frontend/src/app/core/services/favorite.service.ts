@@ -59,13 +59,11 @@ export class FavoriteService {
     if (isFav) {
       return this.removeFavorite(propertyId)
         .pipe(
-          tap(() => {}),
           map(() => ({ isFavorited: false, favoritesCount: this.favoritesCount$.value }))
         );
     } else {
       return this.addFavorite(propertyId)
         .pipe(
-          tap(() => {}),
           map(f => ({ isFavorited: true, favoritesCount: this.favoritesCount$.value }))
         );
     }
