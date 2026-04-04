@@ -991,22 +991,55 @@ namespace Mulkchi.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTimeOffset>("CreatedDate")
+                    b.Property<string>("City")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTimeOffset?>("DeletedDate")
+                    b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("NotifyOnMatch")
+                    b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<string>("SearchQuery")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTimeOffset?>("LastNotifiedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTimeOffset>("UpdatedDate")
+                    b.Property<int?>("ListingType")
+                        .HasColumnType("int");
+
+                    b.Property<double?>("MaxArea")
+                        .HasColumnType("float");
+
+                    b.Property<decimal?>("MaxPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<double?>("MinArea")
+                        .HasColumnType("float");
+
+                    b.Property<int?>("MinBedrooms")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("MinPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("NotifyByEmail")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("NotifyByPush")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<Guid>("UserId")

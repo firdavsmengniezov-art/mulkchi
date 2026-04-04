@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Serilog;
 using Mulkchi.Api.Brokers.Storages;
 using Mulkchi.Api.Models.Foundations.Properties;
+using Microsoft.EntityFrameworkCore;
 
 namespace Mulkchi.Api;
 
@@ -52,7 +53,7 @@ public class Program
         
         // Check if properties already exist
         var existing = db.SelectAllProperties();
-        if (existing.Any()) return;
+        if (await existing.AnyAsync()) return;
         
         // Get host user
         var host = db.SelectAllUsers().FirstOrDefault();

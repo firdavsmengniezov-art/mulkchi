@@ -54,7 +54,8 @@ public partial class AuthServiceTests
         var filler = new Filler<RegisterRequest>();
         filler.Setup()
             .OnProperty(r => r.Email).Use(() => $"user{Random.Shared.Next(1000, 9999)}@example.com")
-            .OnProperty(r => r.Password).Use(() => $"Pass{Random.Shared.Next(1000, 9999)}word1");
+            .OnProperty(r => r.Password).Use(() => $"Pass{Random.Shared.Next(1000, 9999)}word1")
+            .OnProperty(r => r.Phone).Use(() => $"+998{Random.Shared.Next(100000000, 999999999)}");
 
         return filler.Create();
     }

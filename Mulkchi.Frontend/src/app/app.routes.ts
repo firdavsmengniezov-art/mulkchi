@@ -57,6 +57,21 @@ export const routes: Routes = [
     loadComponent: () => import('./features/bookings/host-bookings/host-bookings.component').then(m => m.HostBookingsComponent) 
   },
   { 
+    path: 'saved-searches', 
+    canActivate: [authGuard], 
+    loadComponent: () => import('./features/saved-searches/saved-search-list/saved-search-list.component').then(m => m.SavedSearchListComponent) 
+  },
+  { 
+    path: 'saved-searches/new', 
+    canActivate: [authGuard], 
+    loadComponent: () => import('./features/saved-searches/saved-search-form/saved-search-form.component').then(m => m.SavedSearchFormComponent) 
+  },
+  { 
+    path: 'saved-searches/:id/edit', 
+    canActivate: [authGuard], 
+    loadComponent: () => import('./features/saved-searches/saved-search-form/saved-search-form.component').then(m => m.SavedSearchFormComponent) 
+  },
+  { 
     path: 'profile', 
     canActivate: [authGuard], 
     loadComponent: () => import('./features/profile/profile.component').then(m => m.ProfileComponent) 

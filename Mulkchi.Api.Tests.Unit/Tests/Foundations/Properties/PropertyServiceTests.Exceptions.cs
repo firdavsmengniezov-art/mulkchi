@@ -86,11 +86,11 @@ public partial class PropertyServiceTests
     {
         // Arrange
         Guid propertyId = Guid.NewGuid();
-        Property nullProperty = null;
+        Property? nullProperty = null;
 
         this.storageBrokerMock.Setup(broker =>
             broker.SelectPropertyByIdAsync(propertyId))
-                .ReturnsAsync(nullProperty);
+                .ReturnsAsync(nullProperty!);
 
         // Act & Assert
         Func<Task> retrievePropertyTask = async () =>
@@ -103,7 +103,7 @@ public partial class PropertyServiceTests
     public async Task ModifyPropertyAsync_NullProperty_ThrowsValidationException()
     {
         // Arrange
-        Property nullProperty = null;
+        Property? nullProperty = null;
 
         // Act & Assert
         Func<Task> modifyPropertyTask = async () =>
@@ -121,11 +121,11 @@ public partial class PropertyServiceTests
     {
         // Arrange
         Guid propertyId = Guid.NewGuid();
-        Property nullProperty = null;
+        Property? nullProperty = null;
 
         this.storageBrokerMock.Setup(broker =>
             broker.SelectPropertyByIdAsync(propertyId))
-                .ReturnsAsync(nullProperty);
+                .ReturnsAsync(nullProperty!);
 
         // Act & Assert
         Func<Task> removePropertyTask = async () =>

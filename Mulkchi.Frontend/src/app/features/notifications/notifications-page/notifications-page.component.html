@@ -1,11 +1,11 @@
 <div class="notifications-page">
   <div class="page-header">
     <div class="header-content">
-      <h1>Bildirishnomalar</h1>
+      <h1>{{ 'NOTIFICATIONS.TITLE' | translate }}</h1>
       <div class="header-actions">
         <button mat-button (click)="markAllAsRead()" [disabled]="unreadCount === 0">
           <mat-icon>done_all</mat-icon>
-          Barchasini o'qilgan deb belgilash
+          {{ 'NOTIFICATIONS.MARK_ALL_READ' | translate }}
         </button>
       </div>
     </div>
@@ -13,28 +13,28 @@
     <div class="header-stats">
       <div class="stat-item">
         <span class="stat-number">{{ notifications.length }}</span>
-        <span class="stat-label">Jami</span>
+        <span class="stat-label">{{ 'NOTIFICATIONS.TOTAL' | translate }}</span>
       </div>
       <div class="stat-item">
         <span class="stat-number">{{ unreadCount }}</span>
-        <span class="stat-label">O'qilmagan</span>
+        <span class="stat-label">{{ 'NOTIFICATIONS.UNREAD' | translate }}</span>
       </div>
     </div>
   </div>
 
   <div class="filters-section">
     <mat-tab-group [(selectedIndex)]="currentTab" (selectedTabChange)="onTabChange($event.index)">
-      <mat-tab label="Barchasi">
+      <mat-tab [label]="'NOTIFICATIONS.ALL' | translate">
         <div class="tab-content">
           <div class="filters">
             <mat-form-field appearance="outline" class="search-field">
-              <mat-label>Qidirish...</mat-label>
+              <mat-label>{{ 'NOTIFICATIONS.SEARCH' | translate }}</mat-label>
               <input matInput (keyup)="onSearchChange($event)" [value]="searchTerm">
               <mat-icon matSuffix>search</mat-icon>
             </mat-form-field>
             
             <mat-form-field appearance="outline" class="type-filter">
-              <mat-label>Turi</mat-label>
+              <mat-label>{{ 'NOTIFICATIONS.TYPE' | translate }}</mat-label>
               <mat-select [(value)]="selectedType" (selectionChange)="onTypeChange($event.value)">
                 @for (type of getNotificationTypes(); track type.value) {
                   <mat-option [value]="type.value">{{ type.label }}</mat-option>
@@ -45,15 +45,15 @@
         </div>
       </mat-tab>
       
-      <mat-tab label="O'qilmagan">
+      <mat-tab [label]="'NOTIFICATIONS.UNREAD' | translate">
         <div class="tab-content">
-          <p class="tab-description">Faqat o'qilmagan bildirishnomalar</p>
+          <p class="tab-description">{{ 'NOTIFICATIONS.UNREAD_DESC' | translate }}</p>
         </div>
       </mat-tab>
       
-      <mat-tab label="O'qilgan">
+      <mat-tab [label]="'NOTIFICATIONS.READ' | translate">
         <div class="tab-content">
-          <p class="tab-description">O'qilgan bildirishnomalar</p>
+          <p class="tab-description">{{ 'NOTIFICATIONS.READ_DESC' | translate }}</p>
         </div>
       </mat-tab>
     </mat-tab-group>
@@ -85,11 +85,11 @@
           
           <div class="notification-actions">
             @if (!notification.isRead) {
-              <button mat-icon-button (click)="markAsRead(notification); $event.stopPropagation()" matTooltip="O'qilgan deb belgilash">
+              <button mat-icon-button (click)="markAsRead(notification); $event.stopPropagation()" [matTooltip]="'NOTIFICATIONS.MARK_READ' | translate">
                 <mat-icon>mark_as_unread</mat-icon>
               </button>
             }
-            <button mat-icon-button (click)="deleteNotification(notification); $event.stopPropagation()" matTooltip="O'chirish">
+            <button mat-icon-button (click)="deleteNotification(notification); $event.stopPropagation()" [matTooltip]="'NOTIFICATIONS.DELETE' | translate">
               <mat-icon>delete</mat-icon>
             </button>
           </div>
@@ -107,7 +107,7 @@
         @if (notification.actionUrl) {
           <div class="notification-action">
             <mat-icon>arrow_forward</mat-icon>
-            <span>Batafsil</span>
+            <span>{{ 'NOTIFICATIONS.DETAILS' | translate }}</span>
           </div>
         }
       </mat-card>
@@ -115,14 +115,14 @@
 
     <div class="empty-state" *ngIf="filteredNotifications.length === 0">
       <mat-icon>notifications_none</mat-icon>
-      <h3>Bildirishnomalar yo'q</h3>
+      <h3>{{ 'NOTIFICATIONS.NO_NOTIFICATIONS' | translate }}</h3>
       <p>
         @if (currentTab === 1) {
-          O'qilmagan bildirishnomalar yo'q
+          {{ 'NOTIFICATIONS.NO_UNREAD' | translate }}
         } @else if (currentTab === 2) {
-          O'qilgan bildirishnomalar yo'q
+          {{ 'NOTIFICATIONS.NO_READ' | translate }}
         } @else {
-          Hech qanday bildirishnoma topilmadi
+          {{ 'NOTIFICATIONS.NOT_FOUND' | translate }}
         }
       </p>
     </div>
@@ -131,7 +131,7 @@
   <ng-template #loadingTemplate>
     <div class="loading-state">
       <mat-spinner diameter="50"></mat-spinner>
-      <p>Yuklanmoqda...</p>
+      <p>{{ 'COMMON.LOADING' | translate }}</p>
     </div>
   </ng-template>
 </div>

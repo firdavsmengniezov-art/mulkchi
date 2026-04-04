@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Models.Foundations.Users;
 using Mulkchi.Api.Models.Foundations.Users.Exceptions;
@@ -21,20 +22,46 @@ public class UsersController : ControllerBase
 
     [HttpGet]
     [Authorize(Roles = "Admin")]
-    public ActionResult<PagedResult<User>> GetAllUsers([FromQuery] PaginationParams pagination)
+    public async Task<ActionResult<PagedResult<UserResponse>>> GetAllUsers([FromQuery] PaginationParams pagination)
     {
         try
         {
             IQueryable<User> query = this.userService.RetrieveAllUsers();
             
-            int totalCount = query.Count();
+            int totalCount = await query.CountAsync();
             
-            var items = query
+            // DTO Projection at database level
+            var items = await query
                 .Skip((pagination.Page - 1) * pagination.PageSize)
                 .Take(pagination.PageSize)
-                .ToList();
+                .Select(u => new UserResponse
+                {
+                    Id = u.Id,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName,
+                    Email = u.Email,
+                    Phone = u.Phone,
+                    AvatarUrl = u.AvatarUrl,
+                    Bio = u.Bio,
+                    Address = u.Address,
+                    DateOfBirth = u.DateOfBirth,
+                    Gender = u.Gender,
+                    IsVerified = u.IsVerified,
+                    Role = u.Role,
+                    Badge = u.Badge,
+                    Rating = u.Rating,
+                    ResponseRate = u.ResponseRate,
+                    ResponseTimeMinutes = u.ResponseTimeMinutes,
+                    TotalListings = u.TotalListings,
+                    TotalBookings = u.TotalBookings,
+                    HostSince = u.HostSince,
+                    PreferredLanguage = u.PreferredLanguage,
+                    CreatedDate = u.CreatedDate,
+                    UpdatedDate = u.UpdatedDate
+                })
+                .ToListAsync();
 
-            var result = new PagedResult<User>
+            var result = new PagedResult<UserResponse>
             {
                 Items = items,
                 TotalCount = totalCount,
@@ -56,7 +83,7 @@ public class UsersController : ControllerBase
 
     [HttpGet("{id}")]
     [Authorize]
-    public async ValueTask<ActionResult<User>> GetUserByIdAsync(Guid id)
+    public async ValueTask<ActionResult<UserResponse>> GetUserByIdAsync(Guid id)
     {
         try
         {
@@ -69,7 +96,35 @@ public class UsersController : ControllerBase
                 return Forbid();
 
             User user = await this.userService.RetrieveUserByIdAsync(id);
-            return Ok(user);
+            
+            // Map to UserResponse DTO
+            var response = new UserResponse
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                Phone = user.Phone,
+                AvatarUrl = user.AvatarUrl,
+                Bio = user.Bio,
+                Address = user.Address,
+                DateOfBirth = user.DateOfBirth,
+                Gender = user.Gender,
+                IsVerified = user.IsVerified,
+                Role = user.Role,
+                Badge = user.Badge,
+                Rating = user.Rating,
+                ResponseRate = user.ResponseRate,
+                ResponseTimeMinutes = user.ResponseTimeMinutes,
+                TotalListings = user.TotalListings,
+                TotalBookings = user.TotalBookings,
+                HostSince = user.HostSince,
+                PreferredLanguage = user.PreferredLanguage,
+                CreatedDate = user.CreatedDate,
+                UpdatedDate = user.UpdatedDate
+            };
+            
+            return Ok(response);
         }
         catch (UserValidationException userValidationException)
         {

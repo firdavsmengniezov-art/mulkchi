@@ -4,19 +4,19 @@
       <span class="brand-icon">🏠</span>
       <span class="brand-name">Mulkchi</span>
     </div>
-    <h2>Minglab xaridorlar bilan bog'laning</h2>
+    <h2>{{ 'AUTH.REGISTER_TITLE' | translate }}</h2>
     <div class="auth-features">
-      <div class="feat">✅ Bepul ro'yxatdan o'tish</div>
-      <div class="feat">✅ Darhol e'lon berish</div>
-      <div class="feat">✅ Xavfsiz to'lovlar</div>
-      <div class="feat">✅ 24/7 qo'llab-quvvatlash</div>
+      <div class="feat">✅ {{ 'AUTH.FREE_REGISTER' | translate }}</div>
+      <div class="feat">✅ {{ 'AUTH.INSTANT_LIST' | translate }}</div>
+      <div class="feat">✅ {{ 'AUTH.SECURE_PAYMENTS' | translate }}</div>
+      <div class="feat">✅ {{ 'AUTH.SUPPORT_24_7' | translate }}</div>
     </div>
   </div>
   <div class="auth-right">
     <mat-card class="auth-card animate-slide-up">
       <mat-card-header>
-        <mat-card-title>Ro'yxatdan o'ting</mat-card-title>
-        <mat-card-subtitle>Yangi akkaunt yarating</mat-card-subtitle>
+        <mat-card-title>{{ 'AUTH.REGISTER' | translate }}</mat-card-title>
+        <mat-card-subtitle>{{ 'AUTH.CREATE_ACCOUNT' | translate }}</mat-card-subtitle>
       </mat-card-header>
       <mat-card-content>
         @if (errorMsg) {
@@ -29,35 +29,35 @@
         <form class="auth-form">
           <div class="form-row">
             <mat-form-field appearance="outline" class="form-field">
-              <mat-label>Ism</mat-label>
-              <input matInput [(ngModel)]="firstName" placeholder="Ismingiz">
+              <mat-label>{{ 'AUTH.FIRST_NAME' | translate }}</mat-label>
+              <input matInput [(ngModel)]="firstName" name="firstName" [placeholder]="'AUTH.FIRST_NAME' | translate">
               <mat-icon matPrefix>person</mat-icon>
             </mat-form-field>
             
             <mat-form-field appearance="outline" class="form-field">
-              <mat-label>Familiya</mat-label>
-              <input matInput [(ngModel)]="lastName" placeholder="Familyangiz">
+              <mat-label>{{ 'AUTH.LAST_NAME' | translate }}</mat-label>
+              <input matInput [(ngModel)]="lastName" name="lastName" [placeholder]="'AUTH.LAST_NAME' | translate">
               <mat-icon matPrefix>person_outline</mat-icon>
             </mat-form-field>
           </div>
           
           <mat-form-field appearance="outline" class="form-field full-width">
-            <mat-label>Email</mat-label>
-            <input matInput type="email" [(ngModel)]="email" placeholder="email@example.com">
+            <mat-label>{{ 'AUTH.EMAIL' | translate }}</mat-label>
+            <input matInput type="email" [(ngModel)]="email" name="email" placeholder="email@example.com">
             <mat-icon matPrefix>email</mat-icon>
           </mat-form-field>
           
           <mat-form-field appearance="outline" class="form-field full-width">
-            <mat-label>Telefon</mat-label>
-            <input matInput type="tel" [(ngModel)]="phone" placeholder="+998 90 123 45 67">
+            <mat-label>{{ 'AUTH.PHONE' | translate }}</mat-label>
+            <input matInput type="tel" [(ngModel)]="phone" name="phone" placeholder="+998 90 123 45 67">
             <mat-icon matPrefix>phone</mat-icon>
           </mat-form-field>
           
           <mat-form-field appearance="outline" class="form-field full-width">
-            <mat-label>Parol</mat-label>
-            <input matInput type="password" [(ngModel)]="password" placeholder="Kamida 6 belgi">
+            <mat-label>{{ 'AUTH.PASSWORD' | translate }}</mat-label>
+            <input matInput type="password" [(ngModel)]="password" name="password" [placeholder]="'AUTH.MIN_6_CHARS' | translate">
             <mat-icon matPrefix>lock</mat-icon>
-            <mat-hint>Kamida 6 belgidan iborat bo'lishi kerak</mat-hint>
+            <mat-hint>{{ 'AUTH.MIN_6_HINT' | translate }}</mat-hint>
           </mat-form-field>
         </form>
       </mat-card-content>
@@ -71,11 +71,11 @@
           @if (loading) {
             <mat-spinner diameter="20" class="spinner"></mat-spinner>
           }
-          Ro'yxatdan o'tish
+          {{ 'AUTH.REGISTER' | translate }}
         </button>
         
         <a mat-button routerLink="/login" class="login-link">
-          Login qilish
+          {{ 'AUTH.LOGIN_LINK' | translate }}
         </a>
       </mat-card-actions>
     </mat-card>

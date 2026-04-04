@@ -1,57 +1,62 @@
 <nav class="navbar">
-  <div class="container nav-inner">
+  <div class="nav-inner">
     <a routerLink="/" class="logo">
       <span class="logo-icon">🏠</span>
       <span class="logo-text">Mulkchi</span>
     </a>
     
-    <ul class="nav-links">
-      <li><a routerLink="/properties" [queryParams]="{listingType:'Sale'}" class="nav-link">
+    <div class="nav-links">
+      <a routerLink="/properties" [queryParams]="{listingType:'Sale'}" class="nav-link">
         <span class="nav-emoji">🏡</span>
-        <span>Sotib olish</span>
-      </a></li>
-      <li><a routerLink="/properties" [queryParams]="{listingType:'Rent'}" class="nav-link">
+        <span>{{ 'NAV.BUY' | translate }}</span>
+      </a>
+      <a routerLink="/properties" [queryParams]="{listingType:'Rent'}" class="nav-link">
         <span class="nav-emoji">🏢</span>
-        <span>Ijaraga olish</span>
-      </a></li>
-      <li><a routerLink="/properties" [queryParams]="{listingType:'DailyRent'}" class="nav-link">
+        <span>{{ 'NAV.RENT' | translate }}</span>
+      </a>
+      <a routerLink="/properties" [queryParams]="{listingType:'DailyRent'}" class="nav-link">
         <span class="nav-emoji">🏨</span>
-        <span>Kunlik ijara</span>
-      </a></li>
-      <li><a routerLink="/ai-price" class="nav-link">
+        <span>{{ 'NAV.DAILY_RENT' | translate }}</span>
+      </a>
+      <a routerLink="/ai-price" class="nav-link">
         <span class="nav-emoji">🤖</span>
-        <span>AI Narx</span>
-      </a></li>
-    </ul>
+        <span>{{ 'NAV.AI_PRICE' | translate }}</span>
+      </a>
+    </div>
     
     <div class="nav-right">
       <!-- SignalR Connection Status Indicator -->
       @if (isLoggedIn) {
         <div class="connection-status" [class.connected]="isSignalRConnected" [class.disconnected]="!isSignalRConnected">
           <span class="status-dot"></span>
-          <span class="status-text">{{ isSignalRConnected ? 'Online' : 'Offline' }}</span>
+          <span class="status-text">{{ isSignalRConnected ? ('NAV.ONLINE' | translate) : ('NAV.OFFLINE' | translate) }}</span>
         </div>
       }
       
-      <div class="lang-switcher" (click)="showLangMenu = !showLangMenu">
-        <span class="lang-emoji">🌐</span>
-        <span>{{ currentLang === 'uz' ? "O'z" : currentLang === 'ru' ? 'Ру' : 'En' }}</span>
-        <span class="dropdown-arrow">▼</span>
+      <!-- Language Switcher -->
+      <div class="lang-switcher">
+        <button class="lang-btn" (click)="toggleLangMenu()">
+          <span class="lang-flag">{{ currentLang.flag }}</span>
+          <span class="lang-label">{{ currentLang.label }}</span>
+          <span class="lang-arrow">▾</span>
+        </button>
         @if (showLangMenu) {
-          <div class="lang-menu animate-fade-in">
+          <div class="lang-dropdown animate-fade-in">
             @for (lang of languages; track lang.code) {
-              <div class="lang-option" 
-                   [class.active]="lang.code === currentLang"
-                   (click)="switchLang(lang.code); $event.stopPropagation()">
-                {{ lang.label }}
-              </div>
+              <button 
+                class="lang-option"
+                [class.active]="lang.code === currentLang.code"
+                (click)="changeLang(lang.code)">
+                <span class="lang-flag">{{ lang.flag }}</span>
+                <span class="lang-label">{{ lang.label }}</span>
+              </button>
             }
           </div>
         }
       </div>
       
       @if (isLoggedIn) {
-        <div class="user-menu-wrap">
+        <div class="user-menu-wrap user-menu">
           <app-notification-bell></app-notification-bell>
           <div class="user-avatar" (click)="showUserMenu = !showUserMenu">
             <span class="avatar-emoji">👤</span>
@@ -61,41 +66,43 @@
               <div class="user-info">
                 <span class="user-emoji">👤</span>
                 <div class="user-details">
-                  <strong>{{ currentUser?.firstName }}</strong>
-                  <span>{{ currentUser?.email }}</span>
+                  <strong>{{ currentUser?.email }}</strong>
                 </div>
               </div>
               <hr>
               @if (currentUser?.role === 'Host' || currentUser?.role === 'Admin') {
                 <a routerLink="/dashboard" (click)="showUserMenu=false" class="menu-item">
-                  <span class="menu-emoji">🏠</span> Dashboard
+                  <span class="menu-emoji">🏠</span> {{ 'NAV.DASHBOARD' | translate }}
                 </a>
               }
               @if (currentUser?.role === 'Admin') {
                 <a routerLink="/admin" (click)="showUserMenu=false" class="menu-item">
-                  <span class="menu-emoji">⚙️</span> Admin panel
+                  <span class="menu-emoji">⚙️</span> {{ 'NAV.ADMIN_PANEL' | translate }}
                 </a>
               }
               <a routerLink="/chat" (click)="showUserMenu=false" class="menu-item">
-                <span class="menu-emoji">💬</span> Chat
+                <span class="menu-emoji">💬</span> {{ 'NAV.CHAT' | translate }}
               </a>
               <a routerLink="/favorites" (click)="showUserMenu=false" class="menu-item">
-                <span class="menu-emoji">❤️</span> Sevimlilar
+                <span class="menu-emoji">❤️</span> {{ 'NAV.FAVORITES' | translate }}
+              </a>
+              <a routerLink="/saved-searches" (click)="showUserMenu=false" class="menu-item">
+                <span class="menu-emoji">🔍</span> {{ 'NAV.SAVED_SEARCHES' | translate }}
               </a>
               <a routerLink="/my-bookings" (click)="showUserMenu=false" class="menu-item">
-                <span class="menu-emoji">📅</span> Mening bronlarim
+                <span class="menu-emoji">📅</span> {{ 'NAV.MY_BOOKINGS' | translate }}
               </a>
               @if (currentUser?.role === 'Host' || currentUser?.role === 'Admin') {
                 <a routerLink="/host-bookings" (click)="showUserMenu=false" class="menu-item">
-                  <span class="menu-emoji">🏠</span> Uy egasi bronlari
+                  <span class="menu-emoji">🏠</span> {{ 'NAV.HOST_BOOKINGS' | translate }}
                 </a>
               }
               <a routerLink="/profile" (click)="showUserMenu=false" class="menu-item">
-                <span class="menu-emoji">👤</span> Profil
+                <span class="menu-emoji">👤</span> {{ 'NAV.PROFILE' | translate }}
               </a>
               <hr>
               <button class="btn-logout" (click)="logout()">
-                <span class="logout-emoji">🚪</span> Chiqish
+                <span class="logout-emoji">🚪</span> {{ 'NAV.LOGOUT' | translate }}
               </button>
             </div>
           }
@@ -103,7 +110,7 @@
       } @else {
         <button class="btn-auth" routerLink="/login">
           <span class="auth-emoji">🔑</span>
-          Kirish / Ro'yxatdan o'tish
+          {{ 'NAV.LOGIN' | translate }} / {{ 'NAV.REGISTER' | translate }}
         </button>
       }
     </div>

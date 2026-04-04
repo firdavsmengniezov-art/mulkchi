@@ -14,6 +14,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
 import { Subject, takeUntil } from 'rxjs';
+import { TranslateModule } from '@ngx-translate/core';
 import { ChatService, Message, Conversation } from '../../../core/services/chat.service';
 import { AuthService } from '../../../core/services/auth.service';
 
@@ -24,6 +25,7 @@ import { AuthService } from '../../../core/services/auth.service';
     CommonModule,
     FormsModule,
     RouterModule,
+    TranslateModule,
     MatSidenavModule,
     MatListModule,
     MatCardModule,

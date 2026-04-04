@@ -5,12 +5,12 @@
       <button mat-icon-button routerLink="/">
         <mat-icon>arrow_back</mat-icon>
       </button>
-      <h1>Chat</h1>
+      <h1>{{ 'CHAT.TITLE' | translate }}</h1>
     </div>
     <div class="header-right">
       <div class="connection-status">
         <div class="status-dot" [class.connected]="connectionStatus" [class.disconnected]="!connectionStatus"></div>
-        <span>{{ connectionStatus ? 'Online' : 'Offline' }}</span>
+        <span>{{ connectionStatus ? ('CHAT.ONLINE' | translate) : ('CHAT.OFFLINE' | translate) }}</span>
       </div>
     </div>
   </div>
@@ -19,7 +19,7 @@
     <!-- Conversations Sidebar -->
     <mat-sidenav mode="side" opened class="conversations-sidebar" [fixedInViewport]="true">
       <div class="conversations-header">
-        <h3>Suhbatlar</h3>
+        <h3>{{ 'CHAT.CONVERSATIONS' | translate }}</h3>
         <div class="unread-indicator" *ngIf="unreadCount > 0">
           <span class="badge">{{ unreadCount }}</span>
         </div>
@@ -43,7 +43,7 @@
                 <span class="user-name">{{ conversation.otherUserName }}</span>
               </div>
               <div class="conversation-meta">
-                <span class="last-message">{{ conversation.lastMessage || 'Xabar yo\'q' }}</span>
+                <span class="last-message">{{ conversation.lastMessage || ('CHAT.NO_MESSAGE' | translate) }}</span>
                 <span class="last-time">{{ formatMessageDate(conversation.lastMessageDate) }}</span>
               </div>
             </div>
@@ -56,14 +56,14 @@
         
         <div class="empty-state" *ngIf="conversations.length === 0">
           <mat-icon>chat_bubble_outline</mat-icon>
-          <p>Hali hech qanday suhbat yo'q</p>
+          <p>{{ 'CHAT.NO_CONVERSATIONS' | translate }}</p>
         </div>
       </div>
       
       <ng-template #loadingTemplate>
         <div class="loading-state">
           <mat-spinner diameter="40"></mat-spinner>
-          <p>Yuklanmoqda...</p>
+          <p>{{ 'COMMON.LOADING' | translate }}</p>
         </div>
       </ng-template>
     </mat-sidenav>
@@ -81,7 +81,7 @@
               onerror="this.src='https://picsum.photos/seed/default/40/40.jpg'">
             <div class="user-details">
               <h3>{{ selectedConversation.otherUserName }}</h3>
-              <span class="online-status">Online</span>
+              <span class="online-status">{{ 'CHAT.ONLINE' | translate }}</span>
             </div>
           </div>
         </div>
@@ -113,13 +113,14 @@
         <!-- Message Input -->
         <div class="message-input-container">
           <mat-form-field appearance="outline" class="message-input">
-            <mat-label>Xabar yozing...</mat-label>
+            <mat-label>{{ 'CHAT.TYPE_MESSAGE' | translate }}</mat-label>
             <textarea 
               matInput 
               [(ngModel)]="newMessage"
+              name="newMessage"
               (keyup)="onTyping()"
               (keypress)="onKeyPress($event)"
-              placeholder="Xabar yozing..."
+              [placeholder]="'CHAT.TYPE_MESSAGE' | translate"
               rows="1"
               #messageInput>
             </textarea>
@@ -128,7 +129,7 @@
               matSuffix 
               (click)="sendMessage()"
               [disabled]="!newMessage.trim()"
-              matTooltip="Yuborish">
+              [matTooltip]="'COMMON.SEND' | translate">
               <mat-icon>send</mat-icon>
             </button>
           </mat-form-field>
@@ -138,8 +139,8 @@
       <ng-template #noConversation>
         <div class="no-conversation">
           <mat-icon>chat_bubble_outline</mat-icon>
-          <h3>Suhbat tanlang</h3>
-          <p>Chap paneldan suhbatni tanlang yoki yangi suhbat boshlang</p>
+          <h3>{{ 'CHAT.SELECT_CONVERSATION' | translate }}</h3>
+          <p>{{ 'CHAT.SELECT_FROM_PANEL' | translate }}</p>
         </div>
       </ng-template>
     </mat-sidenav-content>

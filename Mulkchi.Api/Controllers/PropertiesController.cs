@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Models.Foundations.Properties;
 using Mulkchi.Api.Models.Foundations.Properties.Exceptions;
@@ -60,7 +61,7 @@ public class PropertiesController : ControllerBase
 
     [HttpGet]
     [AllowAnonymous]
-    public ActionResult<PagedResult<PropertyResponse>> GetAllProperties(
+    public async Task<ActionResult<PagedResult<PropertyResponse>>> GetAllProperties(
         [FromQuery] PaginationParams pagination,
         [FromQuery] string? city = null,
         [FromQuery] decimal? minPrice = null,
@@ -92,84 +93,80 @@ public class PropertiesController : ControllerBase
             if (listingType.HasValue)
                 query = query.Where(p => p.ListingType == listingType.Value);
 
-            int totalCount = query.Count();
+            int totalCount = await query.CountAsync();
 
-            var items = query
+            // DTO Projection at database level
+            var responseItems = await query
                 .Skip((pagination.Page - 1) * pagination.PageSize)
                 .Take(pagination.PageSize)
-                .ToList();
-
-            // Convert to PropertyResponse with currency conversion
-            var responseItems = items.Select(property => new PropertyResponse
-            {
-                // Original properties
-                Id = property.Id,
-                Title = property.Title,
-                Description = property.Description,
-                Type = property.Type,
-                Category = property.Category,
-                Status = property.Status,
-                ListingType = property.ListingType,
-                MonthlyRent = property.MonthlyRent,
-                SalePrice = property.SalePrice,
-                PricePerNight = property.PricePerNight,
-                SecurityDeposit = property.SecurityDeposit,
-                Area = property.Area,
-                NumberOfBedrooms = property.NumberOfBedrooms,
-                NumberOfBathrooms = property.NumberOfBathrooms,
-                MaxGuests = property.MaxGuests,
-                Region = property.Region,
-                City = property.City,
-                District = property.District,
-                Address = property.Address,
-                Mahalla = property.Mahalla,
-                Latitude = property.Latitude,
-                Longitude = property.Longitude,
-                HasWifi = property.HasWifi,
-                HasParking = property.HasParking,
-                HasPool = property.HasPool,
-                PetsAllowed = property.PetsAllowed,
-                IsInstantBook = property.IsInstantBook,
-                IsVacant = property.IsVacant,
-                IsFeatured = property.IsFeatured,
-                IsVerified = property.IsVerified,
-                HasMetroNearby = property.HasMetroNearby,
-                HasBusStop = property.HasBusStop,
-                HasMarketNearby = property.HasMarketNearby,
-                HasSchoolNearby = property.HasSchoolNearby,
-                HasHospitalNearby = property.HasHospitalNearby,
-                DistanceToCityCenter = property.DistanceToCityCenter,
-                HasElevator = property.HasElevator,
-                HasSecurity = property.HasSecurity,
-                HasGenerator = property.HasGenerator,
-                HasGas = property.HasGas,
-                HasFurniture = property.HasFurniture,
-                IsRenovated = property.IsRenovated,
-                HasAirConditioning = property.HasAirConditioning,
-                HasHeating = property.HasHeating,
-                HasWasher = property.HasWasher,
-                HasKitchen = property.HasKitchen,
-                HasTV = property.HasTV,
-                HasWorkspace = property.HasWorkspace,
-                IsSelfCheckIn = property.IsSelfCheckIn,
-                IsChildFriendly = property.IsChildFriendly,
-                IsAccessible = property.IsAccessible,
-                AverageRating = property.AverageRating,
-                ViewsCount = property.ViewsCount,
-                FavoritesCount = property.FavoritesCount,
-                HostId = property.HostId,
-                Currency = property.Currency,
-                ExchangeRate = property.ExchangeRate,
-                CreatedDate = property.CreatedDate,
-                UpdatedDate = property.UpdatedDate,
-                DeletedDate = property.DeletedDate,
-
-                // USD converted prices
-                MonthlyRentUSD = property.MonthlyRent.HasValue ? property.MonthlyRent.Value / property.ExchangeRate : null,
-                SalePriceUSD = property.SalePrice.HasValue ? property.SalePrice.Value / property.ExchangeRate : null,
-                PricePerNightUSD = property.PricePerNight.HasValue ? property.PricePerNight.Value / property.ExchangeRate : null,
-                SecurityDepositUSD = property.SecurityDeposit.HasValue ? property.SecurityDeposit.Value / property.ExchangeRate : null
-            }).ToList();
+                .Select(p => new PropertyResponse
+                {
+                    Id = p.Id,
+                    Title = p.Title,
+                    Description = p.Description,
+                    Type = p.Type,
+                    Category = p.Category,
+                    Status = p.Status,
+                    ListingType = p.ListingType,
+                    MonthlyRent = p.MonthlyRent,
+                    SalePrice = p.SalePrice,
+                    PricePerNight = p.PricePerNight,
+                    SecurityDeposit = p.SecurityDeposit,
+                    Area = p.Area,
+                    NumberOfBedrooms = p.NumberOfBedrooms,
+                    NumberOfBathrooms = p.NumberOfBathrooms,
+                    MaxGuests = p.MaxGuests,
+                    Region = p.Region,
+                    City = p.City,
+                    District = p.District,
+                    Address = p.Address,
+                    Mahalla = p.Mahalla,
+                    Latitude = p.Latitude,
+                    Longitude = p.Longitude,
+                    HasWifi = p.HasWifi,
+                    HasParking = p.HasParking,
+                    HasPool = p.HasPool,
+                    PetsAllowed = p.PetsAllowed,
+                    IsInstantBook = p.IsInstantBook,
+                    IsVacant = p.IsVacant,
+                    IsFeatured = p.IsFeatured,
+                    IsVerified = p.IsVerified,
+                    HasMetroNearby = p.HasMetroNearby,
+                    HasBusStop = p.HasBusStop,
+                    HasMarketNearby = p.HasMarketNearby,
+                    HasSchoolNearby = p.HasSchoolNearby,
+                    HasHospitalNearby = p.HasHospitalNearby,
+                    DistanceToCityCenter = p.DistanceToCityCenter,
+                    HasElevator = p.HasElevator,
+                    HasSecurity = p.HasSecurity,
+                    HasGenerator = p.HasGenerator,
+                    HasGas = p.HasGas,
+                    HasFurniture = p.HasFurniture,
+                    IsRenovated = p.IsRenovated,
+                    HasAirConditioning = p.HasAirConditioning,
+                    HasHeating = p.HasHeating,
+                    HasWasher = p.HasWasher,
+                    HasKitchen = p.HasKitchen,
+                    HasTV = p.HasTV,
+                    HasWorkspace = p.HasWorkspace,
+                    IsSelfCheckIn = p.IsSelfCheckIn,
+                    IsChildFriendly = p.IsChildFriendly,
+                    IsAccessible = p.IsAccessible,
+                    AverageRating = p.AverageRating,
+                    ViewsCount = p.ViewsCount,
+                    FavoritesCount = p.FavoritesCount,
+                    HostId = p.HostId,
+                    Currency = p.Currency,
+                    ExchangeRate = p.ExchangeRate,
+                    CreatedDate = p.CreatedDate,
+                    UpdatedDate = p.UpdatedDate,
+                    DeletedDate = p.DeletedDate,
+                    MonthlyRentUSD = p.MonthlyRent.HasValue ? p.MonthlyRent.Value / p.ExchangeRate : null,
+                    SalePriceUSD = p.SalePrice.HasValue ? p.SalePrice.Value / p.ExchangeRate : null,
+                    PricePerNightUSD = p.PricePerNight.HasValue ? p.PricePerNight.Value / p.ExchangeRate : null,
+                    SecurityDepositUSD = p.SecurityDeposit.HasValue ? p.SecurityDeposit.Value / p.ExchangeRate : null
+                })
+                .ToListAsync();
 
             var result = new PagedResult<PropertyResponse>
             {
@@ -193,7 +190,7 @@ public class PropertiesController : ControllerBase
 
     [HttpGet("search")]
     [AllowAnonymous]
-    public ActionResult<PagedResult<PropertyResponse>> SearchProperties(
+    public async Task<ActionResult<PagedResult<PropertyResponse>>> SearchProperties(
         [FromQuery] PropertySearchParams searchParams,
         [FromQuery] PaginationParams pagination)
     {
@@ -242,17 +239,112 @@ public class PropertiesController : ControllerBase
                 _ => query.OrderByDescending(p => p.CreatedDate)
             };
 
-            int totalCount = query.Count();
+            int totalCount = await query.CountAsync();
 
-            var items = query
+            // DTO Projection at database level
+            var responseItems = await query
                 .Skip((pagination.Page - 1) * pagination.PageSize)
                 .Take(pagination.PageSize)
-                .ToList();
+                .Select(p => new PropertyResponse
+                {
+                    Id = p.Id,
+                    Title = p.Title,
+                    Description = p.Description,
+                    Type = p.Type,
+                    Category = p.Category,
+                    Status = p.Status,
+                    ListingType = p.ListingType,
+                    MonthlyRent = p.MonthlyRent,
+                    SalePrice = p.SalePrice,
+                    PricePerNight = p.PricePerNight,
+                    SecurityDeposit = p.SecurityDeposit,
+                    Area = p.Area,
+                    NumberOfBedrooms = p.NumberOfBedrooms,
+                    NumberOfBathrooms = p.NumberOfBathrooms,
+                    MaxGuests = p.MaxGuests,
+                    Region = p.Region,
+                    City = p.City,
+                    District = p.District,
+                    Address = p.Address,
+                    Mahalla = p.Mahalla,
+                    Latitude = p.Latitude,
+                    Longitude = p.Longitude,
+                    HasWifi = p.HasWifi,
+                    HasParking = p.HasParking,
+                    HasPool = p.HasPool,
+                    PetsAllowed = p.PetsAllowed,
+                    IsInstantBook = p.IsInstantBook,
+                    IsVacant = p.IsVacant,
+                    IsFeatured = p.IsFeatured,
+                    IsVerified = p.IsVerified,
+                    HasMetroNearby = p.HasMetroNearby,
+                    HasBusStop = p.HasBusStop,
+                    HasMarketNearby = p.HasMarketNearby,
+                    HasSchoolNearby = p.HasSchoolNearby,
+                    HasHospitalNearby = p.HasHospitalNearby,
+                    DistanceToCityCenter = p.DistanceToCityCenter,
+                    HasElevator = p.HasElevator,
+                    HasSecurity = p.HasSecurity,
+                    HasGenerator = p.HasGenerator,
+                    HasGas = p.HasGas,
+                    HasFurniture = p.HasFurniture,
+                    IsRenovated = p.IsRenovated,
+                    HasAirConditioning = p.HasAirConditioning,
+                    HasHeating = p.HasHeating,
+                    HasWasher = p.HasWasher,
+                    HasKitchen = p.HasKitchen,
+                    HasTV = p.HasTV,
+                    HasWorkspace = p.HasWorkspace,
+                    IsSelfCheckIn = p.IsSelfCheckIn,
+                    IsChildFriendly = p.IsChildFriendly,
+                    IsAccessible = p.IsAccessible,
+                    AverageRating = p.AverageRating,
+                    ViewsCount = p.ViewsCount,
+                    FavoritesCount = p.FavoritesCount,
+                    HostId = p.HostId,
+                    Currency = p.Currency,
+                    ExchangeRate = p.ExchangeRate,
+                    CreatedDate = p.CreatedDate,
+                    UpdatedDate = p.UpdatedDate,
+                    DeletedDate = p.DeletedDate,
+                    MonthlyRentUSD = p.MonthlyRent.HasValue ? p.MonthlyRent.Value / p.ExchangeRate : null,
+                    SalePriceUSD = p.SalePrice.HasValue ? p.SalePrice.Value / p.ExchangeRate : null,
+                    PricePerNightUSD = p.PricePerNight.HasValue ? p.PricePerNight.Value / p.ExchangeRate : null,
+                    SecurityDepositUSD = p.SecurityDeposit.HasValue ? p.SecurityDeposit.Value / p.ExchangeRate : null
+                })
+                .ToListAsync();
 
-            // Convert to PropertyResponse with currency conversion
-            var responseItems = items.Select(property => new PropertyResponse
+            var result = new PagedResult<PropertyResponse>
             {
-                // Original properties
+                Items = responseItems,
+                TotalCount = totalCount,
+                Page = pagination.Page,
+                PageSize = pagination.PageSize
+            };
+
+            return Ok(result);
+        }
+        catch (PropertyDependencyException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+        catch (PropertyServiceException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+    }
+
+    [HttpGet("{id}")]
+    [AllowAnonymous]
+    public async ValueTask<ActionResult<PropertyResponse>> GetPropertyByIdAsync(Guid id)
+    {
+        try
+        {
+            Property property = await this.propertyService.RetrievePropertyByIdAsync(id);
+            
+            // Map to PropertyResponse DTO
+            var response = new PropertyResponse
+            {
                 Id = property.Id,
                 Title = property.Title,
                 Description = property.Description,
@@ -313,42 +405,13 @@ public class PropertiesController : ControllerBase
                 CreatedDate = property.CreatedDate,
                 UpdatedDate = property.UpdatedDate,
                 DeletedDate = property.DeletedDate,
-
-                // USD converted prices
                 MonthlyRentUSD = property.MonthlyRent.HasValue ? property.MonthlyRent.Value / property.ExchangeRate : null,
                 SalePriceUSD = property.SalePrice.HasValue ? property.SalePrice.Value / property.ExchangeRate : null,
                 PricePerNightUSD = property.PricePerNight.HasValue ? property.PricePerNight.Value / property.ExchangeRate : null,
                 SecurityDepositUSD = property.SecurityDeposit.HasValue ? property.SecurityDeposit.Value / property.ExchangeRate : null
-            }).ToList();
-
-            var result = new PagedResult<PropertyResponse>
-            {
-                Items = responseItems,
-                TotalCount = totalCount,
-                Page = pagination.Page,
-                PageSize = pagination.PageSize
             };
-
-            return Ok(result);
-        }
-        catch (PropertyDependencyException)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
-        }
-        catch (PropertyServiceException)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
-        }
-    }
-
-    [HttpGet("{id}")]
-    [AllowAnonymous]
-    public async ValueTask<ActionResult<Property>> GetPropertyByIdAsync(Guid id)
-    {
-        try
-        {
-            Property property = await this.propertyService.RetrievePropertyByIdAsync(id);
-            return Ok(property);
+            
+            return Ok(response);
         }
         catch (PropertyValidationException propertyValidationException)
         {

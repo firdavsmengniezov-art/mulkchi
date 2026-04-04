@@ -161,7 +161,7 @@ public partial class StorageBroker : DbContext, IStorageBroker
         modelBuilder.Entity<PropertyView>().HasQueryFilter(e => e.DeletedDate == null);
         modelBuilder.Entity<RentalContract>().HasQueryFilter(e => e.DeletedDate == null);
         modelBuilder.Entity<Review>().HasQueryFilter(e => e.DeletedDate == null);
-        modelBuilder.Entity<SavedSearch>().HasQueryFilter(e => e.DeletedDate == null);
+        modelBuilder.Entity<SavedSearch>().HasQueryFilter(e => e.DeletedAt == null);
         modelBuilder.Entity<User>().HasQueryFilter(e => e.DeletedDate == null);
         modelBuilder.Entity<UserRefreshToken>().HasQueryFilter(e => e.ExpiresAt > DateTimeOffset.UtcNow);
         modelBuilder.Entity<Booking>().HasQueryFilter(e => e.DeletedDate == null);

@@ -14,7 +14,7 @@ public partial class PropertyServiceTests
     public async Task AddPropertyAsync_NullProperty_ThrowsValidationException()
     {
         // Arrange
-        Property nullProperty = null;
+        Property? nullProperty = null;
 
         // Act & Assert
         Func<Task> addPropertyTask = async () =>
@@ -28,7 +28,6 @@ public partial class PropertyServiceTests
     }
 
     [Theory]
-    [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
     public async Task AddPropertyAsync_InvalidTitle_ThrowsValidationException(
@@ -37,6 +36,20 @@ public partial class PropertyServiceTests
         // Arrange
         Property property = CreateRandomProperty();
         property.Title = invalidTitle;
+
+        // Act & Assert
+        Func<Task> addPropertyTask = async () =>
+            await this.propertyService.AddPropertyAsync(property);
+
+        await Assert.ThrowsAsync<PropertyValidationException>(addPropertyTask);
+    }
+
+    [Fact]
+    public async Task AddPropertyAsync_NullTitle_ThrowsValidationException()
+    {
+        // Arrange
+        Property property = CreateRandomProperty();
+        property.Title = null!;
 
         // Act & Assert
         Func<Task> addPropertyTask = async () =>

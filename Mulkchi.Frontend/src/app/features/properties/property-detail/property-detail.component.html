@@ -5,7 +5,7 @@
   <div class="detail-page">
     <div class="back-bar">
       <div class="container">
-        <button class="btn-back" (click)="goBack()">← Orqaga</button>
+        <button class="btn-back" (click)="goBack()">← {{ 'COMMON.BACK' | translate }}</button>
       </div>
     </div>
     <!-- GALLERY -->
@@ -18,35 +18,35 @@
       <div class="detail-left">
         <div class="detail-badges">
           <span class="listing-badge" [class]="'badge-' + property.listingType.toLowerCase()">
-            {{ property.listingType === 'Rent' ? 'Ijara' : property.listingType === 'Sale' ? 'Sotiladi' : 'Kunlik' }}
+            {{ property.listingType === 'Rent' ? ('PROPERTY.RENT' | translate) : property.listingType === 'Sale' ? ('PROPERTY.SALE' | translate) : ('PROPERTY.DAILY' | translate) }}
           </span>
           <span class="type-badge">{{ property.type }}</span>
         </div>
         <h1>{{ property.title }}</h1>
         <div class="detail-meta">
           <span>📍 {{ property.district }}, {{ property.city }}</span>
-          <span>⭐ {{ property.averageRating || 'Yangi' }}</span>
-          <span>👁 {{ property.viewsCount }} ko'rishlar</span>
-          <span>❤️ {{ property.favoritesCount || 0 }} kishi sevimliga qo'shgan</span>
+          <span>⭐ {{ property.averageRating || ('PROPERTY.NEW' | translate) }}</span>
+          <span>👁 {{ property.viewsCount }} {{ 'PROPERTY.VIEWS' | translate }}</span>
+          <span>❤️ {{ property.favoritesCount || 0 }} {{ 'PROPERTY.FAVORITES_COUNT' | translate }}</span>
           <app-favorite-button [propertyId]="property.id"></app-favorite-button>
         </div>
         <div class="detail-stats">
-          <div class="ds"><strong>{{ property.numberOfBedrooms }}</strong><span>Xona</span></div>
-          <div class="ds"><strong>{{ property.numberOfBathrooms }}</strong><span>Hammom</span></div>
+          <div class="ds"><strong>{{ property.numberOfBedrooms }}</strong><span>{{ 'PROPERTY.BEDROOMS' | translate }}</span></div>
+          <div class="ds"><strong>{{ property.numberOfBathrooms }}</strong><span>{{ 'PROPERTY.BATHROOMS' | translate }}</span></div>
           <div class="ds"><strong>{{ property.area }}</strong><span>m²</span></div>
           @if (property.maxGuests) {
-            <div class="ds"><strong>{{ property.maxGuests }}</strong><span>Mehmon</span></div>
+            <div class="ds"><strong>{{ property.maxGuests }}</strong><span>{{ 'PROPERTY.GUESTS' | translate }}</span></div>
           }
         </div>
-        <h3>Tavsif</h3>
+        <h3>{{ 'PROPERTY.DESCRIPTION' | translate }}</h3>
         <p class="desc">{{ property.description }}</p>
-        <h3>Qulayliklar</h3>
+        <h3>{{ 'PROPERTY.AMENITIES' | translate }}</h3>
         <div class="amenities-grid">
           @for (a of getAmenities(); track a) {
             <span class="amenity-chip">{{ a }}</span>
           }
         </div>
-        <h3>Manzil</h3>
+        <h3>{{ 'PROPERTY.ADDRESS' | translate }}</h3>
         <p class="address">📍 {{ property.address }}, {{ property.district }}, {{ property.city }}, {{ property.region }}</p>
       </div>
 
@@ -61,32 +61,34 @@
         <div class="booking-rating">⭐ {{ property.averageRating || 'Yangi' }}</div>
 
         @if (bookingSuccess) {
-          <div class="success-msg">✅ Bron muvaffaqiyatli yuborildi!</div>
+          <div class="success-msg">✅ {{ 'BOOKING.BOOKING_SUCCESS' | translate }}</div>
         } @else {
           @if (property.listingType !== 'Sale') {
-            <div class="date-inputs">
-              <div class="date-input">
-                <label>Kirish</label>
-                <input type="date" [(ngModel)]="checkIn">
+            <form>
+              <div class="date-inputs">
+                <div class="date-input">
+                  <label>{{ 'BOOKING.CHECK_IN' | translate }}</label>
+                  <input type="date" [(ngModel)]="checkIn" name="checkIn">
+                </div>
+                <div class="date-input">
+                  <label>{{ 'BOOKING.CHECK_OUT' | translate }}</label>
+                  <input type="date" [(ngModel)]="checkOut" name="checkOut">
+                </div>
               </div>
-              <div class="date-input">
-                <label>Chiqish</label>
-                <input type="date" [(ngModel)]="checkOut">
+              <div class="guests-input">
+                <label>{{ 'PROPERTY.GUEST_COUNT' | translate }}</label>
+                <input type="number" [(ngModel)]="guests" name="guests" min="1" [max]="property.maxGuests || 10">
               </div>
-            </div>
-            <div class="guests-input">
-              <label>Mehmonlar soni</label>
-              <input type="number" [(ngModel)]="guests" min="1" [max]="property.maxGuests || 10">
-            </div>
+            </form>
             @if (bookingError) {
               <div class="error-msg">⚠️ {{ bookingError }}</div>
             }
             <button class="btn-book" (click)="book()" [disabled]="bookingLoading">
-              {{ bookingLoading ? 'Yuborilmoqda...' : 'Bron qilish' }}
+              {{ bookingLoading ? ('COMMON.LOADING' | translate) : ('BOOKING.CREATE' | translate) }}
             </button>
           }
           <button class="btn-chat" (click)="goToChat()">
-            💬 Mulkdor bilan bog'lanish
+            💬 {{ 'PROPERTY.CONTACT_HOST' | translate }}
           </button>
         }
       </div>

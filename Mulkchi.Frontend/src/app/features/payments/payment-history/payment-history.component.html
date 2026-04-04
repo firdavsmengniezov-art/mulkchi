@@ -1,12 +1,12 @@
 <div class="payment-history">
   <div class="page-header">
-    <h1>💳 To'lovlar tarixi</h1>
+    <h1>💳 {{ 'PAYMENTS.TITLE' | translate }}</h1>
   </div>
 
   <div class="filters-section">
     <div class="filter-group">
       <mat-form-field appearance="outline">
-        <mat-label>Status</mat-label>
+        <mat-label>{{ 'PAYMENTS.STATUS' | translate }}</mat-label>
         <mat-select [(value)]="selectedStatus" (selectionChange)="onStatusChange($event.value)">
           @for (option of getStatusOptions(); track option.value) {
             <mat-option [value]="option.value">{{ option.label }}</mat-option>
@@ -17,7 +17,7 @@
 
     <div class="filter-group">
       <mat-form-field appearance="outline">
-        <mat-label>To'lov usuli</mat-label>
+        <mat-label>{{ 'PAYMENTS.METHOD' | translate }}</mat-label>
         <mat-select [(value)]="selectedMethod" (selectionChange)="onMethodChange($event.value)">
           @for (method of getMethodOptions(); track method.value) {
             <mat-option [value]="method.value">{{ method.label }}</mat-option>
@@ -33,15 +33,15 @@
         <mat-card class="summary-card">
           <div class="summary-content">
             <div class="summary-item">
-              <span class="label">Jami to'langan:</span>
+              <span class="label">{{ 'PAYMENTS.TOTAL_PAID' | translate }}:</span>
               <span class="value success">{{ getTotalPaid() | number:'uz' }} UZS</span>
             </div>
             <div class="summary-item">
-              <span class="label">Jami qabul qilingan:</span>
+              <span class="label">{{ 'PAYMENTS.TOTAL_RECEIVED' | translate }}:</span>
               <span class="value primary">{{ getTotalReceived() | number:'uz' }} UZS</span>
             </div>
             <div class="summary-item">
-              <span class="label">Kutilmoqda:</span>
+              <span class="label">{{ 'PAYMENTS.PENDING_AMOUNT' | translate }}:</span>
               <span class="value warning">{{ getPendingAmount() | number:'uz' }} UZS</span>
             </div>
           </div>
@@ -49,17 +49,17 @@
       </div>
 
       <mat-tab-group [(selectedIndex)]="selectedTab" dynamicHeight="false">
-        <mat-tab label="To'lovlar jadvali">
+        <mat-tab [label]="'PAYMENTS.VIEW_TABLE' | translate">
           <div class="table-container">
             <table class="payments-table">
               <thead>
                 <tr>
-                  <th>Sanasi</th>
-                  <th>Bron raqami</th>
-                  <th>Summa</th>
-                  <th>Usul</th>
-                  <th>Status</th>
-                  <th>Amallar</th>
+                  <th>{{ 'PAYMENTS.DATE' | translate }}</th>
+                  <th>{{ 'PAYMENTS.BOOKING_NUMBER' | translate }}</th>
+                  <th>{{ 'PAYMENTS.AMOUNT' | translate }}</th>
+                  <th>{{ 'PAYMENTS.METHOD' | translate }}</th>
+                  <th>{{ 'PAYMENTS.STATUS' | translate }}</th>
+                  <th>{{ 'PAYMENTS.ACTIONS' | translate }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -91,7 +91,7 @@
                         mat-icon-button 
                         (click)="cancelPayment(payment, $event)"
                         [disabled]="payment.status !== 'Pending'"
-                        matTooltip="Bekor qilish">
+                        [matTooltip]="'PAYMENTS.CANCEL' | translate">
                         <mat-icon>cancel</mat-icon>
                       </button>
                     </td>
@@ -106,11 +106,11 @@
 
     <div class="empty-state" *ngIf="payments.length === 0">
       <mat-icon>receipt_long</mat-icon>
-      <h3>To'lovlar yo'q</h3>
-      <p>Hali hech qanday to'lov amalga oshirmagansiz.</p>
+      <h3>{{ 'PAYMENTS.NO_PAYMENTS' | translate }}</h3>
+      <p>{{ 'PAYMENTS.NO_PAYMENTS_DESC' | translate }}</p>
       <button mat-raised-button color="primary" routerLink="/properties">
         <mat-icon>search</mat-icon>
-        Mulklarni ko'rish
+        {{ 'FAVORITES.VIEW_PROPERTIES' | translate }}
       </button>
     </div>
   </div>
@@ -118,7 +118,7 @@
   <ng-template #loadingTemplate>
     <div class="loading-state">
       <mat-spinner diameter="50"></mat-spinner>
-      <p>To'lovlar yuklanmoqda...</p>
+      <p>{{ 'PAYMENTS.LOADING' | translate }}</p>
     </div>
   </ng-template>
 

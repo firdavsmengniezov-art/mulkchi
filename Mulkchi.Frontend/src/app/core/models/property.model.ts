@@ -32,6 +32,7 @@ export interface Property {
   isRenovated: boolean;
   isPetFriendly: boolean;
   hasBalcony: boolean;
+  isInstantBook?: boolean;
   averageRating: number;
   viewsCount: number;
   favoritesCount: number;

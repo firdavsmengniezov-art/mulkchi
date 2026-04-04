@@ -1,15 +1,17 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { SignalRService } from '../../../core/services/signalr.service';
+import { LanguageService } from '../../../core/services/language.service';
 import { Observable, map } from 'rxjs';
 import { NotificationBellComponent } from '../notifications/notification-bell/notification-bell.component';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterModule, NotificationBellComponent],
+  imports: [CommonModule, RouterModule, NotificationBellComponent, TranslateModule],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.scss'
 })
@@ -21,30 +23,20 @@ export class NavbarComponent implements OnInit {
   isSignalRConnected = false;
   
   // Language switcher
-  languages = [
-    { code: 'uz', label: "O'z" },
-    { code: 'ru', label: 'Ру' },
-    { code: 'en', label: 'En' }
-  ];
-  currentLang = 'uz';
+  get languages() { return this.languageService.languages; }
   showLangMenu = false;
   showUserMenu = false;
 
   private authService = inject(AuthService);
   private router = inject(Router);
   private signalRService = inject(SignalRService);
+  private languageService = inject(LanguageService);
 
   constructor() {
     this.isLoggedIn$ = this.authService.currentUser$.pipe(map(u => !!u));
     this.currentUser$ = this.authService.currentUser$;
     this.isHost$ = this.authService.currentUser$.pipe(map(u => u ? (u.role === 1 || u.role === 2) : false));
     this.isAdmin$ = this.authService.currentUser$.pipe(map(u => u ? u.role === 2 : false));
-    
-    // Load saved language
-    const savedLang = localStorage.getItem('lang');
-    if (savedLang) {
-      this.currentLang = savedLang;
-    }
   }
 
   ngOnInit(): void {
@@ -62,16 +54,33 @@ export class NavbarComponent implements OnInit {
     return this.authService.getCurrentUser();
   }
 
+  get currentLang() {
+    return this.languageService.getCurrentLangObj();
+  }
+
   logout() {
     this.authService.logout();
     this.showUserMenu = false;
     this.router.navigate(['/']);
   }
 
-  switchLang(code: string) {
-    this.currentLang = code;
+  toggleLangMenu() {
+    this.showLangMenu = !this.showLangMenu;
+  }
+
+  changeLang(code: string) {
+    this.languageService.setLanguage(code);
     this.showLangMenu = false;
-    localStorage.setItem('lang', code);
-    // Store preference only - no i18n library needed for now
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.lang-switcher')) {
+      this.showLangMenu = false;
+    }
+    if (!target.closest('.user-menu')) {
+      this.showUserMenu = false;
+    }
   }
 }

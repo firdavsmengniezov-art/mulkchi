@@ -4,22 +4,27 @@
 <section class="hero">
   <div class="hero-overlay"></div>
   <div class="hero-content">
-    <h1>O'zbekistandagi orzuingizdagi uyni toping.</h1>
+    <h1>{{ 'HOME.HERO_TITLE' | translate }}</h1>
     <div class="search-bar">
-      <select [(ngModel)]="searchRegion">
-        <option value="">Viloyat tanlang</option>
-        <option>Toshkent</option><option>Samarqand</option>
-        <option>Buxoro</option><option>Namangan</option>
-        <option>Andijon</option><option>Farg'ona</option>
-      </select>
-      <select [(ngModel)]="searchType">
-        <option value="">Mulk turi</option>
-        <option value="Apartment">Kvartira</option>
-        <option value="House">Uy</option>
-        <option value="Office">Ofis</option>
-      </select>
-      <input type="text" placeholder="Narx oralig'i" [(ngModel)]="searchPrice">
-      <button class="btn-primary" (click)="search()">Qidirish</button>
+      <form>
+        <select [(ngModel)]="searchRegion" name="searchRegion">
+          <option value="">{{ 'HOME.SELECT_REGION' | translate }}</option>
+          <option>{{ 'HOME.TASHKENT' | translate }}</option>
+          <option>{{ 'HOME.SAMARKAND' | translate }}</option>
+          <option>{{ 'HOME.BUKHARA' | translate }}</option>
+          <option>{{ 'HOME.NAMANGAN' | translate }}</option>
+          <option>{{ 'HOME.ANDIJAN' | translate }}</option>
+          <option>{{ 'HOME.FERGANA' | translate }}</option>
+        </select>
+        <select [(ngModel)]="searchType" name="searchType">
+          <option value="">{{ 'HOME.PROPERTY_TYPE' | translate }}</option>
+          <option value="Apartment">{{ 'HOME.APARTMENT' | translate }}</option>
+          <option value="House">{{ 'HOME.HOUSE' | translate }}</option>
+          <option value="Office">{{ 'HOME.OFFICE' | translate }}</option>
+        </select>
+        <input type="text" [placeholder]="'HOME.PRICE_RANGE' | translate" [(ngModel)]="searchPrice" name="searchPrice">
+      </form>
+      <button class="btn-primary" (click)="search()">{{ 'HOME.SEARCH' | translate }}</button>
     </div>
   </div>
 </section>
@@ -27,8 +32,8 @@
 <!-- YANGI E'LONLAR -->
 <section class="listings">
   <div class="container">
-    <h2>Yangi E'lonlar</h2>
-    @if (loading) { <div class="loading">Yuklanmoqda...</div> }
+    <h2>{{ 'HOME.NEW_LISTINGS' | translate }}</h2>
+    @if (loading) { <div class="loading">{{ 'COMMON.LOADING' | translate }}</div> }
     <div class="cards-grid">
       @for (p of properties; track p.id) {
         <app-property-card [property]="p"></app-property-card>
@@ -42,12 +47,12 @@
   <div class="container ai-inner">
     <div class="ai-left">
       <span class="ml-badge">ML.NET</span>
-      <h3>Sun'iy Intellekt Narx Bashorati</h3>
-      <p>AI yordamida uyingiz narxini hisoblang</p>
+      <h3>{{ 'HOME.AI_BANNER_TITLE' | translate }}</h3>
+      <p>{{ 'HOME.AI_BANNER_DESC' | translate }}</p>
     </div>
-    <button class="btn-primary" routerLink="/ai-price">Hisoblash</button>
+    <button class="btn-primary" routerLink="/ai-price">{{ 'HOME.AI_CALCULATE' | translate }}</button>
   </div>
 </section>
 
 <!-- FLOATING CHAT -->
-<button class="chat-float" routerLink="/chat">💬 Chat</button>
+<button class="chat-float" routerLink="/chat">💬 {{ 'NAV.CHAT' | translate }}</button>

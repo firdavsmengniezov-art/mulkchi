@@ -1,6 +1,6 @@
 <div class="favorites-page">
   <div class="page-header">
-    <h1>❤️ Sevimli mulklar</h1>
+    <h1>❤️ {{ 'FAVORITES.TITLE' | translate }}</h1>
     @if (pagedResult) {
       <span class="count">({{ pagedResult.totalCount }})</span>
     }
@@ -9,7 +9,7 @@
   <div class="filters-section">
     <div class="sort-control">
       <mat-form-field appearance="outline">
-        <mat-label>Tartib</mat-label>
+        <mat-label>{{ 'FAVORITES.SORT' | translate }}</mat-label>
         <mat-select [(value)]="sortBy" (selectionChange)="onSortChange($event.value)">
           @for (option of getSortOptions(); track option.value) {
             <mat-option [value]="option.value">{{ option.label }}</mat-option>
@@ -30,14 +30,14 @@
           <button mat-icon-button 
                   class="remove-btn" 
                   (click)="removeFavorite(favorite, $event)"
-                  matTooltip="Sevimlilardan olib tashlash">
+                  [matTooltip]="'FAVORITES.REMOVE' | translate">
             <mat-icon>close</mat-icon>
           </button>
         </div>
         
         <div class="card-content">
           <div class="property-info">
-            <h3 class="property-title">{{ favorite.property?.title || 'Mulk nomi yo\'q' }}</h3>
+            <h3 class="property-title">{{ favorite.property?.title || ('FAVORITES.NO_NAME' | translate) }}</h3>
             <p class="property-location">
               <mat-icon>location_on</mat-icon>
               {{ favorite.property?.city || '' }}, {{ favorite.property?.district || '' }}
@@ -45,11 +45,11 @@
             <div class="property-details">
               <span class="detail-item">
                 <mat-icon>king_bed</mat-icon>
-                {{ favorite.property?.numberOfBedrooms || 0 }} xona
+                {{ favorite.property?.numberOfBedrooms || 0 }} {{ 'PROPERTY.BEDROOMS' | translate }}
               </span>
               <span class="detail-item">
                 <mat-icon>bathtub</mat-icon>
-                {{ favorite.property?.numberOfBathrooms || 0 }} hammom
+                {{ favorite.property?.numberOfBathrooms || 0 }} {{ 'PROPERTY.BATHROOMS' | translate }}
               </span>
               <span class="detail-item">
                 <mat-icon>straighten</mat-icon>
@@ -58,13 +58,13 @@
             </div>
             <div class="property-price">
               @if (favorite.property?.monthlyRent) {
-                <span class="price">{{ favorite.property?.monthlyRent | number:'uz' }} $/oy</span>
+                <span class="price">{{ favorite.property?.monthlyRent | number:'uz' }} {{ 'PROPERTY.PRICE_PER_MONTH' | translate }}</span>
               } @else if (favorite.property?.salePrice) {
                 <span class="price">{{ favorite.property?.salePrice | number:'uz' }} $</span>
               } @else if (favorite.property?.pricePerNight) {
-                <span class="price">{{ favorite.property?.pricePerNight | number:'uz' }} $/kun</span>
+                <span class="price">{{ favorite.property?.pricePerNight | number:'uz' }} {{ 'PROPERTY.PRICE_PER_NIGHT' | translate }}</span>
               } @else {
-                <span class="price">Narx mavjud emas</span>
+                <span class="price">{{ 'FAVORITES.NO_PRICE' | translate }}</span>
               }
             </div>
           </div>
@@ -74,11 +74,11 @@
 
     <div class="empty-state" *ngIf="favorites.length === 0">
       <mat-icon>favorite_border</mat-icon>
-      <h3>Hali sevimli mulklaringiz yo'q</h3>
-      <p>Mulklarni sevimlilar ro'yxatiga qo'shish uchun ❤️ tugmasini bosing</p>
+      <h3>{{ 'FAVORITES.NO_FAVORITES' | translate }}</h3>
+      <p>{{ 'FAVORITES.ADD_FAVORITES' | translate }}</p>
       <button mat-raised-button (click)="goToProperties()">
         <mat-icon>search</mat-icon>
-        Mulklarni ko'rish
+        {{ 'FAVORITES.VIEW_PROPERTIES' | translate }}
       </button>
     </div>
   </div>
@@ -86,7 +86,7 @@
   <ng-template #loadingTemplate>
     <div class="loading-state">
       <mat-spinner diameter="50"></mat-spinner>
-      <p>Sevimlilar yuklanmoqda...</p>
+      <p>{{ 'FAVORITES.LOADING' | translate }}</p>
     </div>
   </ng-template>
 

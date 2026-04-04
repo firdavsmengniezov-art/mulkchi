@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap, map } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { BehaviorSubject, Observable, tap, map, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { Favorite, FavoriteToggleResult, PagedResult } from '../models/favorite.models';
 
@@ -27,7 +28,9 @@ export class FavoriteService {
 
   getFavorites(pagination?: { page: number; pageSize: number }): Observable<PagedResult<Favorite>> {
     const params = pagination ? `?page=${pagination.page}&pageSize=${pagination.pageSize}` : '';
-    return this.http.get<PagedResult<Favorite>>(`${environment.apiUrl}/favorites${params}`);
+    return this.http.get<PagedResult<Favorite>>(`${environment.apiUrl}/favorites${params}`).pipe(
+      catchError(this.handleError)
+    );
   }
 
   addFavorite(propertyId: string): Observable<Favorite> {
@@ -38,7 +41,8 @@ export class FavoriteService {
           ids.add(propertyId);
           this.favoriteIds$.next(ids);
           this.favoritesCount$.next(this.favoritesCount$.value + 1);
-        })
+        }),
+        catchError(this.handleError)
       );
   }
 
@@ -50,8 +54,14 @@ export class FavoriteService {
           ids.delete(propertyId);
           this.favoriteIds$.next(ids);
           this.favoritesCount$.next(Math.max(0, this.favoritesCount$.value - 1));
-        })
+        }),
+        catchError(this.handleError)
       );
+  }
+
+  private handleError(error: HttpErrorResponse) {
+    console.error('Favorite API Error:', error);
+    return throwError(() => error);
   }
 
   toggleFavorite(propertyId: string): Observable<FavoriteToggleResult> {

@@ -8,8 +8,10 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+import { TranslateModule } from '@ngx-translate/core';
 import { PaymentService } from '../../../core/services/payment.service';
 import { 
   Payment, 
@@ -23,6 +25,7 @@ import {
   standalone: true,
   imports: [
     CommonModule,
+    TranslateModule,
     MatButtonModule,
     MatIconModule,
     MatCardModule,
@@ -30,7 +33,8 @@ import {
     MatSelectModule,
     MatFormFieldModule,
     MatProgressSpinnerModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    MatTooltipModule
   ],
   templateUrl: './payment-history.component.html',
   styleUrls: ['./payment-history.component.scss']

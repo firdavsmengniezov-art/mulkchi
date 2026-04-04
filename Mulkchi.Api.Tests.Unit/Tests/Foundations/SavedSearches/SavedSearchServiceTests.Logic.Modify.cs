@@ -13,7 +13,7 @@ public partial class SavedSearchServiceTests
         DateTimeOffset randomDateTimeOffset = DateTimeOffset.UtcNow;
         SavedSearch randomSavedSearch = CreateRandomSavedSearch();
         SavedSearch inputSavedSearch = randomSavedSearch;
-        inputSavedSearch.UpdatedDate = randomDateTimeOffset;
+        inputSavedSearch.UpdatedAt = randomDateTimeOffset;
         SavedSearch expectedSavedSearch = inputSavedSearch;
 
         this.dateTimeBrokerMock.Setup(broker =>

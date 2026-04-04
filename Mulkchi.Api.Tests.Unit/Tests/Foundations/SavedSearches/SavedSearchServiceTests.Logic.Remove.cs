@@ -11,20 +11,29 @@ public partial class SavedSearchServiceTests
     {
         // given
         SavedSearch randomSavedSearch = CreateRandomSavedSearch();
-        SavedSearch expectedSavedSearch = randomSavedSearch;
+        SavedSearch storedSavedSearch = randomSavedSearch;
+        storedSavedSearch.DeletedAt = null;
 
         this.storageBrokerMock.Setup(broker =>
-            broker.DeleteSavedSearchByIdAsync(randomSavedSearch.Id))
-                .ReturnsAsync(expectedSavedSearch);
+            broker.SelectSavedSearchByIdAsync(randomSavedSearch.Id))
+                .ReturnsAsync(storedSavedSearch);
+
+        this.storageBrokerMock.Setup(broker =>
+            broker.UpdateSavedSearchAsync(It.IsAny<SavedSearch>()))
+                .ReturnsAsync(randomSavedSearch);
 
         // when
         SavedSearch actualSavedSearch = await this.savedSearchService.RemoveSavedSearchByIdAsync(randomSavedSearch.Id);
 
         // then
-        actualSavedSearch.Should().BeEquivalentTo(expectedSavedSearch);
+        actualSavedSearch.Should().BeEquivalentTo(randomSavedSearch);
 
         this.storageBrokerMock.Verify(broker =>
-            broker.DeleteSavedSearchByIdAsync(randomSavedSearch.Id),
+            broker.SelectSavedSearchByIdAsync(randomSavedSearch.Id),
+            Times.Once);
+
+        this.storageBrokerMock.Verify(broker =>
+            broker.UpdateSavedSearchAsync(It.IsAny<SavedSearch>()),
             Times.Once);
 
         this.storageBrokerMock.VerifyNoOtherCalls();

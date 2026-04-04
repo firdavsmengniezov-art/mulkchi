@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpParams, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { Booking, CreateBookingRequest, BookingResponse, BookingStatus, PagedResult } from '../models';
 
@@ -16,7 +17,9 @@ export class BookingService {
       .set('page', page.toString())
       .set('pageSize', pageSize.toString());
     
-    return this.http.get<PagedResult<Booking>>(`${this.apiUrl}/bookings`, { params }); 
+    return this.http.get<PagedResult<Booking>>(`${this.apiUrl}/bookings`, { params }).pipe(
+      catchError(this.handleError)
+    );
   }
 
   // Get current user's bookings
@@ -25,7 +28,9 @@ export class BookingService {
       .set('page', page.toString())
       .set('pageSize', pageSize.toString());
     
-    return this.http.get<PagedResult<Booking>>(`${this.apiUrl}/bookings/my`, { params }); 
+    return this.http.get<PagedResult<Booking>>(`${this.apiUrl}/bookings/my`, { params }).pipe(
+      catchError(this.handleError)
+    );
   }
 
   // Get host's bookings
@@ -34,37 +39,56 @@ export class BookingService {
       .set('page', page.toString())
       .set('pageSize', pageSize.toString());
     
-    return this.http.get<PagedResult<Booking>>(`${this.apiUrl}/bookings/host`, { params }); 
+    return this.http.get<PagedResult<Booking>>(`${this.apiUrl}/bookings/host`, { params }).pipe(
+      catchError(this.handleError)
+    );
   }
 
   // Get booking by ID
   getBookingById(id: string): Observable<Booking> { 
-    return this.http.get<Booking>(`${this.apiUrl}/bookings/${id}`); 
+    return this.http.get<Booking>(`${this.apiUrl}/bookings/${id}`).pipe(
+      catchError(this.handleError)
+    );
   }
 
   // Create new booking
   createBooking(req: CreateBookingRequest): Observable<BookingResponse> { 
-    return this.http.post<BookingResponse>(`${this.apiUrl}/bookings`, req); 
+    return this.http.post<BookingResponse>(`${this.apiUrl}/bookings`, req).pipe(
+      catchError(this.handleError)
+    );
   }
 
   // Confirm booking (host only)
   confirmBooking(id: string): Observable<Booking> { 
-    return this.http.post<Booking>(`${this.apiUrl}/bookings/${id}/confirm`, {}); 
+    return this.http.post<Booking>(`${this.apiUrl}/bookings/${id}/confirm`, {}).pipe(
+      catchError(this.handleError)
+    );
   }
 
   // Cancel booking
   cancelBooking(id: string): Observable<Booking> { 
-    return this.http.post<Booking>(`${this.apiUrl}/bookings/${id}/cancel`, {}); 
+    return this.http.post<Booking>(`${this.apiUrl}/bookings/${id}/cancel`, {}).pipe(
+      catchError(this.handleError)
+    );
   }
 
   // Update booking
   updateBooking(booking: Booking): Observable<Booking> { 
-    return this.http.put<Booking>(`${this.apiUrl}/bookings`, booking); 
+    return this.http.put<Booking>(`${this.apiUrl}/bookings`, booking).pipe(
+      catchError(this.handleError)
+    );
   }
 
   // Delete booking
   deleteBooking(id: string): Observable<Booking> { 
-    return this.http.delete<Booking>(`${this.apiUrl}/bookings/${id}`); 
+    return this.http.delete<Booking>(`${this.apiUrl}/bookings/${id}`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  private handleError(error: HttpErrorResponse) {
+    console.error('Booking API Error:', error);
+    return throwError(() => error);
   }
 
   // Utility methods

@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { NotificationService } from './core/services/notification.service';
 import { AuthService } from './core/services/auth.service';
 import { FavoriteService } from './core/services/favorite.service';
+import { LanguageService } from './core/services/language.service';
 
 @Component({
   selector: 'app-root',
@@ -18,10 +19,14 @@ export class AppComponent implements OnInit {
   constructor(
     private notificationService: NotificationService,
     private authService: AuthService,
-    private favoriteService: FavoriteService
+    private favoriteService: FavoriteService,
+    private languageService: LanguageService
   ) {}
 
   ngOnInit(): void {
+    // Initialize language
+    this.languageService.init();
+
     // Start notification service when user is logged in
     this.authService.currentUser$.subscribe(user => {
       if (user) {
