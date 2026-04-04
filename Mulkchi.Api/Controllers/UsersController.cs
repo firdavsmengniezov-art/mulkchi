@@ -116,9 +116,7 @@ public class UsersController : ControllerBase
                 user.Badge = existingUser.Badge;
                 user.Rating = existingUser.Rating;
                 user.ResponseRate = existingUser.ResponseRate;
- copilot/implement-booking-feature
                 user.ResponseTimeMinutes = existingUser.ResponseTimeMinutes;
-main
                 user.TotalListings = existingUser.TotalListings;
                 user.TotalBookings = existingUser.TotalBookings;
                 user.CreatedDate = existingUser.CreatedDate;

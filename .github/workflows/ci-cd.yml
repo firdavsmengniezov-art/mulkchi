@@ -72,21 +72,25 @@ jobs:
       run: |
         dotnet restore Mulkchi.sln
         
+    - name: 🏗️ Build Backend
+      run: |
+        dotnet build Mulkchi.sln --configuration Release --no-restore
+        
     - name: 🔍 Run Backend Tests
       run: |
-        cd Mulkchi.Api
-        dotnet test --no-build --verbosity normal --logger "trx;LogFileName=test_results.trx" --results-directory TestResults
+        dotnet test Mulkchi.Api.Tests.Unit/ \
+          --no-build --no-restore \
+          --configuration Release \
+          --verbosity normal \
+          --logger "trx;LogFileName=test_results.trx" \
+          --results-directory TestResults
         
     - name: 📤 Upload Test Results
       uses: actions/upload-artifact@v4
       if: always()
       with:
         name: backend-test-results
-        path: Mulkchi.Api/TestResults/
-        
-    - name: 🏗️ Build Backend
-      run: |
-        dotnet build Mulkchi.sln --configuration Release --no-restore
+        path: Mulkchi.Api.Tests.Unit/TestResults/
         
     - name: 📤 Upload Backend Build Artifacts
       uses: actions/upload-artifact@v4
