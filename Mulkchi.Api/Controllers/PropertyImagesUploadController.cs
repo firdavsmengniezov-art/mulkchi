@@ -41,16 +41,9 @@ public class PropertyImagesUploadController : ControllerBase
             if (userIdClaim is null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
                 return Unauthorized();
 
-            bool isAdmin = User.IsInRole("Admin");
-            if (!isAdmin)
-            {
-                Property property = await this.propertyService.RetrievePropertyByIdAsync(propertyId);
-                if (property is null)
-                    return NotFound(new { message = "Property not found." });
-
-                if (property.HostId != currentUserId)
-                    return Forbid();
-            }
+            ActionResult ownershipResult = await VerifyPropertyOwnershipAsync(propertyId, currentUserId);
+            if (ownershipResult is not OkResult)
+                return ownershipResult;
 
             // Upload file only after ownership is verified
             string imageUrl = await fileStorageBroker.UploadImageAsync(file, "property-images");
@@ -106,13 +99,9 @@ public class PropertyImagesUploadController : ControllerBase
             if (propertyImage == null)
                 return NotFound();
 
-            bool isAdmin = User.IsInRole("Admin");
-            if (!isAdmin)
-            {
-                Property property = await this.propertyService.RetrievePropertyByIdAsync(propertyImage.PropertyId);
-                if (property is null || property.HostId != currentUserId)
-                    return Forbid();
-            }
+            ActionResult ownershipResult = await VerifyPropertyOwnershipAsync(propertyImage.PropertyId, currentUserId);
+            if (ownershipResult is not OkResult)
+                return ownershipResult;
 
             // Delete file from storage
             await fileStorageBroker.DeleteImageAsync(propertyImage.Url);
@@ -138,5 +127,20 @@ public class PropertyImagesUploadController : ControllerBase
         {
             return StatusCode(StatusCodes.Status500InternalServerError, new { message = "A service error occurred." });
         }
+    }
+
+    private async Task<ActionResult> VerifyPropertyOwnershipAsync(Guid propertyId, Guid currentUserId)
+    {
+        if (User.IsInRole("Admin"))
+            return Ok();
+
+        Property property = await this.propertyService.RetrievePropertyByIdAsync(propertyId);
+        if (property is null)
+            return NotFound(new { message = "Property not found." });
+
+        if (property.HostId != currentUserId)
+            return Forbid();
+
+        return Ok();
     }
 }

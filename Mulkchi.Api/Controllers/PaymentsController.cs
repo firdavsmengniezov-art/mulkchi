@@ -139,6 +139,9 @@ public class PaymentsController : ControllerBase
             if (!isAdmin)
             {
                 Payment existingPayment = await this.paymentService.RetrievePaymentByIdAsync(payment.Id);
+                if (existingPayment is null)
+                    return NotFound(new { message = "Payment not found." });
+
                 if (existingPayment.PayerId != currentUserId)
                     return Forbid();
             }
