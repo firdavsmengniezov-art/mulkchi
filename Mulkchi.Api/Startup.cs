@@ -8,6 +8,7 @@ using Mulkchi.Api.Brokers.Loggings;
 using Mulkchi.Api.Brokers.Storages;
 using Microsoft.AspNetCore.SignalR;
 using Mulkchi.Api.Hubs;
+using Mulkchi.Api.Middleware;
 using Mulkchi.Api.Services.Foundations.Users;
 using Mulkchi.Api.Services.Foundations.Properties;
 using Mulkchi.Api.Services.Foundations.HomeRequests;
@@ -46,6 +47,8 @@ public class Startup
                     System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
                 options.JsonSerializerOptions.DefaultIgnoreCondition =
                     System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+                options.JsonSerializerOptions.Converters.Add(
+                    new System.Text.Json.Serialization.JsonStringEnumConverter());
             });
         services.AddEndpointsApiExplorer();
         AddSwagger(services);
@@ -67,7 +70,8 @@ public class Startup
         }
 
         app.UseHttpsRedirection();
-        app.UseCors("AllowAngular");
+        app.UseMiddleware<RateLimitMiddleware>();
+        app.UseCors(env.IsDevelopment() ? "AllowAngular" : "Production");
         app.UseRouting();
         app.UseAuthentication();
         app.UseAuthorization();
