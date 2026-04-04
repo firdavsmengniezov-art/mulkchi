@@ -86,18 +86,15 @@ public class Startup
         }
 
         app.UseHttpsRedirection();
- copilot/implement-booking-feature
-        app.UseMiddleware<RateLimitMiddleware>();
-        app.UseCors(env.IsDevelopment() ? "AllowAngular" : "Production");
         app.UseStaticFiles(); // Enable static file serving
-        app.UseCors("AllowAngular");
-        
+        app.UseCors(env.IsDevelopment() ? "AllowAngular" : "Production");
+
         // Add global exception handling
         app.UseGlobalExceptionHandling();
-        
+
         // Add rate limiting middleware
         app.UseMiddleware<RateLimitMiddleware>();
-        
+
         // Add request localization
         var supportedCultures = new[] { "uz", "ru", "en" };
         app.UseRequestLocalization(new RequestLocalizationOptions
@@ -110,8 +107,7 @@ public class Startup
                 new Microsoft.AspNetCore.Localization.AcceptLanguageHeaderRequestCultureProvider()
             }
         });
-        
- main
+
         app.UseRouting();
         app.UseAuthentication();
         app.UseAuthorization();

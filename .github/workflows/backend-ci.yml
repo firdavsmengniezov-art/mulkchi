@@ -26,15 +26,16 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: NuGet paketlarni tiklash
-        run: dotnet restore
+        run: dotnet restore Mulkchi.sln
 
       - name: Build (Release mode)
-        run: dotnet build --no-restore --configuration Release
+        run: dotnet build Mulkchi.sln --no-restore --configuration Release
 
       - name: Unit testlarni ishga tushirish
         run: |
           dotnet test Mulkchi.Api.Tests.Unit/ \
-            --no-restore \
+            --no-build --no-restore \
+            --configuration Release \
             --verbosity normal \
             --logger "trx;LogFileName=test-results.trx" \
             --collect:"XPlat Code Coverage"
