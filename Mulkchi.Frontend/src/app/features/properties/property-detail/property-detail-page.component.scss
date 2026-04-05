@@ -1,0 +1,136 @@
+.detail-page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+.detail-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 8%;
+  margin-top: 32px;
+  align-items: start;
+}
+
+.detail-header {
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--color-border, #eaeaea);
+
+  h1 {
+    font-size: 26px;
+    font-weight: 600;
+    margin: 0 0 12px;
+    line-height: 1.2;
+    color: #222;
+  }
+
+  .detail-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 15px;
+    color: #222;
+
+    .badge {
+      display: inline-flex;
+      padding: 2px 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+      border-radius: 4px;
+      background: #f5a623;
+      &.verified {
+        background: #1ab394;
+      }
+    }
+
+    .meta-link {
+      color: #222;
+    }
+    .underline {
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  }
+}
+
+.detail-section {
+  padding: 32px 0;
+  border-bottom: 1px solid var(--color-border, #eaeaea);
+  h2 {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 24px;
+    color: #222;
+  }
+}
+
+.specs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+
+  .spec-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    font-size: 15px;
+    color: #222;
+  }
+}
+
+.description-text {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #222;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  overflow: hidden;
+  &.expanded {
+    display: block;
+    overflow: visible;
+  }
+}
+
+.read-more {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin-top: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #222;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.map-address {
+  font-size: 16px;
+  color: #222;
+  margin-bottom: 16px;
+}
+
+.similar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+}
+
+@media (max-width: 1024px) {
+  .detail-page {
+    padding: 0 20px 80px;
+  }
+  .detail-layout {
+    grid-template-columns: 1fr;
+    gap: 40px;
+
+    .detail-right {
+      order: 1; /* Keep it below mostly or top depending on preference */
+    }
+  }
+}

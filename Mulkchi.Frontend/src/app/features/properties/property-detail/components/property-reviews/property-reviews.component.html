@@ -1,0 +1,60 @@
+<section class="detail-section reviews-section" *ngIf="!isLoading">
+
+	<div class="reviews-header" *ngIf="summary?.totalReviews">
+		<h2><span class="star">★</span> {{ summary?.averageRating | number:'1.1-1' }} · {{ summary?.totalReviews }} sharh
+		</h2>
+	</div>
+
+	<div class="reviews-summary" *ngIf="summary?.totalReviews">
+		<!-- Summary bars -->
+		<div class="summary-item">
+			<span>Tozalik</span>
+			<div class="bar">
+				<div class="fill" [style.width.%]="ratingPercentage(summary?.cleanliness)"></div>
+			</div>
+			<span class="score">{{ summary?.cleanliness | number:'1.1-1' }}</span>
+		</div>
+		<div class="summary-item">
+			<span>Joylashuv</span>
+			<div class="bar">
+				<div class="fill" [style.width.%]="ratingPercentage(summary?.location)"></div>
+			</div>
+			<span class="score">{{ summary?.location | number:'1.1-1' }}</span>
+		</div>
+		<div class="summary-item">
+			<span>Qiymat</span>
+			<div class="bar">
+				<div class="fill" [style.width.%]="ratingPercentage(summary?.value)"></div>
+			</div>
+			<span class="score">{{ summary?.value | number:'1.1-1' }}</span>
+		</div>
+		<div class="summary-item">
+			<span>Muloqot</span>
+			<div class="bar">
+				<div class="fill" [style.width.%]="ratingPercentage(summary?.communication)"></div>
+			</div>
+			<span class="score">{{ summary?.communication | number:'1.1-1' }}</span>
+		</div>
+	</div>
+
+	<div class="reviews-grid" *ngIf="reviews.length > 0">
+		<div class="review-card" *ngFor="let review of reviews">
+			<div class="review-card-header">
+				<img [src]="review.authorAvatarUrl || '/assets/images/user-placeholder.png'" class="avatar" />
+				<div>
+					<div class="author">{{ review.authorName }}</div>
+					<div class="date">{{ review.createdDate | date:'MMMM yyyy' }}</div>
+				</div>
+			</div>
+			<p class="comment">{{ review.comment }}</p>
+		</div>
+	</div>
+
+	<button class="btn-outline" *ngIf="summary?.totalReviews && summary!.totalReviews > 6">
+		Ko'proq sharhlar →
+	</button>
+
+	<div *ngIf="!summary?.totalReviews" class="no-reviews">
+		Hozircha sharhlar yo'q. Birinchi bo'lib sharh qoldiring!
+	</div>
+</section>

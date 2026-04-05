@@ -12,8 +12,19 @@ public partial class BookingServiceTests
         // given
         Guid randomBookingId = Guid.NewGuid();
         Booking randomBooking = CreateRandomBooking();
-        Booking expectedBooking = randomBooking;
-        expectedBooking.Id = randomBookingId;
+        randomBooking.Id = randomBookingId;
+        BookingResponse expectedBooking = new BookingResponse
+        {
+            Id = randomBooking.Id,
+            PropertyId = randomBooking.PropertyId,
+            GuestId = randomBooking.GuestId,
+            CheckInDate = randomBooking.CheckInDate,
+            CheckOutDate = randomBooking.CheckOutDate,
+            TotalPrice = randomBooking.TotalPrice,
+            Status = randomBooking.Status,
+            CreatedDate = randomBooking.CreatedDate,
+            UpdatedDate = randomBooking.UpdatedDate
+        };
 
         // Set up CurrentUserService mock to return the booking's guest ID
         this.currentUserServiceMock.Setup(x => x.GetCurrentUserId())
@@ -23,10 +34,10 @@ public partial class BookingServiceTests
 
         this.storageBrokerMock.Setup(broker =>
             broker.SelectBookingByIdAsync(randomBookingId))
-                .ReturnsAsync(expectedBooking);
+                .ReturnsAsync(randomBooking);
 
         // when
-        Booking actualBooking = await this.bookingService.RetrieveBookingByIdAsync(randomBookingId);
+        BookingResponse actualBooking = await this.bookingService.RetrieveBookingByIdAsync(randomBookingId);
 
         // then
         actualBooking.Should().BeEquivalentTo(expectedBooking);
@@ -38,3 +49,4 @@ public partial class BookingServiceTests
         this.storageBrokerMock.VerifyNoOtherCalls();
     }
 }
+

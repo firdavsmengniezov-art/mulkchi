@@ -1,11 +1,9 @@
 #nullable disable
 
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using Mulkchi.Api.Models.Foundations.Bookings;
 using Mulkchi.Api.Models.Foundations.Common;
@@ -24,26 +22,19 @@ namespace Mulkchi.Api.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<ActionResult<PagedResult<Booking>>> GetAllBookings([FromQuery] PaginationParams pagination)
+        public async Task<ActionResult<PagedResult<BookingResponse>>> GetAllBookings([FromQuery] BookingQueryParams queryParams)
         {
             try
             {
-                IQueryable<Booking> query = this.bookingService.RetrieveAllBookings();
+                // Admin can view all if needed, mapped inside service
+                var (items, total) = await this.bookingService.RetrieveBookingsAsync(queryParams);
 
-                var countTask = query.CountAsync();
-                var itemsTask = query
-                    .Skip((pagination.Page - 1) * pagination.PageSize)
-                    .Take(pagination.PageSize)
-                    .ToListAsync();
-
-                await Task.WhenAll(countTask, itemsTask);
-
-                var result = new PagedResult<Booking>
+                var result = new PagedResult<BookingResponse>
                 {
-                    Items = itemsTask.Result,
-                    TotalCount = countTask.Result,
-                    Page = pagination.Page,
-                    PageSize = pagination.PageSize
+                    Items = items,
+                    TotalCount = total,
+                    Page = queryParams.Page,
+                    PageSize = queryParams.PageSize
                 };
 
                 return Ok(result);
@@ -56,7 +47,7 @@ namespace Mulkchi.Api.Controllers
 
         [HttpGet("my")]
         [Authorize]
-        public async Task<ActionResult<PagedResult<Booking>>> GetMyBookings([FromQuery] PaginationParams pagination)
+        public async Task<ActionResult<PagedResult<BookingResponse>>> GetMyBookings([FromQuery] BookingQueryParams queryParams)
         {
             try
             {
@@ -64,23 +55,17 @@ namespace Mulkchi.Api.Controllers
                 if (userIdClaim == null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
                     return Unauthorized();
 
-                IQueryable<Booking> query = this.bookingService.RetrieveAllBookings()
-                    .Where(b => b.GuestId == currentUserId);
+                queryParams.UserId = currentUserId; // Set internally for Guest lookup
+                queryParams.IsHostView = false;
+                
+                var (items, total) = await this.bookingService.RetrieveBookingsAsync(queryParams);
 
-                var countTask = query.CountAsync();
-                var itemsTask = query
-                    .Skip((pagination.Page - 1) * pagination.PageSize)
-                    .Take(pagination.PageSize)
-                    .ToListAsync();
-
-                await Task.WhenAll(countTask, itemsTask);
-
-                var result = new PagedResult<Booking>
+                var result = new PagedResult<BookingResponse>
                 {
-                    Items = itemsTask.Result,
-                    TotalCount = countTask.Result,
-                    Page = pagination.Page,
-                    PageSize = pagination.PageSize
+                    Items = items,
+                    TotalCount = total,
+                    Page = queryParams.Page,
+                    PageSize = queryParams.PageSize
                 };
 
                 return Ok(result);
@@ -93,31 +78,20 @@ namespace Mulkchi.Api.Controllers
 
         [HttpGet("host")]
         [Authorize(Roles = "Host,Admin")]
-        public async Task<ActionResult<PagedResult<Booking>>> GetHostBookings([FromQuery] PaginationParams pagination)
+        public async Task<ActionResult<PagedResult<BookingResponse>>> GetHostBookings([FromQuery] BookingQueryParams queryParams)
         {
             try
             {
-                var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (userIdClaim == null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
-                    return Unauthorized();
+                queryParams.IsHostView = true; // Tell service to filter by Host
+                
+                var (items, total) = await this.bookingService.RetrieveBookingsAsync(queryParams);
 
-                IQueryable<Booking> query = this.bookingService.RetrieveAllBookings()
-                    .Where(b => b.Property.HostId == currentUserId);
-
-                var countTask = query.CountAsync();
-                var itemsTask = query
-                    .Skip((pagination.Page - 1) * pagination.PageSize)
-                    .Take(pagination.PageSize)
-                    .ToListAsync();
-
-                await Task.WhenAll(countTask, itemsTask);
-
-                var result = new PagedResult<Booking>
+                var result = new PagedResult<BookingResponse>
                 {
-                    Items = itemsTask.Result,
-                    TotalCount = countTask.Result,
-                    Page = pagination.Page,
-                    PageSize = pagination.PageSize
+                    Items = items,
+                    TotalCount = total,
+                    Page = queryParams.Page,
+                    PageSize = queryParams.PageSize
                 };
 
                 return Ok(result);
@@ -130,11 +104,11 @@ namespace Mulkchi.Api.Controllers
 
         [HttpGet("{id}")]
         [Authorize]
-        public async ValueTask<ActionResult<Booking>> GetBookingByIdAsync(Guid id)
+        public async ValueTask<ActionResult<BookingResponse>> GetBookingByIdAsync(Guid id)
         {
             try
             {
-                Booking booking = await this.bookingService.RetrieveBookingByIdAsync(id);
+                var booking = await this.bookingService.RetrieveBookingByIdAsync(id);
                 return Ok(booking);
             }
             catch (UnauthorizedAccessException ex)
@@ -149,18 +123,16 @@ namespace Mulkchi.Api.Controllers
 
         [HttpPost]
         [Authorize]
-        public async ValueTask<ActionResult<Booking>> PostBookingAsync(Booking booking)
+        public async ValueTask<ActionResult<BookingResponse>> PostBookingAsync([FromBody] BookingCreateDto dto)
         {
             try
             {
-                var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (userIdClaim == null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
-                    return Unauthorized();
-
-                booking.GuestId = currentUserId;
-                Booking createdBooking = await this.bookingService.AddBookingAsync(booking);
-
+                var createdBooking = await this.bookingService.AddBookingAsync(dto);
                 return CreatedAtAction(nameof(GetBookingByIdAsync), new { id = createdBooking.Id }, createdBooking);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
             }
             catch (Exception)
             {
@@ -170,23 +142,20 @@ namespace Mulkchi.Api.Controllers
 
         [HttpPost("{id}/confirm")]
         [Authorize(Roles = "Host,Admin")]
-        public async ValueTask<ActionResult<Booking>> ConfirmBookingAsync(Guid id)
+        public async ValueTask<ActionResult<BookingResponse>> ConfirmBookingAsync(Guid id)
         {
             try
             {
-                Booking booking = await this.bookingService.RetrieveBookingByIdAsync(id);
-
-                if (booking.Status != BookingStatus.Pending)
-                    return BadRequest(new { message = "Only pending bookings can be confirmed." });
-
-                booking.Status = BookingStatus.Confirmed;
-                Booking updatedBooking = await this.bookingService.ModifyBookingAsync(booking);
-
-                return Ok(updatedBooking);
+                var confirmedBooking = await this.bookingService.ConfirmBookingAsync(id);
+                return Ok(confirmedBooking);
             }
             catch (UnauthorizedAccessException ex)
             {
                 return Unauthorized(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
             catch (Exception)
             {
@@ -196,60 +165,12 @@ namespace Mulkchi.Api.Controllers
 
         [HttpPost("{id}/cancel")]
         [Authorize]
-        public async ValueTask<ActionResult<Booking>> CancelBookingAsync(Guid id)
+        public async ValueTask<ActionResult<BookingResponse>> CancelBookingAsync(Guid id)
         {
             try
             {
-                Booking booking = await this.bookingService.RetrieveBookingByIdAsync(id);
-
-                if (booking.Status == BookingStatus.Cancelled)
-                    return BadRequest(new { message = "Booking is already cancelled." });
-
-                if (booking.Status == BookingStatus.Completed)
-                    return BadRequest(new { message = "Completed bookings cannot be cancelled." });
-
-                booking.Status = BookingStatus.Cancelled;
-                Booking updatedBooking = await this.bookingService.ModifyBookingAsync(booking);
-
-                return Ok(updatedBooking);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { message = ex.Message });
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new { message = "Internal server error." });
-            }
-        }
-
-        [HttpPut]
-        [Authorize]
-        public async ValueTask<ActionResult<Booking>> PutBookingAsync(Booking booking)
-        {
-            try
-            {
-                Booking updatedBooking = await this.bookingService.ModifyBookingAsync(booking);
-                return Ok(updatedBooking);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { message = ex.Message });
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new { message = "Internal server error." });
-            }
-        }
-
-        [HttpDelete("{id}")]
-        [Authorize]
-        public async ValueTask<ActionResult<Booking>> DeleteBookingAsync(Guid id)
-        {
-            try
-            {
-                Booking deletedBooking = await this.bookingService.RemoveBookingAsync(id);
-                return Ok(deletedBooking);
+                var cancelledBooking = await this.bookingService.CancelBookingAsync(id);
+                return Ok(cancelledBooking);
             }
             catch (UnauthorizedAccessException ex)
             {

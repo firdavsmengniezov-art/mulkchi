@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Mulkchi.Api;
 
-public class Program
+public partial class Program
 {
     private static ILogger<Program> _logger;
     
@@ -427,3 +427,4 @@ public class Program
         _logger.LogInformation("✅ {Count} test properties seeded!", properties.Count);
     }
 }
+public partial class Program { }

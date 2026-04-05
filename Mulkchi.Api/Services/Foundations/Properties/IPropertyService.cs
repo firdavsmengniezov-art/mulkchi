@@ -1,10 +1,22 @@
 using Mulkchi.Api.Models.Foundations.Properties;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Mulkchi.Api.Services.Foundations.Properties;
 
 public interface IPropertyService
 {
+    ValueTask<PropertyResponse> AddPropertyAsync(PropertyCreateDto dto);
     ValueTask<Property> AddPropertyAsync(Property property);
+    ValueTask<(IEnumerable<PropertyResponse> Items, int TotalCount)> RetrieveAllPropertiesAsync(PropertyQueryParams queryParams);
+    
+    ValueTask<IEnumerable<string>> SearchLocationSuggestionsAsync(string query);
+    ValueTask<IEnumerable<PropertyResponse>> RetrieveSimilarPropertiesAsync(Guid propertyId, int count = 6);
+    ValueTask<IEnumerable<PropertyResponse>> RetrieveFeaturedPropertiesAsync(int count = 8);
+
+    // Existing base methods format preserved where necessary
     IQueryable<Property> RetrieveAllProperties();
     ValueTask<Property> RetrievePropertyByIdAsync(Guid propertyId);
     ValueTask<Property> ModifyPropertyAsync(Property property);

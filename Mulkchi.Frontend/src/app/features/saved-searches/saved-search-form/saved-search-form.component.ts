@@ -222,6 +222,7 @@ export class SavedSearchFormComponent implements OnInit {
 
   private initializeForm(): void {
     this.searchForm = this.fb.group({
+      id: [null],
       name: ['', [Validators.required]],
       city: [''],
       type: [''],
@@ -286,6 +287,7 @@ export class SavedSearchFormComponent implements OnInit {
 
   private resetForm(): void {
     this.searchForm.reset({
+      id: null,
       name: '',
       city: '',
       type: '',

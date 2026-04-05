@@ -31,7 +31,10 @@ namespace Mulkchi.Api.Controllers
 
                 savedSearch.UserId = currentUserId;
                 SavedSearch addedSavedSearch = await this.savedSearchService.AddSavedSearchAsync(savedSearch);
-                return Created("savedSearch", addedSavedSearch);
+                return CreatedAtAction(
+                    nameof(GetSavedSearchByIdAsync),
+                    new { id = addedSavedSearch.Id },
+                    addedSavedSearch);
             }
             catch (SavedSearchValidationException savedSearchValidationException)
             {
@@ -142,9 +145,9 @@ namespace Mulkchi.Api.Controllers
                 if (userIdClaim == null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
                     return Unauthorized();
 
-                // Check if user owns this saved search
+                // Check if user owns this saved search when entity is available
                 SavedSearch existingSearch = await this.savedSearchService.RetrieveSavedSearchByIdAsync(savedSearch.Id);
-                if (existingSearch.UserId != currentUserId)
+                if (existingSearch is not null && existingSearch.UserId != currentUserId)
                     return Unauthorized();
 
                 savedSearch.UserId = currentUserId;
@@ -228,9 +231,9 @@ namespace Mulkchi.Api.Controllers
                     return Unauthorized();
 
                 SavedSearch savedSearch = await this.savedSearchService.RetrieveSavedSearchByIdAsync(id);
-                
-                // Check if user owns this saved search
-                if (savedSearch.UserId != currentUserId)
+
+                // Check if user owns this saved search when entity is available
+                if (savedSearch is not null && savedSearch.UserId != currentUserId)
                     return Unauthorized();
 
                 SavedSearch deletedSavedSearch = await this.savedSearchService.RemoveSavedSearchByIdAsync(id);

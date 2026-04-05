@@ -1,0 +1,305 @@
+<div class="discount-form">
+  <div class="max-w-4xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">
+            {{ isEditMode ? 'Edit Discount' : 'Create Discount' }}
+          </h1>
+          <p class="text-gray-600 mt-1">
+            {{ isEditMode ? 'Update discount configuration' : 'Create a new promotional discount code' }}
+          </p>
+        </div>
+        <button (click)="onCancel()" 
+                class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="text-center py-12" *ngIf="loading">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+      <p class="mt-4 text-gray-600">Loading discount...</p>
+    </div>
+
+    <!-- Error State -->
+    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6" *ngIf="error">
+      <div class="flex items-center">
+        <svg class="w-5 h-5 text-red-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <span class="text-red-800">{{ error }}</span>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <form (ngSubmit)="onSubmit()" *ngIf="!loading">
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <!-- Basic Information -->
+        <div class="space-y-6">
+          <!-- Code -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Discount Code <span class="text-red-500">*</span>
+            </label>
+            <div class="flex space-x-2">
+              <input type="text" 
+                     [(ngModel)]="formData.code" 
+                     name="code"
+                     (input)="onCodeChange()"
+                     maxlength="20"
+                     class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                     placeholder="e.g., SUMMER2024"
+                     required>
+              <button type="button" 
+                      (click)="generateCode()"
+                      class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                Generate
+              </button>
+            </div>
+            <div class="mt-1 text-sm text-gray-500">
+              {{ codeCharCount }}/20 characters • Uppercase letters and numbers only
+            </div>
+            <div class="mt-1 text-sm text-red-500" *ngIf="codeError">
+              {{ codeError }}
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Description <span class="text-red-500">*</span>
+            </label>
+            <textarea [(ngModel)]="formData.description" 
+                      name="description"
+                      rows="3"
+                      maxlength="200"
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Describe this discount offer..."
+                      required></textarea>
+            <div class="mt-1 text-sm text-gray-500">
+              {{ descriptionCharCount }}/200 characters
+            </div>
+          </div>
+
+          <!-- Discount Type and Value -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Type -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Discount Type <span class="text-red-500">*</span>
+              </label>
+              <select [(ngModel)]="formData.discountType" 
+                      name="discountType"
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required>
+                <option *ngFor="let type of discountTypes" [value]="type">
+                  {{ getDiscountTypeLabel(type) }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Value -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Discount Value <span class="text-red-500">*</span>
+              </label>
+              <div class="relative">
+                <input type="number" 
+                       [(ngModel)]="formData.discountValue" 
+                       name="discountValue"
+                       min="0"
+                       [max]="formData.discountType === 'Percentage' ? 100 : null"
+                       step="0.01"
+                       class="w-full px-4 py-2 pr-16 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                       placeholder="0.00"
+                       required>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <span class="text-gray-500 text-sm">
+                    {{ formData.discountType === 'Percentage' ? '%' : 'UZS' }}
+                  </span>
+                </div>
+              </div>
+              <div class="mt-1 text-sm text-red-500" *ngIf="valueError">
+                {{ valueError }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Date Range -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Start Date -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Start Date <span class="text-red-500">*</span>
+              </label>
+              <input type="datetime-local" 
+                     [(ngModel)]="formData.validFrom" 
+                     name="validFrom"
+                     [min]="minStartDate"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                     required>
+            </div>
+
+            <!-- End Date -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                End Date <span class="text-red-500">*</span>
+              </label>
+              <input type="datetime-local" 
+                     [(ngModel)]="formData.validUntil" 
+                     name="validUntil"
+                     [min]="minEndDate"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                     required>
+              <div class="mt-1 text-sm text-red-500" *ngIf="dateError">
+                {{ dateError }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Usage Limits -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Min Booking Amount -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Minimum Booking Amount (UZS)</label>
+              <input type="number" 
+                     [(ngModel)]="formData.minBookingAmount" 
+                     name="minBookingAmount"
+                     min="0"
+                     step="0.01"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                     placeholder="0">
+            </div>
+
+            <!-- Max Discount Amount -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Max Discount Amount (UZS)</label>
+              <input type="number" 
+                     [(ngModel)]="formData.maxDiscountAmount" 
+                     name="maxDiscountAmount"
+                     min="0"
+                     step="0.01"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                     placeholder="0">
+            </div>
+
+            <!-- Max Usage Count -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Max Usage Count</label>
+              <input type="number" 
+                     [(ngModel)]="formData.maxUsageCount" 
+                     name="maxUsageCount"
+                     min="1"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                     placeholder="Unlimited">
+            </div>
+          </div>
+
+          <div class="mt-1 text-sm text-red-500" *ngIf="minBookingAmountError">
+            {{ minBookingAmountError }}
+          </div>
+
+          <!-- Additional Requirements -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Min Booking Days -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Minimum Booking Days</label>
+              <input type="number" 
+                     [(ngModel)]="formData.minBookingDays" 
+                     name="minBookingDays"
+                     min="1"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                     placeholder="Any duration">
+            </div>
+
+            <!-- Spacer -->
+            <div></div>
+          </div>
+
+          <!-- Applicability -->
+          <div class="border-t pt-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-medium text-gray-900">Applicability (Optional)</h3>
+              <div class="space-x-2">
+                <button type="button" 
+                        (click)="clearPropertyTypes()"
+                        class="text-sm text-gray-600 hover:text-gray-800">
+                  Clear Properties
+                </button>
+                <button type="button" 
+                        (click)="clearListingTypes()"
+                        class="text-sm text-gray-600 hover:text-gray-800">
+                  Clear Listings
+                </button>
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Property Types -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Property Types</label>
+                <div class="space-y-2">
+                  <label class="flex items-center cursor-pointer" *ngFor="let type of propertyTypes">
+                    <input type="checkbox" 
+                           [checked]="isPropertyTypeSelected(type)"
+                           (change)="togglePropertyType(type)"
+                           class="mr-2">
+                    <span class="text-sm">{{ type }}</span>
+                  </label>
+                </div>
+                <p class="mt-2 text-xs text-gray-500">
+                  Leave empty to apply to all property types
+                </p>
+              </div>
+
+              <!-- Listing Types -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Listing Types</label>
+                <div class="space-y-2">
+                  <label class="flex items-center cursor-pointer" *ngFor="let type of listingTypes">
+                    <input type="checkbox" 
+                           [checked]="isListingTypeSelected(type)"
+                           (change)="toggleListingType(type)"
+                           class="mr-2">
+                    <span class="text-sm">{{ type }}</span>
+                  </label>
+                </div>
+                <p class="mt-2 text-xs text-gray-500">
+                  Leave empty to apply to all listing types
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex justify-end space-x-4 mt-8 pt-6 border-t">
+          <button type="button" 
+                  (click)="onCancel()"
+                  class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+            Cancel
+          </button>
+          <button type="submit" 
+                  [disabled]="!isFormValid() || saving"
+                  class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors">
+            <span *ngIf="!saving">
+              {{ isEditMode ? 'Update Discount' : 'Create Discount' }}
+            </span>
+            <span *ngIf="saving" class="flex items-center">
+              <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              {{ isEditMode ? 'Updating...' : 'Creating...' }}
+            </span>
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

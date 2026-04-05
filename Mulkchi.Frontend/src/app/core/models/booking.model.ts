@@ -50,3 +50,7 @@ export interface BookingResponse {
     isInstantBook: boolean;
   };
 }
+
+export interface BookingCreateDto { propertyId: string; checkInDate: string; checkOutDate: string; guestsCount: number; totalPrice: number; message?: string; }
+
+export interface AvailabilityResponse { blockedDates: string[]; }

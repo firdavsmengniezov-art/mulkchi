@@ -42,13 +42,44 @@ public class LocalFileStorageBroker : IFileStorageBroker
             return Task.CompletedTask;
 
         string filePath = Path.Combine(environment.ContentRootPath, "wwwroot", imageUrl.TrimStart('/'));
-        
+
         if (File.Exists(filePath))
         {
             File.Delete(filePath);
         }
 
         return Task.CompletedTask;
+    }
+
+    public async ValueTask<string> UploadFileAsync(IFormFile file, string path)
+    {
+        var uploadsFolder = Path.Combine(environment.ContentRootPath, "wwwroot", path);
+        Directory.CreateDirectory(uploadsFolder);
+
+        string uniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName).ToLowerInvariant()}";
+        string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+        using (var fileStream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(fileStream);
+        }
+
+        return $"/{path}/{uniqueFileName}";
+    }
+
+    public ValueTask DeleteFileAsync(string filePath)
+    {
+        if (string.IsNullOrEmpty(filePath))
+            return ValueTask.CompletedTask;
+
+        string fullPath = Path.Combine(environment.ContentRootPath, "wwwroot", filePath.TrimStart('/'));
+
+        if (File.Exists(fullPath))
+        {
+            File.Delete(fullPath);
+        }
+
+        return ValueTask.CompletedTask;
     }
 
     private void ValidateFile(IFormFile file)

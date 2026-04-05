@@ -1,5 +1,5 @@
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, KeyValuePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
@@ -9,7 +9,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Subject, takeUntil } from 'rxjs';
 import { ReviewService } from '../../../core/services/review.service';
-import { Review, ReviewSummary, PagedResult } from '../../../core/models/review.models';
+import { Review, ReviewSummary, PagedResult } from '../../../core/models/review.model';
 import { ReviewFormComponent, ReviewFormDialogData } from '../review-form/review-form.component';
 import { StarRatingComponent } from '../../../shared/components/star-rating/star-rating.component';
 
@@ -18,6 +18,7 @@ import { StarRatingComponent } from '../../../shared/components/star-rating/star
   standalone: true,
   imports: [
     CommonModule,
+    KeyValuePipe,
     MatButtonModule,
     MatIconModule,
     MatCardModule,
@@ -155,3 +156,4 @@ export class ReviewsListComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 }
+

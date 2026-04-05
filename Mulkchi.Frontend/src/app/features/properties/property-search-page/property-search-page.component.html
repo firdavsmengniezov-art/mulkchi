@@ -1,0 +1,46 @@
+<!-- Sticky filter bar -->
+<app-property-filter-bar [initialParams]="params" (filtersChanged)="onFiltersChanged($event)"></app-property-filter-bar>
+
+<div class="search-page-content">
+	<!-- Results header -->
+	<div class="results-header">
+		<div class="results-count" *ngIf="!isLoading">
+			<strong>{{ totalCount }}</strong> <span>ta mulk topildi</span>
+		</div>
+		<select class="sort-select" [(ngModel)]="params.sortBy" (change)="loadProperties()">
+			<option [ngValue]="undefined">Saralash</option>
+			<option value="price_asc">💰 Arzon birinchi</option>
+			<option value="price_desc">💎 Qimmat birinchi</option>
+			<option value="rating">⭐ Reyting bo'yicha</option>
+			<option value="newest">🆕 Yangi birinchi</option>
+		</select>
+	</div>
+
+	<!-- Skeleton loading -->
+	<div class="properties-grid" *ngIf="isLoading">
+		<app-property-skeleton *ngFor="let s of skeletonArray"></app-property-skeleton>
+	</div>
+
+	<!-- Results grid -->
+	<div class="properties-grid" *ngIf="!isLoading && properties.length > 0">
+		<app-property-card *ngFor="let property of properties" [property]="property"
+			(favoriteToggled)="onFavoriteToggled($event)"></app-property-card>
+	</div>
+
+	<!-- Empty state (Inline instead of separate component for now) -->
+	<div class="empty-state" *ngIf="!isLoading && properties.length === 0">
+		<div class="empty-icon">🏡</div>
+		<h3>Mulklar topilmadi</h3>
+		<p>Boshqa filtrlarni tanlab ko'ring.</p>
+		<button class="btn-clear" (click)="onFiltersChanged({ page: 1, pageSize: 12 })">
+			Filtrlarni tozalash
+		</button>
+	</div>
+
+	<!-- Pagination -->
+	<div class="pagination" *ngIf="!isLoading && totalPages > 1">
+		<button [disabled]="params.page === 1" (click)="onPageChange(params.page! - 1)">‹</button>
+		<span class="page-info">{{ params.page }} / {{ totalPages }}</span>
+		<button [disabled]="params.page === totalPages" (click)="onPageChange(params.page! + 1)">›</button>
+	</div>
+</div>

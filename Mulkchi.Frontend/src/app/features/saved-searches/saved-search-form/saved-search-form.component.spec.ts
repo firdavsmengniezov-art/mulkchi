@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { SavedSearchFormComponent } from './saved-search-form.component';
 import { SavedSearchService } from '../../../core/services/saved-search.service';
@@ -34,6 +34,18 @@ describe('SavedSearchFormComponent', () => {
       'createSavedSearch',
       'updateSavedSearch'
     ]);
+
+    spy.createSavedSearch.and.returnValue(of({
+      success: true,
+      message: 'Created successfully',
+      data: mockSavedSearch
+    }));
+
+    spy.updateSavedSearch.and.returnValue(of({
+      success: true,
+      message: 'Updated successfully',
+      data: mockSavedSearch
+    }));
 
     await TestBed.configureTestingModule({
       imports: [
@@ -98,13 +110,13 @@ describe('SavedSearchFormComponent', () => {
 
     it('should mark all controls as touched on invalid submit', () => {
       // Arrange
-      spyOn(component, 'markFormAsTouched');
+      spyOn<any>(component, 'markFormAsTouched');
 
       // Act
       component.onSubmit();
 
       // Assert
-      expect(component.markFormAsTouched).toHaveBeenCalled();
+      expect((component as any).markFormAsTouched).toHaveBeenCalled();
     });
   });
 
@@ -127,42 +139,48 @@ describe('SavedSearchFormComponent', () => {
       });
     });
 
-    it('should create new saved search', () => {
+    it('should create new saved search', fakeAsync(() => {
       // Arrange
       savedSearchServiceSpy.createSavedSearch.and.returnValue(of({
         success: true,
+        message: 'Created successfully',
         data: mockSavedSearch
       }));
-      spyOn(component, 'resetForm');
+      spyOn<any>(component, 'resetForm');
 
       // Act
       component.onSubmit();
+      tick();
+      fixture.detectChanges();
 
       // Assert
       expect(savedSearchServiceSpy.createSavedSearch).toHaveBeenCalled();
       expect(component.successMessage).toBe('Qidiruv muvaffaqiyatli saqlandi!');
-      expect(component.resetForm).toHaveBeenCalled();
+      expect((component as any).resetForm).toHaveBeenCalled();
       expect(component.isLoading).toBe(false);
-    });
+    }));
 
-    it('should update existing saved search', () => {
+    it('should update existing saved search', fakeAsync(() => {
       // Arrange
       component.isEditing = true;
       component.searchForm.patchValue({ id: '1' });
       savedSearchServiceSpy.updateSavedSearch.and.returnValue(of({
         success: true,
+        message: 'Updated successfully',
         data: mockSavedSearch
       }));
-      spyOn(component, 'resetForm');
+      spyOn<any>(component, 'resetForm');
 
       // Act
       component.onSubmit();
+      tick();
+      fixture.detectChanges();
 
       // Assert
       expect(savedSearchServiceSpy.updateSavedSearch).toHaveBeenCalledWith('1', component.searchForm.value);
       expect(component.successMessage).toBe('Qidiruv muvaffaqiyatli yangilandi!');
-      expect(component.resetForm).toHaveBeenCalled();
-    });
+      expect((component as any).resetForm).toHaveBeenCalled();
+    }));
 
     it('should handle error when creating saved search', () => {
       // Arrange
@@ -196,23 +214,23 @@ describe('SavedSearchFormComponent', () => {
   });
 
   describe('onCancel', () => {
-    beforeEach(() => {
+    it('should reset form when cancel is clicked', () => {
       component.ngOnInit();
       component.successMessage = 'Previous success';
       component.errorMessage = 'Previous error';
       component.isEditing = true;
-      spyOn(component, 'resetForm');
+      spyOn<any>(component, 'resetForm');
 
       // Act
       component.onCancel();
 
       // Assert
-      expect(component.resetForm).toHaveBeenCalled();
+      expect((component as any).resetForm).toHaveBeenCalled();
     });
   });
 
   describe('resetForm', () => {
-    beforeEach(() => {
+    it('should reset form values and state', () => {
       component.ngOnInit();
       component.searchForm.patchValue({
         name: 'Modified',
@@ -226,7 +244,7 @@ describe('SavedSearchFormComponent', () => {
       component.isEditing = true;
 
       // Act
-      component.resetForm();
+      (component as any).resetForm();
 
       // Assert
       expect(component.searchForm.value.name).toBe('');
@@ -273,7 +291,7 @@ describe('SavedSearchFormComponent', () => {
 
     it('should mark all form controls as touched', () => {
       // Act
-      component.markFormAsTouched();
+      (component as any).markFormAsTouched();
 
       // Assert
       expect(component.searchForm.touched).toBe(true);

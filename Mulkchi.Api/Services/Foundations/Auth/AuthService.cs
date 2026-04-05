@@ -1,12 +1,10 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
+using System;
 using System.Security.Cryptography;
-using System.Text;
 using BCrypt.Net;
-using Microsoft.IdentityModel.Tokens;
 using Mulkchi.Api.Brokers.DateTimes;
 using Mulkchi.Api.Brokers.Loggings;
 using Mulkchi.Api.Brokers.Storages;
+using Mulkchi.Api.Brokers.Tokens;
 using Mulkchi.Api.Models.Foundations.Auth;
 using Mulkchi.Api.Models.Foundations.Auth.Exceptions;
 using Mulkchi.Api.Models.Foundations.Users;
@@ -20,18 +18,18 @@ public partial class AuthService : IAuthService
     private readonly IStorageBroker storageBroker;
     private readonly ILoggingBroker loggingBroker;
     private readonly IDateTimeBroker dateTimeBroker;
-    private readonly IConfiguration configuration;
+    private readonly ITokenBroker tokenBroker;
 
     public AuthService(
         IStorageBroker storageBroker,
         ILoggingBroker loggingBroker,
         IDateTimeBroker dateTimeBroker,
-        IConfiguration configuration)
+        ITokenBroker tokenBroker)
     {
         this.storageBroker = storageBroker;
         this.loggingBroker = loggingBroker;
         this.dateTimeBroker = dateTimeBroker;
-        this.configuration = configuration;
+        this.tokenBroker = tokenBroker;
     }
 
     public ValueTask<AuthResponse> LoginAsync(LoginRequest request) =>
@@ -141,38 +139,13 @@ public partial class AuthService : IAuthService
 
     private async Task<AuthResponse> GenerateAndSaveAuthResponseAsync(User user)
     {
-        var jwtSettings = this.configuration.GetSection("JwtSettings");
-        var secret = jwtSettings["Secret"]
-            ?? throw new InvalidOperationException("JwtSettings:Secret is not configured.");
-        var issuer = jwtSettings["Issuer"];
-        var audience = jwtSettings["Audience"];
-        int expiryDays = int.TryParse(jwtSettings["ExpiryDays"], out int days) ? days : 7;
-
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
-        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
         DateTimeOffset now = this.dateTimeBroker.GetCurrentDateTimeOffset();
-        DateTimeOffset expiresAt = now.AddDays(expiryDays);
+        DateTimeOffset expiresAt = now.AddDays(7); // Default expiry logic
 
-        var claims = new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Role, user.Role.ToString()),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-        };
-
-        var tokenDescriptor = new JwtSecurityToken(
-            issuer: issuer,
-            audience: audience,
-            claims: claims,
-            expires: expiresAt.UtcDateTime,
-            signingCredentials: credentials);
-
-        string token = new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
-
-        string refreshTokenValue = GenerateSecureRefreshToken();
-        DateTimeOffset refreshExpiresAt = now.AddDays(expiryDays * 2);
+        string token = this.tokenBroker.GenerateToken(user);
+        string refreshTokenValue = this.tokenBroker.GenerateRefreshToken();
+        
+        DateTimeOffset refreshExpiresAt = now.AddDays(14);
 
         var userRefreshToken = new UserRefreshToken
         {

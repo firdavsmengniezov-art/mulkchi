@@ -1,0 +1,138 @@
+.booking-widget {
+  position: sticky;
+  top: 100px;
+  background: #fff;
+  border: 1px solid var(--color-border, #eaeaea);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  margin-bottom: 24px;
+}
+
+.widget-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 24px;
+}
+
+.widget-price {
+  font-size: 22px;
+  font-weight: 700;
+  span {
+    font-size: 14px;
+    font-weight: 400;
+    color: #717171;
+    margin-left: 4px;
+  }
+}
+
+.widget-rating {
+  font-size: 13px;
+  font-weight: 600;
+  .review-count {
+    font-weight: 500;
+    color: #717171;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+}
+
+.booking-form {
+  .date-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border: 1px solid #b0b0b0;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 16px;
+
+    .input-cell {
+      padding: 10px 12px;
+      position: relative;
+      background: #fff;
+
+      label {
+        display: block;
+        font-size: 10px;
+        font-weight: 800;
+        color: #222;
+        margin-bottom: 4px;
+      }
+
+      input,
+      select {
+        width: 100%;
+        border: none;
+        outline: none;
+        background: transparent;
+        font-size: 14px;
+        cursor: pointer;
+      }
+
+      &.half {
+        width: 100%;
+      }
+      &.full {
+        grid-column: span 2;
+      }
+      &.border-right {
+        border-right: 1px solid #b0b0b0;
+      }
+      &.border-top {
+        border-top: 1px solid #b0b0b0;
+      }
+    }
+  }
+
+  .btn-book {
+    width: 100%;
+    padding: 14px;
+    background: #e51d53;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover {
+      background: #d0184a;
+    }
+    &:disabled {
+      background: #dddddd;
+      cursor: not-allowed;
+    }
+  }
+
+  .no-charge-msg {
+    text-align: center;
+    font-size: 13px;
+    color: #717171;
+    margin-top: 12px;
+    margin-bottom: 20px;
+  }
+}
+
+.price-breakdown {
+  .price-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 15px;
+    color: #222;
+
+    .underline {
+      text-decoration: underline;
+      cursor: help;
+    }
+
+    &.total {
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid #dddddd;
+      font-weight: 600;
+    }
+  }
+}

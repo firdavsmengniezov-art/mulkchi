@@ -1,8 +1,9 @@
-using System.Security.Claims;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Models.Foundations.Users;
 using Mulkchi.Api.Models.Foundations.Users.Exceptions;
 using Mulkchi.Api.Services.Foundations.Users;
@@ -20,218 +21,139 @@ public class UsersController : ControllerBase
         this.userService = userService;
     }
 
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<ActionResult<UserResponse>> GetCurrentUserAsync()
+    {
+        try
+        {
+            UserResponse userResponse = await this.userService.RetrieveCurrentUserAsync();
+            return Ok(userResponse);
+        }
+        catch (UserDependencyValidationException userDependencyValidationException)
+            when (userDependencyValidationException.InnerException is NotFoundUserException)
+        {
+            return NotFound(userDependencyValidationException.InnerException.Message);
+        }
+        catch (UserValidationException userValidationException)
+        {
+            return BadRequest(userValidationException.InnerException.Message);
+        }
+        catch (UserServiceException userServiceException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, userServiceException.InnerException.Message);
+        }
+    }
+
+    [HttpPut("me")]
+    [Authorize]
+    public async Task<ActionResult<UserResponse>> UpdateProfileAsync([FromBody] UserUpdateDto dto)
+    {
+        try
+        {
+            UserResponse userResponse = await this.userService.ModifyUserProfileAsync(dto);
+            return Ok(userResponse);
+        }
+        catch (UserDependencyValidationException userDependencyValidationException)
+            when (userDependencyValidationException.InnerException is NotFoundUserException)
+        {
+            return NotFound(userDependencyValidationException.InnerException.Message);
+        }
+        catch (UserValidationException userValidationException)
+        {
+            return BadRequest(userValidationException.InnerException.Message);
+        }
+        catch (UserServiceException userServiceException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, userServiceException.InnerException.Message);
+        }
+    }
+
+    [HttpPut("me/avatar")]
+    [Authorize]
+    [Consumes("multipart/form-data")]
+    public async Task<ActionResult<UserResponse>> UploadAvatarAsync(IFormFile avatarFile)
+    {
+        try
+        {
+            UserResponse userResponse = await this.userService.ModifyUserAvatarAsync(avatarFile);
+            return Ok(userResponse);
+        }
+        catch (UserDependencyValidationException userDependencyValidationException)
+            when (userDependencyValidationException.InnerException is NotFoundUserException)
+        {
+            return NotFound(userDependencyValidationException.InnerException.Message);
+        }
+        catch (UserValidationException userValidationException)
+        {
+            return BadRequest(userValidationException.InnerException.Message);
+        }
+        catch (UserServiceException userServiceException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, userServiceException.InnerException.Message);
+        }
+    }
+
+    [HttpGet("{id:guid}")]
+    [AllowAnonymous]
+    public async Task<ActionResult<UserResponse>> GetUserByIdAsync(Guid id)
+    {
+        try
+        {
+            UserResponse userResponse = await this.userService.RetrieveUserByIdAsync(id);
+            return Ok(userResponse);
+        }
+        catch (UserDependencyValidationException userDependencyValidationException)
+            when (userDependencyValidationException.InnerException is NotFoundUserException)
+        {
+            return NotFound(userDependencyValidationException.InnerException.Message);
+        }
+        catch (UserValidationException userValidationException)
+        {
+            return BadRequest(userValidationException.InnerException.Message);
+        }
+        catch (UserServiceException userServiceException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, userServiceException.InnerException.Message);
+        }
+    }
+
     [HttpGet]
     [Authorize(Roles = "Admin")]
-    public async Task<ActionResult<PagedResult<UserResponse>>> GetAllUsers([FromQuery] PaginationParams pagination)
+    public async Task<ActionResult<IEnumerable<UserResponse>>> GetAllUsersAsync()
     {
         try
         {
-            IQueryable<User> query = this.userService.RetrieveAllUsers();
-            
-            int totalCount = await query.CountAsync();
-            
-            // DTO Projection at database level
-            var items = await query
-                .Skip((pagination.Page - 1) * pagination.PageSize)
-                .Take(pagination.PageSize)
-                .Select(u => new UserResponse
-                {
-                    Id = u.Id,
-                    FirstName = u.FirstName,
-                    LastName = u.LastName,
-                    Email = u.Email,
-                    Phone = u.Phone,
-                    AvatarUrl = u.AvatarUrl,
-                    Bio = u.Bio,
-                    Address = u.Address,
-                    DateOfBirth = u.DateOfBirth,
-                    Gender = u.Gender,
-                    IsVerified = u.IsVerified,
-                    Role = u.Role,
-                    Badge = u.Badge,
-                    Rating = u.Rating,
-                    ResponseRate = u.ResponseRate,
-                    ResponseTimeMinutes = u.ResponseTimeMinutes,
-                    TotalListings = u.TotalListings,
-                    TotalBookings = u.TotalBookings,
-                    HostSince = u.HostSince,
-                    PreferredLanguage = u.PreferredLanguage,
-                    CreatedDate = u.CreatedDate,
-                    UpdatedDate = u.UpdatedDate
-                })
-                .ToListAsync();
-
-            var result = new PagedResult<UserResponse>
-            {
-                Items = items,
-                TotalCount = totalCount,
-                Page = pagination.Page,
-                PageSize = pagination.PageSize
-            };
-
-            return Ok(result);
+            IEnumerable<UserResponse> users = await this.userService.RetrieveAllUsersAsync();
+            return Ok(users);
         }
-        catch (UserDependencyException)
+        catch (UserServiceException userServiceException)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
-        }
-        catch (UserServiceException)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+            return StatusCode(StatusCodes.Status500InternalServerError, userServiceException.InnerException.Message);
         }
     }
 
-    [HttpGet("{id}")]
-    [Authorize]
-    public async ValueTask<ActionResult<UserResponse>> GetUserByIdAsync(Guid id)
-    {
-        try
-        {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userIdClaim is null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
-                return Unauthorized();
-
-            bool isAdmin = User.IsInRole("Admin");
-            if (!isAdmin && id != currentUserId)
-                return Forbid();
-
-            User user = await this.userService.RetrieveUserByIdAsync(id);
-            
-            // Map to UserResponse DTO
-            var response = new UserResponse
-            {
-                Id = user.Id,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email,
-                Phone = user.Phone,
-                AvatarUrl = user.AvatarUrl,
-                Bio = user.Bio,
-                Address = user.Address,
-                DateOfBirth = user.DateOfBirth,
-                Gender = user.Gender,
-                IsVerified = user.IsVerified,
-                Role = user.Role,
-                Badge = user.Badge,
-                Rating = user.Rating,
-                ResponseRate = user.ResponseRate,
-                ResponseTimeMinutes = user.ResponseTimeMinutes,
-                TotalListings = user.TotalListings,
-                TotalBookings = user.TotalBookings,
-                HostSince = user.HostSince,
-                PreferredLanguage = user.PreferredLanguage,
-                CreatedDate = user.CreatedDate,
-                UpdatedDate = user.UpdatedDate
-            };
-            
-            return Ok(response);
-        }
-        catch (UserValidationException userValidationException)
-        {
-            return BadRequest(new { message = userValidationException.InnerException?.Message ?? "An error occurred." });
-        }
-        catch (UserDependencyValidationException userDependencyValidationException)
-            when (userDependencyValidationException.InnerException is NotFoundUserException)
-        {
-            return NotFound(new { message = userDependencyValidationException.InnerException?.Message ?? "An error occurred." });
-        }
-        catch (UserDependencyValidationException userDependencyValidationException)
-        {
-            return BadRequest(new { message = userDependencyValidationException.InnerException?.Message ?? "An error occurred." });
-        }
-        catch (UserDependencyException)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
-        }
-        catch (UserServiceException)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
-        }
-    }
-
-    [HttpPut]
-    [Authorize]
-    public async ValueTask<ActionResult<User>> PutUserAsync(User user)
-    {
-        try
-        {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userIdClaim is null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
-                return Unauthorized();
-
-            bool isAdmin = User.IsInRole("Admin");
-            if (!isAdmin && user.Id != currentUserId)
-                return Forbid();
-
-            if (!isAdmin)
-            {
-                User existingUser = await this.userService.RetrieveUserByIdAsync(user.Id);
-                user.Role = existingUser.Role;
-                user.IsVerified = existingUser.IsVerified;
-                user.Badge = existingUser.Badge;
-                user.Rating = existingUser.Rating;
-                user.ResponseRate = existingUser.ResponseRate;
-                user.ResponseTimeMinutes = existingUser.ResponseTimeMinutes;
-                user.TotalListings = existingUser.TotalListings;
-                user.TotalBookings = existingUser.TotalBookings;
-                user.CreatedDate = existingUser.CreatedDate;
-            }
-
-            User modifiedUser = await this.userService.ModifyUserAsync(user);
-            return Ok(modifiedUser);
-        }
-        catch (UserValidationException userValidationException)
-        {
-            return BadRequest(new { message = userValidationException.InnerException?.Message ?? "An error occurred." });
-        }
-        catch (UserDependencyValidationException userDependencyValidationException)
-            when (userDependencyValidationException.InnerException is NotFoundUserException)
-        {
-            return NotFound(new { message = userDependencyValidationException.InnerException?.Message ?? "An error occurred." });
-        }
-        catch (UserDependencyValidationException userDependencyValidationException)
-        {
-            return BadRequest(new { message = userDependencyValidationException.InnerException?.Message ?? "An error occurred." });
-        }
-        catch (UserDependencyException)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
-        }
-        catch (UserServiceException)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
-        }
-    }
-
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:guid}")]
     [Authorize(Roles = "Admin")]
-    public async ValueTask<ActionResult<User>> DeleteUserByIdAsync(Guid id)
+    public async Task<ActionResult> DeleteUserAsync(Guid id)
     {
         try
         {
-            User deletedUser = await this.userService.RemoveUserByIdAsync(id);
-            return Ok(deletedUser);
-        }
-        catch (UserValidationException userValidationException)
-        {
-            return BadRequest(new { message = userValidationException.InnerException?.Message ?? "An error occurred." });
+            User removedUser = await this.userService.RemoveUserByIdAsync(id);
+            return NoContent();
         }
         catch (UserDependencyValidationException userDependencyValidationException)
             when (userDependencyValidationException.InnerException is NotFoundUserException)
         {
-            return NotFound(new { message = userDependencyValidationException.InnerException?.Message ?? "An error occurred." });
+            return NotFound(userDependencyValidationException.InnerException.Message);
         }
-        catch (UserDependencyValidationException userDependencyValidationException)
+        catch (UserValidationException userValidationException)
         {
-            return BadRequest(new { message = userDependencyValidationException.InnerException?.Message ?? "An error occurred." });
+            return BadRequest(userValidationException.InnerException.Message);
         }
-        catch (UserDependencyException)
+        catch (UserServiceException userServiceException)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
-        }
-        catch (UserServiceException)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+            return StatusCode(StatusCodes.Status500InternalServerError, userServiceException.InnerException.Message);
         }
     }
 }

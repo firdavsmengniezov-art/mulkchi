@@ -1,4 +1,4 @@
-export interface Review {
+﻿export interface Review {
   id: string;
   propertyId: string;
   reviewerId: string;
@@ -30,10 +30,27 @@ export interface CreateReviewRequest {
   comment: string;
 }
 
+export interface ReviewResponse {
+  id: string;
+  authorName: string;
+  authorAvatarUrl?: string;
+  rating: number;
+  comment: string;
+  createdDate: string;
+  cleanliness?: number;
+  location?: number;
+  value?: number;
+  communication?: number;
+}
+
 export interface ReviewSummary {
   averageRating: number;
   totalReviews: number;
-  ratingDistribution: { stars: number; count: number; }[];
+  cleanliness: number;
+  location: number;
+  value: number;
+  communication: number;
+  ratingDistribution: Record<number, number>;
 }
 
 export interface PagedResult<T> {

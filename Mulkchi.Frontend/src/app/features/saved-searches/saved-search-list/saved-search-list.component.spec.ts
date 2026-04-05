@@ -227,7 +227,7 @@ describe('SavedSearchListComponent', () => {
     it('should not delete when cancelled', () => {
       // Arrange
       (window.confirm as jasmine.Spy).and.returnValue(false);
-      savedSearchServiceSpy.deleteSavedSearch.and.returnValue(of({ success: true }));
+      savedSearchServiceSpy.deleteSavedSearch.and.returnValue(of({ success: true, message: 'ok' }));
 
       // Act
       component.deleteSearch('1');
@@ -248,6 +248,7 @@ describe('SavedSearchListComponent', () => {
       const event = { target: { checked: true } };
       savedSearchServiceSpy.toggleSavedSearch.and.returnValue(of({
         success: true,
+        message: 'Success',
         data: { ...mockSavedSearches[0], isActive: true }
       }));
 

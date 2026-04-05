@@ -11,16 +11,16 @@
       </div>
 
       <div class="rating-distribution">
-        @for (distribution of reviewSummary.ratingDistribution; track distribution.stars) {
+        @for (distribution of (reviewSummary.ratingDistribution | keyvalue); track distribution.key) {
           <div class="rating-bar">
-            <span class="star-label">{{ distribution.stars }}★</span>
+            <span class="star-label">{{ distribution.key }}★</span>
             <div class="bar-container">
               <div 
                 class="bar-fill" 
-                [style.width.%]="getRatingPercentage(distribution.count)">
+                [style.width.%]="getRatingPercentage(distribution.value)">
               </div>
             </div>
-            <span class="count">({{ distribution.count }})</span>
+            <span class="count">({{ distribution.value }})</span>
           </div>
         }
       </div>

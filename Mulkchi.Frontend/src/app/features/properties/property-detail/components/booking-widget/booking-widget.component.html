@@ -1,0 +1,57 @@
+<div class="booking-widget" *ngIf="property">
+	<div class="widget-header">
+		<div class="widget-price">
+			{{ priceNode | number:'1.0-0' }} UZS<span>{{ priceSuffix }}</span>
+		</div>
+		<div class="widget-rating" *ngIf="reviewSummary?.totalReviews">
+			★ {{ reviewSummary.averageRating | number:'1.1-1' }} · <span class="review-count">{{ reviewSummary.totalReviews }}
+				sharh</span>
+		</div>
+	</div>
+
+	<div class="booking-form" *ngIf="isRentOrNight">
+		<div class="date-inputs">
+			<div class="input-cell half border-right">
+				<label>KIRISH</label>
+				<input type="date" [(ngModel)]="checkInDate" [min]="todayStr()" />
+			</div>
+			<div class="input-cell half">
+				<label>CHIQISH</label>
+				<input type="date" [(ngModel)]="checkOutDate" [min]="checkInDate || todayStr()" />
+			</div>
+			<div class="input-cell full border-top">
+				<label>MEHMONLAR</label>
+				<select [(ngModel)]="guestsCount">
+					<option *ngFor="let g of guestsArray(property.maxGuests || 1)" [value]="g">{{ g }} mehmon</option>
+				</select>
+			</div>
+		</div>
+
+		<button class="btn-book" [disabled]="!canBook()" (click)="onBookClicked()">
+			Band qilish
+		</button>
+		<p class="no-charge-msg">Sizdan hozircha pul yechib olinmaydi</p>
+
+		<!-- Breakdown -->
+		<div class="price-breakdown" *ngIf="totalNights > 0">
+			<div class="price-row">
+				<span>{{ priceNode | number:'1.0-0' }} UZS × {{ totalNights }} {{ priceSuffix.replace('/','') }}</span>
+				<span>{{ calculatedPrice | number:'1.0-0' }} UZS</span>
+			</div>
+			<div class="price-row">
+				<span class="underline">Xizmat to'lovi</span>
+				<span>{{ serviceFee | number:'1.0-0' }} UZS</span>
+			</div>
+			<div class="price-row total">
+				<span>Jami to'lov (UZS)</span>
+				<span>{{ finalTotal | number:'1.0-0' }} UZS</span>
+			</div>
+		</div>
+	</div>
+
+	<div class="booking-form" *ngIf="!isRentOrNight">
+		<button class="btn-book" (click)="onBookClicked()">
+			Sotib olish bo'yicha bog'lanish
+		</button>
+	</div>
+</div>

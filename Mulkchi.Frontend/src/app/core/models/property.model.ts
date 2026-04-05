@@ -1,6 +1,22 @@
-export enum PropertyType { Apartment='Apartment', House='House', Office='Office', Land='Land', Commercial='Commercial' }
-export enum ListingType { Rent='Rent', Sale='Sale', DailyRent='DailyRent' }
-export enum PropertyStatus { Available='Available', Rented='Rented', Sold='Sold', Inactive='Inactive' }
+import { UserRole } from './auth.model';
+
+export enum PropertyType {
+  Apartment = 'Apartment',
+  House = 'House',
+  Office = 'Office',
+  Land = 'Land',
+  Commercial = 'Commercial',
+}
+export enum ListingType {
+  Rent = 'Rent',
+  Sale = 'Sale',
+  DailyRent = 'DailyRent',
+}
+export enum PropertyStatus {
+  Available = 'Available',
+  Rented = 'Rented',
+  Sold = 'Sold',
+}
 
 export interface Property {
   id: string;
@@ -19,29 +35,22 @@ export interface Property {
   maxGuests?: number;
   region: string;
   city: string;
-  district: string;
   address: string;
-  latitude?: number;
+  isActive: boolean;
+  isVerified?: boolean;
+  isFeatured?: boolean;
   longitude?: number;
-  hasWifi: boolean;
-  hasParking: boolean;
-  hasPool: boolean;
-  hasMetroNearby: boolean;
-  hasElevator: boolean;
-  hasAirConditioning: boolean;
-  isRenovated: boolean;
-  isPetFriendly: boolean;
-  hasBalcony: boolean;
-  isInstantBook?: boolean;
-  averageRating: number;
-  viewsCount: number;
-  favoritesCount: number;
-  hostId: string;
-  currency: string;
-  exchangeRate?: number;
-  createdDate: string;
+  latitude?: number;
+  ownerId: string;
   images?: PropertyImage[];
+  isInstantBook?: boolean;
+  viewsCount?: number;
+  isRenovated?: boolean;
+  averageRating?: number;
+  reviewsCount?: number;
 }
+
+export interface PropertyResponse extends Property {}
 
 export interface PropertyImage {
   id: string;
@@ -52,11 +61,19 @@ export interface PropertyImage {
 
 export interface PropertySearchParams {
   region?: string;
+  city?: string;
   minPrice?: number;
   maxPrice?: number;
   bedrooms?: number;
   listingType?: string;
   propertyType?: string;
-  pageNumber?: number;
+  hasMetroNearby?: boolean;
+  hasMarketNearby?: boolean;
+  hasSchoolNearby?: boolean;
+  hasHospitalNearby?: boolean;
+  sortBy?: string;
+  page?: number;
   pageSize?: number;
 }
+
+export interface PropertyQueryParams extends PropertySearchParams {}

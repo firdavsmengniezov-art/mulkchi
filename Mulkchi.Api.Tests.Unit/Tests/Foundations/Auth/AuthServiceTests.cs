@@ -7,6 +7,7 @@ using FluentAssertions;
 using Mulkchi.Api.Brokers.DateTimes;
 using Mulkchi.Api.Brokers.Loggings;
 using Mulkchi.Api.Brokers.Storages;
+using Mulkchi.Api.Brokers.Tokens;
 using Mulkchi.Api.Models.Foundations.Auth;
 using Mulkchi.Api.Models.Foundations.Users;
 using Mulkchi.Api.Services.Foundations.Auth;
@@ -18,7 +19,7 @@ public partial class AuthServiceTests
     private readonly Mock<IStorageBroker> storageBrokerMock;
     private readonly Mock<ILoggingBroker> loggingBrokerMock;
     private readonly Mock<IDateTimeBroker> dateTimeBrokerMock;
-    private readonly IConfiguration configuration;
+    private readonly Mock<ITokenBroker> tokenBrokerMock;
     private readonly IAuthService authService;
 
     public AuthServiceTests()
@@ -26,13 +27,13 @@ public partial class AuthServiceTests
         this.storageBrokerMock = new Mock<IStorageBroker>();
         this.loggingBrokerMock = new Mock<ILoggingBroker>();
         this.dateTimeBrokerMock = new Mock<IDateTimeBroker>();
-        this.configuration = CreateTestConfiguration();
+        this.tokenBrokerMock = new Mock<ITokenBroker>();
 
         this.authService = new AuthService(
             this.storageBrokerMock.Object,
             this.loggingBrokerMock.Object,
             this.dateTimeBrokerMock.Object,
-            this.configuration);
+            this.tokenBrokerMock.Object);
     }
 
     private static IConfiguration CreateTestConfiguration() =>
@@ -83,3 +84,5 @@ public partial class AuthServiceTests
     private static SqlException CreateSqlException() =>
         (SqlException)RuntimeHelpers.GetUninitializedObject(typeof(SqlException));
 }
+
+

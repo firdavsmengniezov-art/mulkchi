@@ -10,7 +10,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Subject, takeUntil } from 'rxjs';
 import { ReviewService } from '../../../core/services/review.service';
-import { Review, PagedResult } from '../../../core/models/review.models';
+import { Review, PagedResult } from '../../../core/models/review.model';
 import { ReviewFormComponent, ReviewFormDialogData } from '../review-form/review-form.component';
 import { StarRatingComponent } from '../../../shared/components/star-rating/star-rating.component';
 
@@ -120,3 +120,4 @@ export class MyReviewsComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 }
+

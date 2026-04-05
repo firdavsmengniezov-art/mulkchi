@@ -30,6 +30,14 @@ public partial class AuthServiceTests
             broker.InsertRefreshTokenAsync(It.IsAny<UserRefreshToken>()))
                 .ReturnsAsync(CreateRandomUserRefreshToken());
 
+        this.tokenBrokerMock.Setup(broker =>
+            broker.GenerateToken(It.IsAny<User>()))
+                .Returns("test-jwt-token");
+
+        this.tokenBrokerMock.Setup(broker =>
+            broker.GenerateRefreshToken())
+                .Returns("test-refresh-token");
+
         // when
         AuthResponse actualResponse = await this.authService.RegisterAsync(inputRequest);
 

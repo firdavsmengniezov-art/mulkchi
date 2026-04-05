@@ -1,0 +1,264 @@
+.property-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+  border: 1px solid transparent;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+    border-color: rgba(14, 165, 164, 0.15);
+
+    .img-nav {
+      opacity: 1;
+    }
+
+    .card-image img {
+      transform: scale(1.04);
+    }
+  }
+}
+
+.card-image {
+  position: relative;
+  aspect-ratio: 16/11;
+  overflow: hidden;
+  background: var(--bg-alt);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+    display: block;
+  }
+}
+
+.img-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: white;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  font-size: 16px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+
+  &.prev {
+    left: 10px;
+  }
+
+  &.next {
+    right: 10px;
+  }
+
+  &:hover {
+    transform: translateY(-50%) scale(1.1);
+  }
+}
+
+.img-dots {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 5px;
+
+  span {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transition: all var(--transition-fast);
+
+    &.active {
+      background: white;
+      width: 14px;
+      border-radius: 3px;
+    }
+  }
+}
+
+.card-badges {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.card-badge {
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  backdrop-filter: blur(8px);
+
+  &.featured {
+    background: rgba(245, 166, 35, 0.92);
+    color: white;
+  }
+
+  &.verified {
+    background: rgba(14, 165, 164, 0.92);
+    color: white;
+  }
+}
+
+.favorite-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(4px);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  transition: all var(--transition-fast);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  &:hover {
+    transform: scale(1.15);
+    background: white;
+  }
+
+  &.active {
+    background: #fff0f0;
+  }
+}
+
+.card-body {
+  padding: 14px 16px 16px;
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 4px;
+}
+
+.card-location {
+  font-size: 12px;
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+.card-rating {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+
+  .star {
+    color: #f59e0b;
+    font-size: 13px;
+  }
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+.card-specs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+
+  .spec {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 12px;
+    color: var(--text-light);
+    font-weight: 500;
+  }
+
+  .dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.card-price {
+  .price-amount {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+
+  .price-period {
+    font-size: 12px;
+    color: var(--text-light);
+    font-weight: 400;
+    margin-left: 2px;
+  }
+
+  .price-usd {
+    font-size: 11px;
+    color: var(--text-light);
+    margin-top: 1px;
+  }
+}
+
+.card-listing-type {
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+
+  &.rent {
+    background: #eff6ff;
+    color: #2563eb;
+  }
+
+  &.sale {
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  &.shortterm {
+    background: var(--accent-soft);
+    color: var(--accent-dark);
+  }
+}

@@ -47,7 +47,7 @@ public partial class PropertyServiceTests
     public async Task ShouldThrowServiceException_OnAdd_WhenExceptionOccurs()
     {
         // given
-        Property someProperty = CreateRandomProperty();
+        Property someProperty = CreateValidProperty();
         var exception = new Exception();
 
         this.storageBrokerMock.Setup(broker =>
