@@ -1,88 +1,53 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { 
-  Review, 
-  CreateReviewRequest, 
+import {
+  CreateReviewRequest,
+  Review,
   ReviewSummary,
-  PagedResult 
-} from '../models/review.models';
+  PagedResult
+} from '../models/review.model';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class ReviewService {
-  private readonly apiUrl = environment.apiUrl;
+  private readonly apiUrl = `${environment.apiUrl}/reviews`;
 
   constructor(private http: HttpClient) {}
 
-  getPropertyReviews(propertyId: string, page: number = 1, pageSize: number = 10): Observable<PagedResult<Review>> {
-    return this.http.get<PagedResult<Review>>(`${this.apiUrl}/reviews?propertyId=${propertyId}&page=${page}&pageSize=${pageSize}`).pipe(
-      catchError(this.handleError)
-    );
+  getMyReviews(page = 1, pageSize = 10): Observable<PagedResult<Review>> {
+    return this.http.get<PagedResult<Review>>(`${this.apiUrl}`, {
+      params: { page, pageSize }
+    });
   }
 
-  createReview(request: CreateReviewRequest): Observable<Review> {
-    return this.http.post<Review>(`${this.apiUrl}/reviews`, request).pipe(
-      catchError(this.handleError)
-    );
-  }
-
-  updateReview(id: string, request: Partial<CreateReviewRequest>): Observable<Review> {
-    return this.http.put<Review>(`${this.apiUrl}/reviews/${id}`, request).pipe(
-      catchError(this.handleError)
-    );
-  }
-
-  deleteReview(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/reviews/${id}`).pipe(
-      catchError(this.handleError)
-    );
-  }
-
-  getMyReviews(page: number = 1, pageSize: number = 10): Observable<PagedResult<Review>> {
-    return this.http.get<PagedResult<Review>>(`${this.apiUrl}/reviews/my?page=${page}&pageSize=${pageSize}`).pipe(
-      catchError(this.handleError)
-    );
-  }
-
-  getReviewById(id: string): Observable<Review> {
-    return this.http.get<Review>(`${this.apiUrl}/reviews/${id}`).pipe(
-      catchError(this.handleError)
-    );
+  getPropertyReviews(
+    propertyId: string,
+    page = 1,
+    pageSize = 5
+  ): Observable<PagedResult<Review>> {
+    return this.http.get<PagedResult<Review>>(`${this.apiUrl}/property/${propertyId}`, {
+      params: { page, pageSize }
+    });
   }
 
   getReviewSummary(propertyId: string): Observable<ReviewSummary> {
-    return this.http.get<ReviewSummary>(`${this.apiUrl}/reviews/property/${propertyId}/summary`).pipe(
-      catchError(this.handleError)
-    );
+    return this.http.get<ReviewSummary>(`${this.apiUrl}/property/${propertyId}/summary`);
   }
 
-  private handleError(error: HttpErrorResponse) {
-    console.error('Review API Error:', error);
-    return throwError(() => error);
+  createReview(request: CreateReviewRequest): Observable<Review> {
+    return this.http.post<Review>(this.apiUrl, request);
   }
 
-  // Helper methods
-  getAverageRating(review: Review): number {
-    const ratings = [
-      review.overallRating,
-      review.cleanlinessRating,
-      review.locationRating,
-      review.valueRating,
-      review.communicationRating,
-      review.accuracyRating
-    ];
-    return ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length;
+  updateReview(id: string, request: CreateReviewRequest): Observable<Review> {
+    return this.http.put<Review>(`${this.apiUrl}/${id}`, request);
   }
 
-  getRatingStars(rating: number): number[] {
-    return Array(5).fill(0).map((_, i) => i + 1 <= rating ? 1 : 0);
+  deleteReview(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  formatDate(date: Date): string {
+  formatDate(date: Date | string): string {
     return new Date(date).toLocaleDateString('uz-UZ', {
       year: 'numeric',
       month: 'long',

@@ -139,4 +139,8 @@ export class BookingService {
   canConfirmBooking(status: BookingStatus): boolean {
     return status === BookingStatus.Pending;
   }
+
+  getBlockedDates(propertyId: string, year: number, month: number): Observable<any> { return this.http.get<any>(`/bookings/availability/`, { params: { year, month } }); }
+
+  createPropertyBooking(dto: any): Observable<any> { return this.http.post<any>(`/bookings`, dto); }
 }

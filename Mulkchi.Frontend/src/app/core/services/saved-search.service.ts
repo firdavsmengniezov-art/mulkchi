@@ -93,13 +93,13 @@ export class SavedSearchService {
     return typeMap[listingType] || listingType;
   }
 
-  formatPrice(price?: number): string {
-    if (!price) return 'Narx belgilanmagan';
+  formatPrice(price?: number | null): string {
+    if (price === undefined || price === null) return 'Narx belgilanmagan';
     return `${price.toLocaleString()} so'm`;
   }
 
-  formatArea(area?: number): string {
-    if (!area) return 'Maydon belgilanmagan';
+  formatArea(area?: number | null): string {
+    if (area === undefined || area === null) return 'Maydon belgilanmagan';
     return `${area} m²`;
   }
 

@@ -1,0 +1,233 @@
+<div class="property-form container mx-auto px-4 py-8">
+  <div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">
+        {{ isEditMode ? 'Edit Property' : 'Create New Property' }}
+      </h1>
+      <p class="text-gray-600">
+        {{ isEditMode ? 'Update your property information' : 'Fill in the details to list your property' }}
+      </p>
+    </div>
+
+    <!-- Loading State -->
+    <div class="text-center py-12" *ngIf="loading">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+      <p class="mt-4 text-gray-600">Loading property details...</p>
+    </div>
+
+    <!-- Form -->
+    <form (ngSubmit)="onSubmit()" *ngIf="!loading">
+      <!-- Basic Information -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-4 text-gray-900">Basic Information</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Title -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Property Title *</label>
+            <input type="text" 
+                   [(ngModel)]="property.title" 
+                   name="title"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   placeholder="e.g., Modern 3-Bedroom Apartment in City Center"
+                   required>
+          </div>
+
+          <!-- Description -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+            <textarea [(ngModel)]="property.description" 
+                      name="description"
+                      rows="4"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Describe your property in detail..."
+                      required></textarea>
+          </div>
+
+          <!-- Price -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Price (UZS) *</label>
+            <input type="number" 
+                   [(ngModel)]="property.price" 
+                   name="price"
+                   min="0"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   placeholder="0"
+                   required>
+          </div>
+
+          <!-- Area -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Area (m²) *</label>
+            <input type="number" 
+                   [(ngModel)]="property.area" 
+                   name="area"
+                   min="1"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   placeholder="0"
+                   required>
+          </div>
+        </div>
+      </div>
+
+      <!-- Property Details -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-4 text-gray-900">Property Details</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Property Type -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Property Type</label>
+            <select [(ngModel)]="property.propertyType" 
+                    name="propertyType"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option *ngFor="let type of propertyTypes" [value]="type">{{ type }}</option>
+            </select>
+          </div>
+
+          <!-- Listing Type -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Listing Type</label>
+            <select [(ngModel)]="property.listingType" 
+                    name="listingType"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option *ngFor="let type of listingTypes" [value]="type">{{ type }}</option>
+            </select>
+          </div>
+
+          <!-- Rooms -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Rooms</label>
+            <input type="number" 
+                   [(ngModel)]="property.roomsCount" 
+                   name="roomsCount"
+                   min="1"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+
+          <!-- Bathrooms -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Bathrooms</label>
+            <input type="number" 
+                   [(ngModel)]="property.bathroomsCount" 
+                   name="bathroomsCount"
+                   min="1"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+
+          <!-- Year Built -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Year Built</label>
+            <input type="number" 
+                   [(ngModel)]="property.yearBuilt" 
+                   name="yearBuilt"
+                   min="1900"
+                   max="{{currentYear + 1}}"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+        </div>
+
+        <!-- Features -->
+        <div class="mt-6">
+          <label class="block text-sm font-medium text-gray-700 mb-3">Features</label>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <label class="flex items-center">
+              <input type="checkbox" [(ngModel)]="property.hasParking" name="hasParking" class="mr-2">
+              <span>Parking</span>
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" [(ngModel)]="property.hasFurniture" name="hasFurniture" class="mr-2">
+              <span>Furnished</span>
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" [(ngModel)]="property.hasAirConditioning" name="hasAirConditioning" class="mr-2">
+              <span>Air Conditioning</span>
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" [(ngModel)]="property.hasHeating" name="hasHeating" class="mr-2">
+              <span>Heating</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Location -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-4 text-gray-900">Location</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Address -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Address *</label>
+            <input type="text" 
+                   [(ngModel)]="property.address" 
+                   name="address"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   placeholder="Full address"
+                   required>
+          </div>
+
+          <!-- City -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">City *</label>
+            <input type="text" 
+                   [(ngModel)]="property.city" 
+                   name="city"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   placeholder="City name"
+                   required>
+          </div>
+
+          <!-- Region -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Region *</label>
+            <select [(ngModel)]="property.region" 
+                    name="region"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required>
+              <option value="">Select Region</option>
+              <option *ngFor="let region of regions" [value]="region">{{ region }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Image Upload -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-4 text-gray-900">Property Images</h2>
+        <app-image-uploader 
+          [propertyId]="propertyId"
+          [existingImages]="propertyImages"
+          [maxFiles]="10"
+          (imagesUploaded)="onImagesUploaded($event)"
+          (imageDeleted)="onImageDeleted($event)"
+          (primaryImageSet)="onPrimaryImageSet($event)">
+        </app-image-uploader>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="flex justify-end space-x-4">
+        <button type="button" 
+                (click)="onCancel()"
+                class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+          Cancel
+        </button>
+        <button type="submit" 
+                [disabled]="!isFormValid || saving"
+                class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors">
+          <span *ngIf="!saving">
+            {{ isEditMode ? 'Update Property' : 'Create Property' }}
+          </span>
+          <span *ngIf="saving" class="flex items-center">
+            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            {{ isEditMode ? 'Updating...' : 'Creating...' }}
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

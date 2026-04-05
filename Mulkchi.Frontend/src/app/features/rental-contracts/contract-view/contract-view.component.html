@@ -1,0 +1,250 @@
+<div class="contract-view" [class.printing]="isPrinting">
+  <!-- Loading State -->
+  <div class="loading-overlay" *ngIf="loading">
+    <div class="loading-content">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+      <p class="mt-4 text-gray-600">Loading contract...</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-state" *ngIf="error">
+    <div class="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
+      <svg class="w-12 h-12 text-red-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <p class="text-red-800 font-medium text-center">{{ error }}</p>
+      <button (click)="goBack()" class="mt-4 w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+        Go Back
+      </button>
+    </div>
+  </div>
+
+  <!-- Contract Document -->
+  <div class="contract-document" *ngIf="contract && !loading">
+    <!-- Header (Hidden when printing) -->
+    <header class="document-header" *ngIf="!isPrinting">
+      <div class="container mx-auto px-4 py-4">
+        <div class="flex justify-between items-center">
+          <button (click)="goBack()" class="flex items-center text-gray-600 hover:text-gray-800">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Back
+          </button>
+          
+          <div class="flex space-x-3">
+            <button (click)="downloadPDF()" 
+                    class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              Download PDF
+            </button>
+            <button (click)="printContract()" 
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+              </svg>
+              Print
+            </button>
+            <button (click)="signContract()" 
+                    *ngIf="canUserSign()"
+                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              Sign Contract
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Document Content -->
+    <main class="document-content">
+      <div class="container mx-auto px-8 py-8">
+        <!-- Contract Header -->
+        <div class="contract-header text-center mb-8">
+          <h1 class="text-3xl font-bold text-gray-900 mb-2">IJARA SHARTNOMASI</h1>
+          <h2 class="text-xl text-gray-600 mb-4">RENTAL AGREEMENT</h2>
+          
+          <!-- Contract Info -->
+          <div class="flex justify-center space-x-8 text-sm text-gray-600">
+            <div>
+              <strong>Shartnoma raqami:</strong> {{ contract.contractNumber }}
+            </div>
+            <div>
+              <strong>Sana:</strong> {{ formatDate(contract.contractDate) }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Contract Status Badge -->
+        <div class="text-center mb-6" *ngIf="!isPrinting">
+          <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full"
+                [class]="getStatusBadgeColor(contract.status)">
+            {{ contract.status }}
+          </span>
+        </div>
+
+        <!-- Parties Information -->
+        <section class="contract-section mb-8">
+          <h3 class="section-title">TOMONLAR HAQIDA MA'LUMOT | PARTIES INFORMATION</h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Landlord Info -->
+            <div class="party-info">
+              <h4 class="party-title">IJARA BERUVCHI | LANDLORD</h4>
+              <div class="party-details">
+                <p><strong>F.I.Sh.:</strong> {{ getFullName(contract.landlordDetails.firstName, contract.landlordDetails.lastName) }}</p>
+                <p><strong>Email:</strong> {{ contract.landlordDetails.email }}</p>
+                <p><strong>Telefon:</strong> {{ contract.landlordDetails.phoneNumber }}</p>
+                <p><strong>Manzil:</strong> {{ contract.landlordDetails.address }}, {{ contract.landlordDetails.city }}, {{ contract.landlordDetails.region }}</p>
+              </div>
+            </div>
+
+            <!-- Tenant Info -->
+            <div class="party-info">
+              <h4 class="party-title">IJARACHI | TENANT</h4>
+              <div class="party-details">
+                <p><strong>F.I.Sh.:</strong> {{ getFullName(contract.tenantDetails.firstName, contract.tenantDetails.lastName) }}</p>
+                <p><strong>Email:</strong> {{ contract.tenantDetails.email }}</p>
+                <p><strong>Telefon:</strong> {{ contract.tenantDetails.phoneNumber }}</p>
+                <p><strong>Manzil:</strong> {{ contract.tenantDetails.address }}, {{ contract.tenantDetails.city }}, {{ contract.tenantDetails.region }}</p>
+                <p><strong>Tug'ilgan sanasi:</strong> {{ formatDate(contract.tenantDetails.dateOfBirth) }}</p>
+                <p *ngIf="contract.tenantDetails.passportNumber"><strong>Pasport:</strong> {{ contract.tenantDetails.passportNumber }}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Property Information -->
+        <section class="contract-section mb-8">
+          <h3 class="section-title">OB'EKT HAQIDA MA'LUMOT | PROPERTY INFORMATION</h3>
+          
+          <div class="property-info">
+            <p><strong>Nomi:</strong> {{ contract.propertyDetails.title }}</p>
+            <p><strong>Manzil:</strong> {{ contract.propertyAddress }}</p>
+            <p><strong>Turi:</strong> {{ contract.propertyDetails.type }}</p>
+            <p><strong>Maydoni:</strong> {{ contract.propertyDetails.area }} m²</p>
+            <p><strong>Xonalar soni:</strong> {{ contract.propertyDetails.roomsCount }}</p>
+            <p><strong>Vannalar soni:</strong> {{ contract.propertyDetails.bathroomsCount }}</p>
+            
+            <div class="mt-4">
+              <p><strong>Qo'shimcha imkoniyatlar:</strong></p>
+              <ul class="amenities-list">
+                <li *ngIf="contract.propertyDetails.hasFurniture">✓ Mebel mavjud</li>
+                <li *ngIf="contract.propertyDetails.hasParking">✓ Parking mavjud</li>
+                <li *ngFor="let amenity of getAmenitiesList()">✓ {{ amenity }}</li>
+              </ul>
+            </div>
+            
+            <div class="mt-4">
+              <p><strong>Tavsif:</strong></p>
+              <p class="text-gray-600">{{ contract.propertyDetails.description }}</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Contract Terms -->
+        <section class="contract-section mb-8">
+          <h3 class="section-title">SHARTNOMA SHARTLARI | CONTRACT TERMS</h3>
+          
+          <div class="terms-grid">
+            <!-- Dates -->
+            <div class="term-item">
+              <p><strong>Boshlanish sanasi:</strong> {{ formatDate(contract.startDate) }}</p>
+              <p><strong>Tugash sanasi:</strong> {{ formatDate(contract.endDate) }}</p>
+              <p><strong>Davomiyligi:</strong> {{ getContractDuration() }} kun</p>
+            </div>
+
+            <!-- Financial Terms -->
+            <div class="term-item">
+              <p><strong>Oylik ijar to'lovi:</strong> {{ formatCurrency(contract.monthlyRent) }}</p>
+              <p><strong>Zaxira puli:</strong> {{ formatCurrency(contract.securityDeposit) }}</p>
+              <p><strong>Umumiy summa:</strong> {{ formatCurrency(contract.totalAmount) }}</p>
+              <p><strong>To'lov usuli:</strong> {{ contract.terms.paymentMethod }}</p>
+              <p><strong>To'lov muddati:</strong> {{ contract.terms.paymentDueDay }}-kuni</p>
+            </div>
+
+            <!-- Policies -->
+            <div class="term-item">
+              <p><strong>Hayvonlar siyosati:</strong> {{ contract.terms.petPolicy }}</p>
+              <p><strong>Chekish siyosati:</strong> {{ contract.terms.smokingPolicy }}</p>
+              <p><strong>Mehmonlar siyosati:</strong> {{ contract.terms.guestPolicy }}</p>
+              <p><strong>Ta'mirlash mas'uliyati:</strong> {{ contract.terms.maintenanceResponsibility }}</p>
+            </div>
+
+            <!-- Utilities -->
+            <div class="term-item">
+              <p><strong>Kommunal to'lovlar:</strong></p>
+              <ul>
+                <li *ngFor="let utility of getUtilitiesList()">✓ {{ utility }}</li>
+              </ul>
+            </div>
+
+            <!-- House Rules -->
+            <div class="term-item full-width">
+              <p><strong>Uy qoidalari:</strong></p>
+              <ul>
+                <li *ngFor="let rule of getHouseRulesList()">✓ {{ rule }}</li>
+              </ul>
+            </div>
+
+            <!-- Termination -->
+            <div class="term-item">
+              <p><strong>Bekor qilish haqida ogohlantirish:</strong> {{ contract.terms.terminationNoticeDays }} kun oldidan</p>
+              <p><strong>Erta bekor qilish to'lovi:</strong> {{ formatCurrency(contract.terms.earlyTerminationFee) }}</p>
+              <p><strong>Kechikish to'lovi:</strong> {{ contract.terms.lateFeePercentage }}%</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Signatures -->
+        <section class="contract-section signatures">
+          <h3 class="section-title">IMZOLAR | SIGNATURES</h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <!-- Landlord Signature -->
+            <div class="signature-block">
+              <div class="signature-info">
+                <p><strong>Ijara beruvchi:</strong> {{ getFullName(contract.landlordDetails.firstName, contract.landlordDetails.lastName) }}</p>
+                <p class="signature-status">{{ getLandlordSignatureStatus() }}</p>
+              </div>
+              <div class="signature-line">
+                <p>Imzo:</p>
+                <div class="line"></div>
+              </div>
+              <p class="signature-date" *ngIf="contract.landlordSignedAt">
+                Sana: {{ formatDate(contract.landlordSignedAt) }}
+              </p>
+            </div>
+
+            <!-- Tenant Signature -->
+            <div class="signature-block">
+              <div class="signature-info">
+                <p><strong>Ijarachi:</strong> {{ getFullName(contract.tenantDetails.firstName, contract.tenantDetails.lastName) }}</p>
+                <p class="signature-status">{{ getTenantSignatureStatus() }}</p>
+              </div>
+              <div class="signature-line">
+                <p>Imzo:</p>
+                <div class="line"></div>
+              </div>
+              <p class="signature-date" *ngIf="contract.tenantSignedAt">
+                Sana: {{ formatDate(contract.tenantSignedAt) }}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="contract-footer mt-12 text-center text-sm text-gray-600">
+          <p>Ushbu shartnoma ikkala tomon tomonidan imzolanganidan so'ng kuchga kiradi.</p>
+          <p>This agreement becomes effective upon signature by both parties.</p>
+          <p class="mt-2">Yaratilgan sana: {{ getCurrentDate() }}</p>
+        </footer>
+      </div>
+    </main>
+  </div>
+</div>

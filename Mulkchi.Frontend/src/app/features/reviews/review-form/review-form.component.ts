@@ -9,7 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { finalize, Subject, takeUntil } from 'rxjs';
 import { ReviewService } from '../../../core/services/review.service';
-import { CreateReviewRequest, Review } from '../../../core/models/review.models';
+import { CreateReviewRequest, Review } from '../../../core/models/review.model';
 import { StarRatingComponent } from '../../../shared/components/star-rating/star-rating.component';
 
 export interface ReviewFormDialogData {
@@ -125,3 +125,4 @@ export class ReviewFormComponent implements OnInit {
     this.destroy$.complete();
   }
 }
+

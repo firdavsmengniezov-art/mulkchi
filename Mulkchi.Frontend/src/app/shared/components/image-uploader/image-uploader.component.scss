@@ -1,0 +1,82 @@
+.image-uploader {
+  .existing-images {
+    img {
+      transition: all 0.3s ease;
+      
+      &:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+    }
+  }
+
+  .upload-area {
+    transition: all 0.3s ease;
+    
+    &:hover {
+      border-color: #60a5fa;
+      background-color: #eff6ff;
+    }
+  }
+
+  .selected-files {
+    img {
+      transition: all 0.3s ease;
+      
+      &:hover {
+        transform: scale(1.02);
+      }
+    }
+  }
+
+  // Progress bar animation
+  .bg-blue-500 {
+    transition: width 0.3s ease;
+  }
+
+  // Button animations
+  button {
+    transition: all 0.2s ease;
+    
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
+  }
+
+  // File input styling
+  input[type="file"] {
+    display: none;
+  }
+
+  // Responsive grid adjustments
+  @media (max-width: 640px) {
+    .grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 480px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+// Loading spinner animation
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}

@@ -1,0 +1,84 @@
+<div class="detail-page" *ngIf="property">
+
+	<!-- Image Gallery -->
+	<app-property-image-gallery [images]="property.imageUrls || property.images || []"></app-property-image-gallery>
+
+	<div class="detail-layout">
+
+		<!-- LEFT COLUMN -->
+		<div class="detail-left">
+
+			<!-- Title + badges -->
+			<div class="detail-header">
+				<h1>{{ property.title }}</h1>
+				<div class="detail-meta">
+					<span class="badge" *ngIf="property.isFeatured">⭐ Tanlangan</span>
+					<span class="badge verified" *ngIf="property.isVerified">✓ Tasdiqlangan</span>
+					<span class="meta-link underline">{{ property.address }}, {{ property.city }}, {{ property.region }}</span>
+					<span class="meta-link" *ngIf="reviewSummary?.totalReviews">
+						★ {{ reviewSummary.averageRating | number:'1.1-1' }}
+						<span class="underline">({{ reviewSummary.totalReviews }} sharh)</span>
+					</span>
+				</div>
+			</div>
+
+			<!-- Host info card -->
+			<app-host-card [host]="property.host"></app-host-card>
+
+			<!-- Specs -->
+			<section class="detail-section">
+				<div class="specs-grid">
+					<div class="spec-item">🛏 {{ property.numberOfBedrooms }} xona</div>
+					<div class="spec-item">🚿 {{ property.numberOfBathrooms }} hammom</div>
+					<div class="spec-item">📐 {{ property.area }} m²</div>
+					<div class="spec-item">👥 {{ property.maxGuests || 4 }} mehmon</div>
+				</div>
+			</section>
+
+			<!-- Description -->
+			<section class="detail-section">
+				<h2>Tavsif</h2>
+				<p class="description-text" [class.expanded]="descExpanded">
+					{{ property.description }}
+				</p>
+				<button class="read-more" *ngIf="property.description?.length > 300" (click)="descExpanded = !descExpanded">
+					{{ descExpanded ? 'Kamroq ko\'rsatish' : 'Ko\'proq o\'qish →' }}
+				</button>
+			</section>
+
+			<!-- Amenities -->
+			<app-amenities-grid [property]="property"></app-amenities-grid>
+
+			<!-- Map -->
+			<section class="detail-section">
+				<h2>Joylashuv</h2>
+				<p class="map-address">{{ property.address }}, {{ property.city }}, {{ property.region }}</p>
+				<div class="map-placeholder">
+					<!-- iframe map -->
+					<iframe *ngIf="mapUrl" [src]="mapUrl" width="100%" height="450"
+						style="border-radius:12px; border:1px solid #ddd;">
+					</iframe>
+				</div>
+			</section>
+
+			<!-- Reviews -->
+			<app-property-reviews [propertyId]="property.id" [summary]="reviewSummary"></app-property-reviews>
+
+			<!-- Similar properties -->
+			<section class="detail-section" *ngIf="similarProperties.length">
+				<h2>O'xshash mulklar</h2>
+				<div class="similar-grid">
+					<app-property-card *ngFor="let p of similarProperties" [property]="p"></app-property-card>
+				</div>
+			</section>
+
+		</div>
+
+		<!-- RIGHT COLUMN — Booking Widget -->
+		<div class="detail-right">
+			<app-booking-widget [property]="property" [reviewSummary]="reviewSummary" [blockedDates]="blockedDates"
+				(bookingCreated)="onBookingCreated($event)"></app-booking-widget>
+		</div>
+
+	</div>
+</div>
