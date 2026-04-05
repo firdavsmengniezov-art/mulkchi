@@ -1,14 +1,16 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using Microsoft.Data.SqlClient;
 using Moq;
 using Tynamix.ObjectFiller;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Localization;
+
 using Mulkchi.Api.Brokers.Storages;
 using Mulkchi.Api.Models.Foundations.Bookings;
 using Mulkchi.Api.Services.Foundations.Bookings;
 using Mulkchi.Api.Services.Foundations.Auth;
 using Mulkchi.Api.Brokers.Notifications;
-using Microsoft.Extensions.Logging;
 
 namespace Mulkchi.Api.Tests.Unit.Tests.Foundations.Bookings;
 
@@ -33,7 +35,16 @@ public partial class BookingServiceTests
             this.loggerMock.Object);
     }
 
-    private static Booking CreateRandomBooking()
+    private static BookingCreateDto CreateRandomBookingCreateDto() =>
+        new BookingCreateDto
+        {
+            PropertyId = Guid.NewGuid(),
+            CheckInDate = DateTimeOffset.UtcNow.AddDays(1),
+            CheckOutDate = DateTimeOffset.UtcNow.AddDays(4),
+            TotalPrice = 500m
+        };
+
+    private static Booking CreateRandomBooking() 
     {
         var filler = new Filler<Booking>();
         filler.Setup()

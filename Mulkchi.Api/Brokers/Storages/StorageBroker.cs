@@ -36,7 +36,7 @@ public partial class StorageBroker : DbContext, IStorageBroker
         this.configuration = configuration;
         this.environment = environment;
 
-        if (!this.environment.IsEnvironment("DesignTime"))
+        if (!this.environment.IsEnvironment("DesignTime") && !this.environment.IsEnvironment("Testing"))
         {
             this.Database.Migrate();
         }

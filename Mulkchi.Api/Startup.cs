@@ -247,6 +247,7 @@ public class Startup
     {
         services.AddTransient<ILoggingBroker, LoggingBroker>();
         services.AddTransient<IDateTimeBroker, DateTimeBroker>();
+        services.AddTransient<Mulkchi.Api.Brokers.Tokens.ITokenBroker, Mulkchi.Api.Brokers.Tokens.TokenBroker>();
         services.AddSingleton<IFileStorageBroker, LocalFileStorageBroker>();
     }
 

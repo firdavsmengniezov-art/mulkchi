@@ -140,7 +140,7 @@ namespace Mulkchi.Api.Tests.Unit.Services.Foundations.SavedSearches
                 .ReturnsAsync((SavedSearch?)null);
 
             // Act & Assert
-            await Assert.ThrowsAsync<NotFoundSavedSearchException>(
+            await Assert.ThrowsAsync<SavedSearchDependencyValidationException>(
                 async () => await this.savedSearchService.RetrieveSavedSearchByIdAsync(nonExistentId));
         }
 

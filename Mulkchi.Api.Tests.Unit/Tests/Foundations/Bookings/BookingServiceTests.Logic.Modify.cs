@@ -45,3 +45,4 @@ public partial class BookingServiceTests
         this.storageBrokerMock.VerifyNoOtherCalls();
     }
 }
+

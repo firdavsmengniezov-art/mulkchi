@@ -2,7 +2,6 @@ using System.Runtime.CompilerServices;
 using Microsoft.Data.SqlClient;
 using Moq;
 using Tynamix.ObjectFiller;
-using FluentAssertions;
 using Mulkchi.Api.Brokers.DateTimes;
 using Mulkchi.Api.Brokers.Loggings;
 using Mulkchi.Api.Brokers.Storages;

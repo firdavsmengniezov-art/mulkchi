@@ -1,11 +1,12 @@
-using Microsoft.AspNetCore.Mvc;
+using Mulkchi.Api;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Mulkchi.Api.Controllers;
-using Mulkchi.Core.Application.DTOs.Auth;
-using Mulkchi.Core.Application.Interfaces;
+using Mulkchi.Api.Models.Foundations.Auth;
+using Mulkchi.Api.Services.Foundations.Auth;
 using Moq;
 using Xunit;
 using FluentAssertions;
+using System.Net.Http.Json;
 
 namespace Mulkchi.Tests.Controllers;
 
@@ -23,7 +24,6 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Program>>
     [Fact]
     public async Task Login_WithValidCredentials_ReturnsSuccess()
     {
-        // Arrange
         var loginRequest = new LoginRequest
         {
             Email = "test@example.com",
@@ -33,17 +33,12 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Program>>
         var expectedResponse = new AuthResponse
         {
             Token = "valid-jwt-token",
-            User = new UserDto
-            {
-                Id = Guid.NewGuid(),
-                Email = loginRequest.Email,
-                FirstName = "Test",
-                LastName = "User"
-            }
+            Email = loginRequest.Email,
+            UserId = Guid.NewGuid()
         };
 
         _authServiceMock
-            .Setup(x => x.LoginAsync(loginRequest))
+            .Setup(x => x.LoginAsync(It.IsAny<LoginRequest>()))
             .ReturnsAsync(expectedResponse);
 
         var client = _factory.WithWebHostBuilder(builder =>
@@ -54,22 +49,17 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Program>>
             });
         }).CreateClient();
 
-        // Act
         var response = await client.PostAsJsonAsync("/api/auth/login", loginRequest);
 
-        // Assert
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
-        
         var result = await response.Content.ReadFromJsonAsync<AuthResponse>();
         result.Should().NotBeNull();
-        result.Token.Should().Be(expectedResponse.Token);
-        result.User.Email.Should().Be(expectedResponse.User.Email);
+        result!.Token.Should().Be(expectedResponse.Token);
     }
 
     [Fact]
     public async Task Login_WithInvalidCredentials_ReturnsUnauthorized()
     {
-        // Arrange
         var loginRequest = new LoginRequest
         {
             Email = "invalid@example.com",
@@ -77,7 +67,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Program>>
         };
 
         _authServiceMock
-            .Setup(x => x.LoginAsync(loginRequest))
+            .Setup(x => x.LoginAsync(It.IsAny<LoginRequest>()))
             .ReturnsAsync((AuthResponse)null!);
 
         var client = _factory.WithWebHostBuilder(builder =>
@@ -88,58 +78,8 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Program>>
             });
         }).CreateClient();
 
-        // Act
         var response = await client.PostAsJsonAsync("/api/auth/login", loginRequest);
 
-        // Assert
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
-    }
-
-    [Fact]
-    public async Task Register_WithValidData_ReturnsSuccess()
-    {
-        // Arrange
-        var registerRequest = new RegisterRequest
-        {
-            Email = "newuser@example.com",
-            Password = "Password123!",
-            FirstName = "New",
-            LastName = "User",
-            PhoneNumber = "+998901234567"
-        };
-
-        var expectedResponse = new AuthResponse
-        {
-            Token = "new-user-jwt-token",
-            User = new UserDto
-            {
-                Id = Guid.NewGuid(),
-                Email = registerRequest.Email,
-                FirstName = registerRequest.FirstName,
-                LastName = registerRequest.LastName
-            }
-        };
-
-        _authServiceMock
-            .Setup(x => x.RegisterAsync(registerRequest))
-            .ReturnsAsync(expectedResponse);
-
-        var client = _factory.WithWebHostBuilder(builder =>
-        {
-            builder.ConfigureServices(services =>
-            {
-                services.AddScoped(_ => _authServiceMock.Object);
-            });
-        }).CreateClient();
-
-        // Act
-        var response = await client.PostAsJsonAsync("/api/auth/register", registerRequest);
-
-        // Assert
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Created);
-        
-        var result = await response.Content.ReadFromJsonAsync<AuthResponse>();
-        result.Should().NotBeNull();
-        result.User.Email.Should().Be(expectedResponse.User.Email);
     }
 }

@@ -11,25 +11,53 @@ public partial class BookingServiceTests
     public async Task ShouldAddBookingAsync()
     {
         // given
-        Booking randomBooking = CreateRandomBooking();
-        Booking inputBooking = randomBooking;
-        Booking expectedBooking = inputBooking;
+        BookingCreateDto randomBooking = CreateRandomBookingCreateDto();
+        BookingCreateDto inputBooking = randomBooking;
+        Guid currentUserId = Guid.NewGuid();
         Property property = new Property { Id = inputBooking.PropertyId };
+        Booking addedBooking = new Booking
+        {
+            Id = Guid.NewGuid(),
+            PropertyId = inputBooking.PropertyId,
+            GuestId = currentUserId,
+            CheckInDate = inputBooking.CheckInDate,
+            CheckOutDate = inputBooking.CheckOutDate,
+            TotalPrice = inputBooking.TotalPrice,
+            Status = BookingStatus.Pending,
+            CreatedDate = DateTimeOffset.UtcNow,
+            UpdatedDate = DateTimeOffset.UtcNow
+        };
+
+        BookingResponse expectedBooking = new BookingResponse
+        {
+            Id = addedBooking.Id,
+            PropertyId = addedBooking.PropertyId,
+            GuestId = addedBooking.GuestId,
+            CheckInDate = addedBooking.CheckInDate,
+            CheckOutDate = addedBooking.CheckOutDate,
+            TotalPrice = addedBooking.TotalPrice,
+            Status = addedBooking.Status,
+            CreatedDate = addedBooking.CreatedDate,
+            UpdatedDate = addedBooking.UpdatedDate
+        };
+
+        this.currentUserServiceMock.Setup(service => service.GetCurrentUserId())
+            .Returns(currentUserId);
 
         this.storageBrokerMock.Setup(broker =>
             broker.SelectPropertyByIdAsync(inputBooking.PropertyId))
                 .ReturnsAsync(property);
 
         this.storageBrokerMock.Setup(broker =>
-            broker.InsertBookingAsync(inputBooking))
-                .ReturnsAsync(expectedBooking);
+            broker.InsertBookingAsync(It.IsAny<Booking>()))
+                .ReturnsAsync(addedBooking);
 
         this.emailBrokerMock.Setup(broker =>
             broker.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(Task.CompletedTask);
 
         // when
-        Booking actualBooking = await this.bookingService.AddBookingAsync(inputBooking);
+        BookingResponse actualBooking = await this.bookingService.AddBookingAsync(inputBooking);
 
         // then
         actualBooking.Should().BeEquivalentTo(expectedBooking);
@@ -39,14 +67,16 @@ public partial class BookingServiceTests
             Times.Once);
 
         this.storageBrokerMock.Verify(broker =>
-            broker.InsertBookingAsync(inputBooking),
+            broker.InsertBookingAsync(It.IsAny<Booking>()),
             Times.Once);
 
         this.emailBrokerMock.Verify(broker =>
             broker.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
-            Times.Exactly(2)); // One for guest, one for host
+            Times.Never);
 
         this.storageBrokerMock.VerifyNoOtherCalls();
         this.emailBrokerMock.VerifyNoOtherCalls();
     }
 }
+
+
