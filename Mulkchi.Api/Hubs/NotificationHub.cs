@@ -4,7 +4,7 @@ using Mulkchi.Api.Brokers.DateTimes;
 using Mulkchi.Api.Brokers.Loggings;
 using Mulkchi.Api.Models.Foundations.Notifications;
 using Mulkchi.Api.Services.Foundations.Notifications;
-using System.Collections.Concurrent;
+using Mulkchi.Api.Services.Foundations.Users;
 
 namespace Mulkchi.Api.Hubs;
 
@@ -12,16 +12,18 @@ namespace Mulkchi.Api.Hubs;
 public class NotificationHub : Hub
 {
     private readonly INotificationService notificationService;
+    private readonly IUserConnectionTracker connectionTracker;
     private readonly ILoggingBroker loggingBroker;
     private readonly IDateTimeBroker dateTimeBroker;
-    private static readonly ConcurrentDictionary<string, string> UserConnections = new();
 
     public NotificationHub(
         INotificationService notificationService,
+        IUserConnectionTracker connectionTracker,
         ILoggingBroker loggingBroker,
         IDateTimeBroker dateTimeBroker)
     {
         this.notificationService = notificationService;
+        this.connectionTracker = connectionTracker;
         this.loggingBroker = loggingBroker;
         this.dateTimeBroker = dateTimeBroker;
     }
@@ -85,7 +87,7 @@ public class NotificationHub : Hub
             var announcement = new Notification
             {
                 Id = Guid.NewGuid(),
-                UserId = Guid.Empty, // Broadcast to all
+                UserId = Guid.Empty,
                 TitleUz = titleUz,
                 TitleRu = titleRu,
                 TitleEn = titleEn,
@@ -130,7 +132,7 @@ public class NotificationHub : Hub
         try
         {
             var notification = await this.notificationService.RetrieveNotificationByIdAsync(notificationId);
-            
+
             if (notification.UserId.ToString() != userId)
                 throw new HubException("Unauthorized: You can only mark your own notifications as read.");
 
@@ -159,16 +161,9 @@ public class NotificationHub : Hub
         var userId = Context.UserIdentifier;
         if (!string.IsNullOrEmpty(userId))
         {
-            UserConnections[Context.ConnectionId] = userId;
-            
-            await Clients.All.SendAsync("UserOnline", new
-            {
-                UserId = userId,
-                ConnectionId = Context.ConnectionId,
-                Timestamp = this.dateTimeBroker.GetCurrentDateTimeOffset()
-            });
-
-            this.loggingBroker.LogInformation($"User {userId} connected to NotificationHub: {Context.ConnectionId}");
+            this.connectionTracker.AddConnection(userId, Context.ConnectionId);
+            this.loggingBroker.LogInformation(
+                $"User {userId} connected to NotificationHub: {Context.ConnectionId}");
         }
 
         await base.OnConnectedAsync();
@@ -179,38 +174,15 @@ public class NotificationHub : Hub
         var userId = Context.UserIdentifier;
         if (!string.IsNullOrEmpty(userId))
         {
-            UserConnections.TryRemove(Context.ConnectionId, out _);
-
-            await Clients.All.SendAsync("UserOffline", new
-            {
-                UserId = userId,
-                ConnectionId = Context.ConnectionId,
-                Timestamp = this.dateTimeBroker.GetCurrentDateTimeOffset()
-            });
-
-            this.loggingBroker.LogInformation($"User {userId} disconnected from NotificationHub: {Context.ConnectionId}");
+            this.connectionTracker.RemoveConnection(Context.ConnectionId);
+            this.loggingBroker.LogInformation(
+                $"User {userId} disconnected from NotificationHub: {Context.ConnectionId}");
         }
 
         if (exception is not null)
-        {
             this.loggingBroker.LogError(exception);
-        }
 
         await base.OnDisconnectedAsync(exception);
     }
-
-    public static bool IsUserOnline(string userId)
-    {
-        return UserConnections.Values.Contains(userId);
-    }
-
-    public static List<string> GetOnlineUsers()
-    {
-        return UserConnections.Values.Distinct().ToList();
-    }
-
-    public static int GetOnlineUserCount()
-    {
-        return UserConnections.Values.Distinct().Count();
-    }
 }
+

@@ -15,6 +15,9 @@ namespace Mulkchi.Api.Services.Foundations.Auth;
 
 public partial class AuthService : IAuthService
 {
+    /// <summary>Number of days the refresh token (and its httpOnly cookie) remain valid.</summary>
+    public const int RefreshTokenExpiryDays = 14;
+
     private readonly IStorageBroker storageBroker;
     private readonly ILoggingBroker loggingBroker;
     private readonly IDateTimeBroker dateTimeBroker;
@@ -97,8 +100,10 @@ public partial class AuthService : IAuthService
                 throw new InvalidRefreshTokenException(
                     message: "Refresh token is required.");
 
+            string hashedToken = HashToken(refreshToken);
+
             UserRefreshToken? storedToken =
-                await this.storageBroker.SelectRefreshTokenAsync(refreshToken);
+                await this.storageBroker.SelectRefreshTokenAsync(hashedToken);
 
             if (storedToken is null || storedToken.IsRevoked)
                 throw new InvalidRefreshTokenException(
@@ -127,8 +132,10 @@ public partial class AuthService : IAuthService
                 throw new InvalidRefreshTokenException(
                     message: "Refresh token is required.");
 
+            string hashedToken = HashToken(refreshToken);
+
             UserRefreshToken? storedToken =
-                await this.storageBroker.SelectRefreshTokenAsync(refreshToken);
+                await this.storageBroker.SelectRefreshTokenAsync(hashedToken);
 
             if (storedToken is not null && !storedToken.IsRevoked)
             {
@@ -140,17 +147,18 @@ public partial class AuthService : IAuthService
     private async Task<AuthResponse> GenerateAndSaveAuthResponseAsync(User user)
     {
         DateTimeOffset now = this.dateTimeBroker.GetCurrentDateTimeOffset();
-        DateTimeOffset expiresAt = now.AddDays(7); // Default expiry logic
+        DateTimeOffset expiresAt = now.AddDays(7);
 
-        string token = this.tokenBroker.GenerateToken(user);
-        string refreshTokenValue = this.tokenBroker.GenerateRefreshToken();
-        
-        DateTimeOffset refreshExpiresAt = now.AddDays(14);
+        string accessToken = this.tokenBroker.GenerateToken(user);
+        string rawRefreshToken = this.tokenBroker.GenerateRefreshToken();
+        string hashedRefreshToken = HashToken(rawRefreshToken);
+
+        DateTimeOffset refreshExpiresAt = now.AddDays(RefreshTokenExpiryDays);
 
         var userRefreshToken = new UserRefreshToken
         {
             Id = Guid.NewGuid(),
-            Token = refreshTokenValue,
+            Token = hashedRefreshToken,
             UserId = user.Id,
             ExpiresAt = refreshExpiresAt,
             IsRevoked = false,
@@ -161,8 +169,8 @@ public partial class AuthService : IAuthService
 
         return new AuthResponse
         {
-            Token = token,
-            RefreshToken = refreshTokenValue,
+            Token = accessToken,
+            RefreshToken = rawRefreshToken,
             ExpiresAt = expiresAt,
             UserId = user.Id,
             Email = user.Email,
@@ -182,7 +190,8 @@ public partial class AuthService : IAuthService
                 return;
 
             // Generate secure token
-            string token = GenerateSecureResetToken();
+            string rawToken = GenerateSecureResetToken();
+            string hashedToken = HashToken(rawToken);
             DateTimeOffset now = this.dateTimeBroker.GetCurrentDateTimeOffset();
             DateTimeOffset expiresAt = now.AddHours(1);
 
@@ -190,7 +199,7 @@ public partial class AuthService : IAuthService
             {
                 Id = Guid.NewGuid(),
                 UserId = user.Id,
-                Token = token,
+                Token = hashedToken,
                 ExpiresAt = expiresAt,
                 IsUsed = false,
                 CreatedDate = now
@@ -198,8 +207,8 @@ public partial class AuthService : IAuthService
 
             await this.storageBroker.InsertPasswordResetTokenAsync(passwordResetToken);
 
-            // Send email (for now, just log - in production, use IEmailBroker)
-            await SendPasswordResetEmailAsync(user.Email, token);
+            // Send email with raw token (never the hash)
+            await SendPasswordResetEmailAsync(user.Email, rawToken);
         });
 
     public ValueTask ResetPasswordAsync(string token, string newPassword) =>
@@ -207,7 +216,8 @@ public partial class AuthService : IAuthService
         {
             ValidateResetPasswordRequest(token, newPassword);
 
-            PasswordResetToken? resetToken = await this.storageBroker.SelectPasswordResetTokenByTokenAsync(token);
+            string hashedToken = HashToken(token);
+            PasswordResetToken? resetToken = await this.storageBroker.SelectPasswordResetTokenByTokenAsync(hashedToken);
 
             if (resetToken is null)
                 throw new NotFoundPasswordResetTokenException();
@@ -237,6 +247,17 @@ public partial class AuthService : IAuthService
         var randomBytes = new byte[32];
         RandomNumberGenerator.Fill(randomBytes);
         return Convert.ToBase64String(randomBytes).Replace("+", "-").Replace("/", "_").Trim('=');
+    }
+
+    /// <summary>
+    /// Computes a SHA-256 hex digest of a raw token value.
+    /// Store only the hash in the database; compare hashes on lookup.
+    /// </summary>
+    private static string HashToken(string rawToken)
+    {
+        byte[] bytes = System.Security.Cryptography.SHA256.HashData(
+            System.Text.Encoding.UTF8.GetBytes(rawToken));
+        return Convert.ToHexString(bytes).ToLowerInvariant();
     }
 
     private Task SendPasswordResetEmailAsync(string email, string token)

@@ -200,10 +200,14 @@ public class Startup
     private void AddJwtAuthentication(IServiceCollection services)
     {
         var jwtSettings = this.configuration.GetSection("JwtSettings");
-        var secret = jwtSettings["Secret"]
-            ?? throw new InvalidOperationException(
-                "JwtSettings:Secret is not configured. " +
-                "Add a 'JwtSettings' section with 'Secret', 'Issuer', 'Audience', and 'ExpiryDays' to appsettings.json.");
+        var secret = jwtSettings["Secret"];
+
+        if (string.IsNullOrWhiteSpace(secret))
+            throw new InvalidOperationException(
+                "JwtSettings:Secret is not configured or is empty. " +
+                "Set a strong random secret via an environment variable (MULKCHI_JWT_SECRET), " +
+                "User Secrets (dotnet user-secrets), or a secrets manager.");
+
         var key = Encoding.UTF8.GetBytes(secret);
 
         services.AddAuthentication(options =>
@@ -229,12 +233,28 @@ public class Startup
             {
                 OnMessageReceived = context =>
                 {
-                    var accessToken = context.Request.Query["access_token"];
                     var path = context.HttpContext.Request.Path;
-                    if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hub"))
+
+                    if (path.StartsWithSegments("/hub"))
                     {
-                        context.Token = accessToken;
+                        // SignalR WebSocket: prefer query-string token (accessTokenFactory),
+                        // fall back to httpOnly cookie for SSE/long-polling transports.
+                        var queryToken = context.Request.Query["access_token"].ToString();
+                        if (!string.IsNullOrEmpty(queryToken))
+                        {
+                            context.Token = queryToken;
+                            return Task.CompletedTask;
+                        }
                     }
+
+                    // For all requests (including hubs that did not supply a query token):
+                    // read the access token from the httpOnly cookie.
+                    if (context.Request.Cookies.TryGetValue("access_token", out var cookieToken)
+                        && !string.IsNullOrEmpty(cookieToken))
+                    {
+                        context.Token = cookieToken;
+                    }
+
                     return Task.CompletedTask;
                 }
             };

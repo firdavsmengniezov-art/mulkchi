@@ -12,6 +12,9 @@ namespace Mulkchi.Api.Controllers;
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
+    private const string AccessTokenCookie = "access_token";
+    private const string RefreshTokenCookie = "refresh_token";
+
     private readonly IAuthService authService;
 
     public AuthController(IAuthService authService)
@@ -20,12 +23,13 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async ValueTask<ActionResult<AuthResponse>> LoginAsync(LoginRequest request)
+    public async ValueTask<ActionResult<AuthUserInfo>> LoginAsync(LoginRequest request)
     {
         try
         {
             AuthResponse response = await this.authService.LoginAsync(request);
-            return Ok(response);
+            SetAuthCookies(response);
+            return Ok(new AuthUserInfo(response));
         }
         catch (AuthValidationException authValidationException)
         {
@@ -51,12 +55,13 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async ValueTask<ActionResult<AuthResponse>> RegisterAsync(RegisterRequest request)
+    public async ValueTask<ActionResult<AuthUserInfo>> RegisterAsync(RegisterRequest request)
     {
         try
         {
             AuthResponse response = await this.authService.RegisterAsync(request);
-            return Created("auth/register", response);
+            SetAuthCookies(response);
+            return Created("auth/register", new AuthUserInfo(response));
         }
         catch (AuthValidationException authValidationException)
         {
@@ -82,12 +87,26 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("refresh-token")]
-    public async ValueTask<ActionResult<AuthResponse>> RefreshTokenAsync([FromBody] string refreshToken)
+    public async ValueTask<ActionResult<AuthUserInfo>> RefreshTokenAsync()
     {
         try
         {
+            // Read the refresh token from the httpOnly cookie; fall back to request body
+            // to stay backward-compatible during migration.
+            string? refreshToken = Request.Cookies[RefreshTokenCookie];
+            if (string.IsNullOrWhiteSpace(refreshToken))
+            {
+                // Legacy: accept token from body while clients migrate
+                var body = await Request.ReadFromJsonAsync<RefreshTokenRequest>();
+                refreshToken = body?.RefreshToken;
+            }
+
+            if (string.IsNullOrWhiteSpace(refreshToken))
+                return BadRequest(new { message = "Refresh token is required." });
+
             AuthResponse response = await this.authService.RefreshTokenAsync(refreshToken);
-            return Ok(response);
+            SetAuthCookies(response);
+            return Ok(new AuthUserInfo(response));
         }
         catch (AuthValidationException authValidationException)
         {
@@ -114,11 +133,20 @@ public class AuthController : ControllerBase
 
     [HttpPost("logout")]
     [Authorize]
-    public async ValueTask<ActionResult> LogoutAsync([FromBody] string refreshToken)
+    public async ValueTask<ActionResult> LogoutAsync()
     {
         try
         {
+            string? refreshToken = Request.Cookies[RefreshTokenCookie];
+            if (string.IsNullOrWhiteSpace(refreshToken))
+            {
+                // Legacy: accept token from body while clients migrate
+                var body = await Request.ReadFromJsonAsync<RefreshTokenRequest>();
+                refreshToken = body?.RefreshToken ?? string.Empty;
+            }
+
             await this.authService.LogoutAsync(refreshToken);
+            ClearAuthCookies();
             return NoContent();
         }
         catch (AuthValidationException authValidationException)
@@ -184,7 +212,6 @@ public class AuthController : ControllerBase
         }
     }
 
-    // GET /api/auth/me - joriy foydalanuvchi ma'lumotlari
     [HttpGet("me")]
     [Authorize]
     [ProducesResponseType(typeof(User), StatusCodes.Status200OK)]
@@ -199,7 +226,6 @@ public class AuthController : ControllerBase
         return Ok(user);
     }
 
-    // PUT /api/auth/profile - profil yangilash
     [HttpPut("profile")]
     [Authorize]
     [ProducesResponseType(typeof(User), StatusCodes.Status200OK)]
@@ -214,7 +240,6 @@ public class AuthController : ControllerBase
         return Ok(updatedUser);
     }
 
-    // DELETE /api/auth/account - hisobni o'chirish
     [HttpDelete("account")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -226,6 +251,44 @@ public class AuthController : ControllerBase
             return Unauthorized();
 
         await this.authService.RemoveUserByIdAsync(currentUserId);
+        ClearAuthCookies();
         return Ok(new { message = "Hisob muvaffaqiyatli o'chirildi." });
+    }
+
+    // ─── Cookie helpers ──────────────────────────────────────────────────────
+
+    private void SetAuthCookies(AuthResponse response)
+    {
+        bool isProduction = HttpContext.RequestServices
+            .GetRequiredService<IWebHostEnvironment>()
+            .IsProduction();
+
+        var accessOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = isProduction,
+            SameSite = SameSiteMode.Strict,
+            Expires = response.ExpiresAt,
+            Path = "/"
+        };
+
+        var refreshOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = isProduction,
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTimeOffset.UtcNow.AddDays(AuthService.RefreshTokenExpiryDays),
+            // Restrict the refresh-token cookie to the refresh endpoint
+            Path = "/api/auth/refresh-token"
+        };
+
+        Response.Cookies.Append(AccessTokenCookie, response.Token, accessOptions);
+        Response.Cookies.Append(RefreshTokenCookie, response.RefreshToken, refreshOptions);
+    }
+
+    private void ClearAuthCookies()
+    {
+        Response.Cookies.Delete(AccessTokenCookie, new CookieOptions { Path = "/" });
+        Response.Cookies.Delete(RefreshTokenCookie, new CookieOptions { Path = "/api/auth/refresh-token" });
     }
 }
