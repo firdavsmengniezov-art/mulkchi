@@ -83,7 +83,8 @@ export class AuthService {
       id: res.userId,
       email: res.email,
       role: res.role,
-      firstName: '' // populated by /api/auth/me if needed
+      firstName: '',
+      lastName: ''
     };
     localStorage.setItem('auth_user', JSON.stringify(user));
     this.currentUser$.next(user);

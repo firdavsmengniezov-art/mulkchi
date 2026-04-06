@@ -277,7 +277,7 @@ public class AuthController : ControllerBase
             HttpOnly = true,
             Secure = isProduction,
             SameSite = SameSiteMode.Strict,
-            Expires = DateTimeOffset.UtcNow.AddDays(14),
+            Expires = DateTimeOffset.UtcNow.AddDays(AuthService.RefreshTokenExpiryDays),
             // Restrict the refresh-token cookie to the refresh endpoint
             Path = "/api/auth/refresh-token"
         };

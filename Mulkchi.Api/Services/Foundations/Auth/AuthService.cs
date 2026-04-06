@@ -15,6 +15,9 @@ namespace Mulkchi.Api.Services.Foundations.Auth;
 
 public partial class AuthService : IAuthService
 {
+    /// <summary>Number of days the refresh token (and its httpOnly cookie) remain valid.</summary>
+    public const int RefreshTokenExpiryDays = 14;
+
     private readonly IStorageBroker storageBroker;
     private readonly ILoggingBroker loggingBroker;
     private readonly IDateTimeBroker dateTimeBroker;
@@ -150,7 +153,7 @@ public partial class AuthService : IAuthService
         string rawRefreshToken = this.tokenBroker.GenerateRefreshToken();
         string hashedRefreshToken = HashToken(rawRefreshToken);
 
-        DateTimeOffset refreshExpiresAt = now.AddDays(14);
+        DateTimeOffset refreshExpiresAt = now.AddDays(RefreshTokenExpiryDays);
 
         var userRefreshToken = new UserRefreshToken
         {
