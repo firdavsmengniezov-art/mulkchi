@@ -11,7 +11,7 @@ export interface RegisterRequest {
   email: string;
   password: string;
   phone: string;
-  preferredLanguage?: string; // Backend ga mosladik
+  preferredLanguage?: string;
 }
 
 export interface AuthUser {
@@ -23,8 +23,24 @@ export interface AuthUser {
   avatarUrl?: string;
 }
 
+/**
+ * Shape returned by login / register / refresh endpoints.
+ * Tokens are delivered via httpOnly cookies — NOT in this payload.
+ * `accessToken` is provided solely for SignalR's in-memory use.
+ */
+export interface AuthUserInfo {
+  userId: string;
+  email: string;
+  role: UserRole;
+  expiresAt: string;
+  /** For SignalR only. Store in memory, never in localStorage/sessionStorage. */
+  accessToken: string;
+}
+
+/** @deprecated Use AuthUserInfo. Kept for backward compatibility. */
 export interface AuthResponse {
   token: string;
   refreshToken: string;
   user: AuthUser;
 }
+

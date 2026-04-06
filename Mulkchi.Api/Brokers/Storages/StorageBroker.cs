@@ -72,6 +72,10 @@ public partial class StorageBroker : DbContext, IStorageBroker
             entity.Property(p => p.Amount).HasPrecision(18, 2);
             entity.Property(p => p.PlatformFee).HasPrecision(18, 2);
             entity.Property(p => p.HostReceives).HasPrecision(18, 2);
+            // Filtered unique index: enforce idempotency key uniqueness only when set
+            entity.HasIndex(p => p.IdempotencyKey)
+                .IsUnique()
+                .HasFilter("[IdempotencyKey] IS NOT NULL");
         });
 
         modelBuilder.Entity<Property>(entity =>
@@ -136,9 +140,11 @@ public partial class StorageBroker : DbContext, IStorageBroker
 
         modelBuilder.Entity<Message>(entity =>
         {
-            // Add performance indexes
+            // Individual indexes kept for single-column queries
             entity.HasIndex(p => p.SenderId);
             entity.HasIndex(p => p.ReceiverId);
+            // Compound index for conversation queries (SenderId, ReceiverId, date-ordered)
+            entity.HasIndex(p => new { p.SenderId, p.ReceiverId, p.CreatedDate });
         });
 
         modelBuilder.Entity<Favorite>(entity =>

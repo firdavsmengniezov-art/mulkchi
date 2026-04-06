@@ -29,6 +29,19 @@ public class PaymentsController : ControllerBase
             if (userIdClaim is null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
                 return Unauthorized();
 
+            // Idempotency: if the client supplies X-Idempotency-Key and we already
+            // processed a payment with that key, return the original result instead of
+            // charging twice (safe to replay on network retries).
+            var idempotencyKey = Request.Headers["X-Idempotency-Key"].FirstOrDefault();
+            if (!string.IsNullOrWhiteSpace(idempotencyKey))
+            {
+                Payment? existing = await this.paymentService.RetrievePaymentByIdempotencyKeyAsync(idempotencyKey);
+                if (existing is not null)
+                    return Ok(existing);
+
+                payment.IdempotencyKey = idempotencyKey;
+            }
+
             payment.PayerId = currentUserId;
             Payment addedPayment = await this.paymentService.AddPaymentAsync(payment);
             return Created("payment", addedPayment);
