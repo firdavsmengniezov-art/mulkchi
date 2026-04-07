@@ -10,15 +10,6 @@ import { PropertyService } from '../../core/services/property.service';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { PropertyCardComponent } from '../../shared/components/property-card/property-card.component';
 
-// Angular Material Imports
-import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSelectModule } from '@angular/material/select';
-import { MatSliderModule } from '@angular/material/slider';
-
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -28,14 +19,7 @@ import { MatSliderModule } from '@angular/material/slider';
     RouterModule,
     NavbarComponent,
     PropertyCardComponent,
-    TranslateModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatSliderModule,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressSpinnerModule,
+    TranslateModule
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
@@ -52,15 +36,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   searchPriceMax = 500000;
   showAdvancedFilters = false;
   rooms = '';
-
-  // Stats for count-up animation
-  statsUsers = 0;
-  statsListings = 0;
-  statsSatisfaction = 0;
-
-  // Typewriter effect
-  typewriterText = '';
-  private fullText = "O'zbekistondagi orzuingizdagi uyni toping";
 
   // Regions list
   regions = [
@@ -88,19 +63,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.loading = true;
 
-    if (isPlatformBrowser(this.platformId)) {
-      this.startTypewriter();
-      this.startCountUp();
-    } else {
-      this.typewriterText = this.fullText;
-      this.statsUsers = 20;
-      this.statsListings = 3200;
-      this.statsSatisfaction = 96;
-    }
-
     // Load properties from API
     this.propertyService
-      .getProperties(1, 6)
+      .getProperties(1, 8)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: any) => {
@@ -125,52 +90,18 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  startTypewriter() {
-    let i = 0;
-    const interval = setInterval(() => {
-      if (i < this.fullText.length) {
-        this.typewriterText += this.fullText.charAt(i);
-        i++;
-      } else {
-        clearInterval(interval);
-      }
-    }, 100); // 100ms delay per character
-  }
-
-  startCountUp() {
-    const duration = 2000; // 2 seconds
-    const steps = 60;
-    const stepTime = duration / steps;
-    let currentStep = 0;
-
-    const interval = setInterval(() => {
-      currentStep++;
-      this.statsUsers = Math.floor((20 / steps) * currentStep); // Actually 20K
-      this.statsListings = Math.floor((3200 / steps) * currentStep);
-      this.statsSatisfaction = Math.floor((96 / steps) * currentStep);
-
-      if (currentStep >= steps) {
-        this.statsUsers = 20;
-        this.statsListings = 3200;
-        this.statsSatisfaction = 96;
-        clearInterval(interval);
-      }
-    }, stepTime);
-  }
-
   toggleFilters() {
     this.showAdvancedFilters = !this.showAdvancedFilters;
   }
 
   search() {
     this.isSearching = true;
-    // Simulate slight delay for loading state
     setTimeout(() => {
       this.isSearching = false;
       this.router.navigate(['/properties'], {
         queryParams: {
-          region: this.searchRegion,
-          type: this.searchType,
+          region: this.searchRegion || undefined,
+          type: this.searchType || undefined,
           minPrice: this.searchPriceMin,
           maxPrice: this.searchPriceMax,
           rooms: this.rooms || undefined,

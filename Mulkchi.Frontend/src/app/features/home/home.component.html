@@ -1,214 +1,128 @@
 <app-navbar></app-navbar>
 
-<section class="hero relative overflow-hidden">
-  <!-- Subtle Moving Gradient Background -->
-  <div class="hero-bg-animated absolute inset-0 z-[-1]"></div>
-
-  <!-- Content -->
-  <div class="container hero-content relative z-10 flex flex-col justify-center items-center text-center">
-    <div class="hero-copy animate-fade-in-up">
-      <span
-        class="hero-label bg-[rgba(255,255,255,0.15)] text-white px-4 py-1 rounded-full text-sm font-semibold tracking-wider mb-6 inline-block backdrop-blur-md border border-[rgba(255,255,255,0.3)] shadow-[0_4px_12px_rgba(0,0,0,0.1)]">PropTech
-        Uzbekistan</span>
-
-      <!-- Typewriter Title -->
-      <h1
-        class="text-5xl md:text-7xl font-extrabold text-white mb-6 leading-tight drop-shadow-xl min-h-[140px] md:min-h-[100px]">
-        {{ typewriterText }}<span class="typewriter-cursor">|</span>
+<main class="w-full min-h-screen bg-white">
+  
+  <!-- Hero Section -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 lg:py-24">
+    <div class="text-center max-w-3xl mx-auto mb-10">
+      <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-dark mb-4 drop-shadow-sm">
+        O'zbekistondagi orzuingizdagi uyni toping
       </h1>
-
-      <p class="text-gray-100 text-lg md:text-xl max-w-2xl mx-auto mb-10 drop-shadow-md">
+      <p class="text-lg md:text-xl text-light">
         AI tavsiyalar, tezkor qidiruv va bir joyda to'liq ko'chmas mulk tajribasi.
       </p>
-
-      <div class="hero-metrics flex justify-center gap-8 md:gap-16 mb-12">
-        <div class="metric-card text-white text-center drop-shadow-lg">
-          <strong class="text-4xl md:text-5xl font-bold block mb-1">
-            {{ statsUsers }}K+
-          </strong>
-          <span class="text-sm md:text-base text-gray-200 uppercase tracking-widest">Foydalanuvchi</span>
-        </div>
-        <div class="metric-card text-white text-center drop-shadow-lg">
-          <strong class="text-4xl md:text-5xl font-bold block mb-1">
-            {{ (statsListings / 1000) | number:'1.1-1' }}K
-          </strong>
-          <span class="text-sm md:text-base text-gray-200 uppercase tracking-widest">E'lonlar</span>
-        </div>
-        <div class="metric-card text-white text-center drop-shadow-lg">
-          <strong class="text-4xl md:text-5xl font-bold block mb-1">
-            {{ statsSatisfaction }}%
-          </strong>
-          <span class="text-sm md:text-base text-gray-200 uppercase tracking-widest">Mamnuniyat</span>
-        </div>
-      </div>
     </div>
 
     <!-- Modern Search Card -->
-    <div
-      class="search-panel w-full max-w-5xl mx-auto bg-white rounded-3xl shadow-2xl p-6 md:p-8 animate-slide-up-delayed relative mt-8">
-      <div class="flex justify-between items-center mb-6 border-b pb-4">
-        <h3 class="text-2xl font-bold text-gray-800 m-0">Uy topishni boshlang</h3>
-        <button type="button"
-          class="text-indigo-600 font-medium hover:text-indigo-800 transition-colors bg-indigo-50 px-4 py-2 rounded-lg text-sm flex items-center justify-center gap-2"
-          (click)="toggleFilters()">
-          <mat-icon class="text-[20px] w-[20px] h-[20px] leading-[20px]">{{ showAdvancedFilters ? 'filter_list_off' :
-            'tune' }}</mat-icon>
-          {{ showAdvancedFilters ? 'Oddiy' : 'Batafsil' }} qidiruv
-        </button>
-      </div>
-
-      <form class="search-form" (submit)="$event.preventDefault(); search()">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-
+    <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-lg border border-gray-100 p-4 sm:p-6 md:p-8 animate-slide-up">
+      <form class="flex flex-col gap-4" (submit)="$event.preventDefault(); search()">
+        
+        <!-- Primary Search Inputs Row -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          
           <!-- Region -->
-          <mat-form-field appearance="outline" class="w-full search-field custom-field">
-            <mat-label>{{ 'HOME.SELECT_REGION' | translate }}</mat-label>
-            <mat-select [(ngModel)]="searchRegion" name="searchRegion">
-              <mat-option value="">Barchasi</mat-option>
+          <div class="flex flex-col">
+            <label class="text-xs font-bold text-dark uppercase tracking-wider mb-1 px-1">Hudud</label>
+            <select [(ngModel)]="searchRegion" name="searchRegion" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-dark focus:ring-2 focus:ring-brand focus:border-brand outline-none transition">
+              <span class="truncate block">Hudud tanlang</span>
+              <option value="">Barchasi</option>
               @for (region of regions; track region) {
-              <mat-option [value]="region">{{ region }}</mat-option>
+                <option [value]="region">{{ region }}</option>
               }
-            </mat-select>
-            <mat-icon matPrefix class="mr-2 text-gray-400">location_on</mat-icon>
-          </mat-form-field>
-
-          <!-- Type -->
-          <mat-form-field appearance="outline" class="w-full search-field custom-field">
-            <mat-label>{{ 'HOME.PROPERTY_TYPE' | translate }}</mat-label>
-            <mat-select [(ngModel)]="searchType" name="searchType">
-              <mat-option value="">Barcha turlar</mat-option>
-              <mat-option value="Apartment">Kvartira</mat-option>
-              <mat-option value="House">Hovli uy</mat-option>
-              <mat-option value="Villa">Villa (Dacha)</mat-option>
-              <mat-option value="Office">Ofis</mat-option>
-              <mat-option value="Land">Yer uchastkasi</mat-option>
-            </mat-select>
-            <mat-icon matPrefix class="mr-2 text-gray-400">home_work</mat-icon>
-          </mat-form-field>
-
-          <!-- Price Base -->
-          <div class="price-slider-container w-full pt-2 px-2 flex flex-col justify-center">
-            <div class="flex justify-between items-center mb-0">
-              <span class="text-sm font-medium text-gray-600">Narx (USD)</span>
-              <span class="text-sm font-bold text-indigo-600">${{ searchPriceMin }} - ${{ searchPriceMax | number
-                }}</span>
-            </div>
-            <!-- Standard slider until angular material multi-slider is configured -->
-            <mat-slider min="5000" max="500000" step="5000" class="w-full custom-slider">
-              <input matSliderStartThumb [(ngModel)]="searchPriceMin" name="priceMin">
-              <input matSliderEndThumb [(ngModel)]="searchPriceMax" name="priceMax">
-            </mat-slider>
+            </select>
           </div>
+
+          <!-- Property Type -->
+          <div class="flex flex-col">
+            <label class="text-xs font-bold text-dark uppercase tracking-wider mb-1 px-1">Mulk turi</label>
+            <select [(ngModel)]="searchType" name="searchType" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-dark focus:ring-2 focus:ring-brand focus:border-brand outline-none transition">
+              <option value="">Barchasi</option>
+              <option value="Apartment">Kvartira</option>
+              <option value="House">Hovli uy</option>
+              <option value="Villa">Villa</option>
+              <option value="Office">Ofis</option>
+              <option value="Land">Yer uchastkasi</option>
+            </select>
+          </div>
+
+          <!-- Price Max -->
+          <div class="flex flex-col">
+            <label class="text-xs font-bold text-dark uppercase tracking-wider mb-1 px-1">Maks narx (USD)</label>
+            <input type="number" [(ngModel)]="searchPriceMax" name="searchPriceMax" placeholder="500000" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-dark focus:ring-2 focus:ring-brand focus:border-brand outline-none transition">
+          </div>
+
         </div>
 
-        <!-- Advanced Filters row -->
-        <div class="advanced-filters mt-4 pt-4 border-t border-gray-100 transition-all duration-300 overflow-hidden"
-          [style.maxHeight]="showAdvancedFilters ? '200px' : '0'" [style.opacity]="showAdvancedFilters ? '1' : '0'">
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <!-- Rooms -->
-            <mat-form-field appearance="outline" class="w-full search-field custom-field">
-              <mat-label>Xonalar soni</mat-label>
-              <mat-select [(ngModel)]="rooms" name="rooms">
-                <mat-option value="">Farqi yo'q</mat-option>
-                <mat-option value="1">1 xona</mat-option>
-                <mat-option value="2">2 xona</mat-option>
-                <mat-option value="3">3 xona</mat-option>
-                <mat-option value="4+">4 va undan ko'p</mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
-        </div>
-
-        <!-- Search Button container -->
-        <div class="mt-8 flex justify-center w-full">
-          <button type="submit"
-            class="btn-search bg-indigo-600 hover:bg-indigo-700 text-white shadow-[0_8px_20px_rgba(79,70,229,0.3)] hover:shadow-[0_10px_25px_rgba(79,70,229,0.4)] transition-all duration-300 hover:-translate-y-1 transform rounded-full px-12 py-4 text-lg font-bold flex items-center gap-3 relative overflow-hidden group w-full md:w-auto"
-            [disabled]="isSearching">
-            <div class="absolute inset-0 bg-white/20 w-1/2 -skew-x-12 translate-x-[-150%] group-hover:animate-shine">
-            </div>
+        <!-- Submit Button -->
+        <div class="mt-4 flex justify-center">
+          <button type="submit" [disabled]="isSearching" class="bg-brand text-white font-semibold rounded-xl px-12 py-3.5 shadow-md hover:bg-brand/90 transition disabled:opacity-70 flex items-center justify-center gap-2 w-full md:w-auto">
             @if (isSearching) {
-            <mat-spinner diameter="24" class="search-spinner"></mat-spinner>
-            <span>Qidirilmoqda...</span>
+              <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>Qidirilmoqda...</span>
             } @else {
-            <mat-icon>search</mat-icon>
-            <span>Uylarni Qidirish</span>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+              </svg>
+              <span>Qidirish</span>
             }
           </button>
         </div>
       </form>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="listings py-20 bg-gray-50">
-  <div class="container">
-    <div class="listings-head flex justify-between items-end mb-10 w-full">
+  <!-- Listings Section -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 mb-20 bg-white">
+    <div class="flex justify-between items-end mb-8">
       <div>
-        <h2 class="text-3xl font-extrabold text-gray-900 mb-2">{{ 'HOME.NEW_LISTINGS' | translate }}</h2>
-        <p class="text-gray-500">So'nggi qo'shilgan premium mulklar. Ajoyib takliflarni boy bermang.</p>
+        <h2 class="text-2xl font-bold text-dark mb-1">{{ 'HOME.NEW_LISTINGS' | translate }}</h2>
+        <p class="text-light">Ajoyib takliflarni boy bermang.</p>
       </div>
-      <a routerLink="/properties"
-        class="btn-outline flex items-center gap-2 text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-6 py-3 rounded-xl transition-colors font-semibold">
-        <span>Barchasini ko'rish</span>
-        <mat-icon class="text-[18px] w-[18px] h-[18px] leading-[18px]">arrow_forward</mat-icon>
-      </a>
+      <a routerLink="/properties" class="font-semibold text-dark underline hover:text-brand transition">Barchasi</a>
     </div>
 
     @if (loading) {
-    <!-- Skeleton Loading State -->
-    <div class="cards-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      @for (i of [1,2,3,4,5,6]; track i) {
-      <div
-        class="skeleton-card bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col h-[400px]">
-        <div class="skeleton-img h-[220px] w-full bg-gray-200 animate-pulse"></div>
-        <div class="p-5 flex-1 flex flex-col gap-3">
-          <div class="h-6 w-1/3 bg-gray-200 rounded animate-pulse"></div>
-          <div class="h-4 w-3/4 bg-gray-200 rounded animate-pulse mt-2"></div>
-          <div class="h-4 w-1/2 bg-gray-200 rounded animate-pulse"></div>
-          <div class="mt-auto flex justify-between">
-            <div class="h-8 w-1/4 bg-gray-200 rounded animate-pulse"></div>
-            <div class="h-8 w-1/4 bg-gray-200 rounded animate-pulse"></div>
+      <!-- Skeleton Loading State -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        @for (i of [1,2,3,4,5,6,7,8]; track i) {
+          <div class="w-full flex items-start gap-3 flex-col cursor-pointer">
+            <div class="w-full aspect-[20/19] bg-gray-200 rounded-xl animate-pulse"></div>
+            <div class="w-full flex gap-1 flex-col mt-1">
+              <div class="w-2/3 h-4 bg-gray-200 rounded animate-pulse"></div>
+              <div class="w-1/2 h-3 bg-gray-100 rounded animate-pulse mt-1"></div>
+              <div class="w-1/3 h-4 bg-gray-200 rounded animate-pulse mt-2"></div>
+            </div>
           </div>
-        </div>
+        }
       </div>
-      }
-    </div>
     } @else {
-    <!-- Actual Cards with hover effect implemented in app-property-card or here -->
-    <div class="cards-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      @for (p of properties; track p.id) {
-      <div
-        class="property-card-wrapper transform transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] rounded-2xl">
-        <app-property-card [property]="p"></app-property-card>
+      <!-- Actual Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 gap-y-10">
+        @for (p of properties; track p.id) {
+          <app-property-card [property]="p"></app-property-card>
+        }
       </div>
+
+      <!-- Fallback empty state -->
+      @if(properties.length === 0) {
+        <div class="text-center py-20 bg-gray-50 rounded-2xl border border-gray-100">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12 mx-auto text-gray-400 mb-4">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+          </svg>
+          <h3 class="text-lg font-bold text-dark">Hozircha mulklar yo'q</h3>
+          <p class="text-light mt-1">Tizimda birorta ham mulk e'loni topilmadi</p>
+        </div>
       }
-    </div>
-
-    <!-- Fallback empty state -->
-    @if(properties.length === 0) {
-    <div class="text-center py-16 bg-white rounded-2xl shadow-sm border border-gray-100">
-      <mat-icon class="text-gray-300 !w-16 !h-16 !text-[64px] mb-4">real_estate_agent</mat-icon>
-      <h3 class="text-xl font-bold text-gray-700">Hozircha mulklar yo'q</h3>
-      <p class="text-gray-500">Iltimos, keyinroq qayta urining</p>
-    </div>
     }
-    }
-  </div>
-</section>
+  </section>
 
-<!-- AI Banner - Kept minimal changes, just structural -->
-<section class="ai-banner">
-  <div class="container ai-inner">
-    <div class="ai-left">
-      <span class="ml-badge">AI Engine</span>
-      <h3>{{ 'HOME.AI_BANNER_TITLE' | translate }}</h3>
-      <p>{{ 'HOME.AI_BANNER_DESC' | translate }}</p>
-    </div>
-    <button class="btn-primary" routerLink="/ai-price">{{ 'HOME.AI_CALCULATE' | translate }}</button>
-  </div>
-</section>
+</main>
 
-<button class="chat-float" routerLink="/chat">
-  <span class="chat-dot"></span>
-  {{ 'NAV.CHAT' | translate }}
+<button routerLink="/chat" class="fixed bottom-6 right-6 bg-dark text-white p-4 rounded-full shadow-xl hover:scale-105 hover:shadow-2xl transition z-50 flex items-center justify-center">
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+  </svg>
 </button>
