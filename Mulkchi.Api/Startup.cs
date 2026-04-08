@@ -29,6 +29,7 @@ using Mulkchi.Api.Services.Foundations.Announcements;
 using Mulkchi.Api.Services.Foundations.Auth;
 using Mulkchi.Api.Services.Foundations.Bookings;
 using Mulkchi.Api.Services.Foundations.AI;
+using Mulkchi.Api.Services.RateLimiting;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
@@ -85,6 +86,7 @@ public class Startup
 
         app.UseHttpsRedirection();
         app.UseStaticFiles(); // Enable static file serving
+        app.UseSecurityHeaders();
         app.UseCors(env.IsDevelopment() ? "AllowAngular" : "Production");
 
         // Add global exception handling
@@ -267,6 +269,11 @@ public class Startup
         services.AddTransient<IDateTimeBroker, DateTimeBroker>();
         services.AddTransient<Mulkchi.Api.Brokers.Tokens.ITokenBroker, Mulkchi.Api.Brokers.Tokens.TokenBroker>();
         services.AddSingleton<IFileStorageBroker, LocalFileStorageBroker>();
+
+        // Rate limiting — singleton because the in-memory window state must persist
+        // across requests.  Swap InMemoryRateLimitService for a Redis-backed
+        // implementation here when scaling out to multiple pods.
+        services.AddSingleton<IRateLimitService, InMemoryRateLimitService>();
     }
 
     private void AddFoundationServices(IServiceCollection services)

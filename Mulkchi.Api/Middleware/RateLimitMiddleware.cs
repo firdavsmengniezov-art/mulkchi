@@ -1,26 +1,18 @@
-using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Mulkchi.Api.Services.RateLimiting;
 
 namespace Mulkchi.Api.Middleware;
 
 public class RateLimitMiddleware
 {
     private readonly RequestDelegate _next;
+    private readonly IRateLimitService _rateLimitService;
     private readonly bool _isEnabled;
-
-    // Sliding window: IP -> queue of request timestamps
-    private readonly ConcurrentDictionary<string, Queue<long>> _authRequests = new();
-    private readonly ConcurrentDictionary<string, Queue<long>> _uploadRequests = new();
-    private readonly ConcurrentDictionary<string, Queue<long>> _generalRequests = new();
-
-    // Lock per key to avoid race conditions when mutating the queue
-    private readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = new();
+    private readonly HashSet<string> _trustedProxies;
 
     private const int AuthMaxRequests = 20;
     private const int AuthWindowSeconds = 60;
@@ -29,10 +21,23 @@ public class RateLimitMiddleware
     private const int GeneralMaxRequests = 300;
     private const int GeneralWindowSeconds = 60;
 
-    public RateLimitMiddleware(RequestDelegate next, IConfiguration configuration)
+    public RateLimitMiddleware(
+        RequestDelegate next,
+        IRateLimitService rateLimitService,
+        IConfiguration configuration)
     {
         _next = next;
+        _rateLimitService = rateLimitService;
         _isEnabled = configuration.GetValue<bool>("RateLimiting:Enabled", true);
+
+        // Load the list of IP addresses that are allowed to set X-Forwarded-For /
+        // X-Real-IP.  Only requests arriving from these addresses should have their
+        // forwarded IP trusted.  Configure via "RateLimiting:TrustedProxies" in
+        // appsettings.json or environment variables.
+        var proxies = configuration.GetSection("RateLimiting:TrustedProxies").Get<string[]>();
+        _trustedProxies = proxies is { Length: > 0 }
+            ? new HashSet<string>(proxies)
+            : new HashSet<string>();
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -48,7 +53,8 @@ public class RateLimitMiddleware
 
         if (path.StartsWith("/api/auth/"))
         {
-            if (await IsRateLimitedAsync(_authRequests, clientIp, AuthWindowSeconds, AuthMaxRequests))
+            if (await _rateLimitService.IsRateLimitedAsync(
+                    $"auth:{clientIp}", AuthWindowSeconds, AuthMaxRequests))
             {
                 context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
                 context.Response.Headers["Retry-After"] = AuthWindowSeconds.ToString();
@@ -58,7 +64,8 @@ public class RateLimitMiddleware
         }
         else if (path.StartsWith("/api/propertyimagesupload/upload"))
         {
-            if (await IsRateLimitedAsync(_uploadRequests, clientIp, UploadWindowSeconds, UploadMaxRequests))
+            if (await _rateLimitService.IsRateLimitedAsync(
+                    $"upload:{clientIp}", UploadWindowSeconds, UploadMaxRequests))
             {
                 context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
                 context.Response.Headers["Retry-After"] = UploadWindowSeconds.ToString();
@@ -68,7 +75,8 @@ public class RateLimitMiddleware
         }
         else
         {
-            if (await IsRateLimitedAsync(_generalRequests, clientIp, GeneralWindowSeconds, GeneralMaxRequests))
+            if (await _rateLimitService.IsRateLimitedAsync(
+                    $"general:{clientIp}", GeneralWindowSeconds, GeneralMaxRequests))
             {
                 context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
                 context.Response.Headers["Retry-After"] = GeneralWindowSeconds.ToString();
@@ -80,47 +88,27 @@ public class RateLimitMiddleware
         await _next(context);
     }
 
-    private async Task<bool> IsRateLimitedAsync(
-        ConcurrentDictionary<string, Queue<long>> store,
-        string key,
-        int windowSeconds,
-        int maxRequests)
+    /// <summary>
+    /// Returns the real client IP address.
+    /// X-Forwarded-For / X-Real-IP headers are only trusted when the TCP
+    /// connection originates from a known trusted proxy, preventing IP-spoofing
+    /// attacks where a client injects its own forwarded-for header.
+    /// </summary>
+    private string GetClientIp(HttpContext context)
     {
-        var semaphore = _locks.GetOrAdd(key, _ => new SemaphoreSlim(1, 1));
-        await semaphore.WaitAsync();
-        try
+        var remoteIp = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+        if (_trustedProxies.Contains(remoteIp))
         {
-            var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            var windowStart = now - windowSeconds;
+            var xForwardedFor = context.Request.Headers["X-Forwarded-For"].ToString();
+            if (!string.IsNullOrEmpty(xForwardedFor))
+                return xForwardedFor.Split(',')[0].Trim();
 
-            var queue = store.GetOrAdd(key, _ => new Queue<long>());
-
-            // Evict timestamps outside the current window
-            while (queue.Count > 0 && queue.Peek() <= windowStart)
-                queue.Dequeue();
-
-            if (queue.Count >= maxRequests)
-                return true;
-
-            queue.Enqueue(now);
-            return false;
+            var xRealIp = context.Request.Headers["X-Real-IP"].ToString();
+            if (!string.IsNullOrEmpty(xRealIp))
+                return xRealIp;
         }
-        finally
-        {
-            semaphore.Release();
-        }
-    }
 
-    private static string GetClientIp(HttpContext context)
-    {
-        var xForwardedFor = context.Request.Headers["X-Forwarded-For"].ToString();
-        if (!string.IsNullOrEmpty(xForwardedFor))
-            return xForwardedFor.Split(',')[0].Trim();
-
-        var xRealIp = context.Request.Headers["X-Real-IP"].ToString();
-        if (!string.IsNullOrEmpty(xRealIp))
-            return xRealIp;
-
-        return context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        return remoteIp;
     }
 }

@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Models.Foundations.Reviews;
 using Mulkchi.Api.Models.Foundations.Reviews.Exceptions;
@@ -53,17 +54,17 @@ public class ReviewsController : ControllerBase
 
     [HttpGet]
     [AllowAnonymous]
-    public ActionResult<PagedResult<Review>> GetAllReviews([FromQuery] PaginationParams pagination)
+    public async Task<ActionResult<PagedResult<Review>>> GetAllReviews([FromQuery] PaginationParams pagination)
     {
         try
         {
             IQueryable<Review> query = this.reviewService.RetrieveAllReviews();
-            int totalCount = query.Count();
+            int totalCount = await query.CountAsync();
 
-            var items = query
+            var items = await query
                 .Skip((pagination.Page - 1) * pagination.PageSize)
                 .Take(pagination.PageSize)
-                .ToList();
+                .ToListAsync();
 
             var result = new PagedResult<Review>
             {
@@ -123,6 +124,21 @@ public class ReviewsController : ControllerBase
     {
         try
         {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdClaim is null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
+                return Unauthorized();
+
+            bool isAdmin = User.IsInRole("Admin");
+            if (!isAdmin)
+            {
+                Review existingReview = await this.reviewService.RetrieveReviewByIdAsync(review.Id);
+                if (existingReview is null)
+                    return NotFound(new { message = "Review not found." });
+
+                if (existingReview.ReviewerId != currentUserId)
+                    return Forbid();
+            }
+
             Review modifiedReview = await this.reviewService.ModifyReviewAsync(review);
             return Ok(modifiedReview);
         }
@@ -155,6 +171,21 @@ public class ReviewsController : ControllerBase
     {
         try
         {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdClaim is null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
+                return Unauthorized();
+
+            bool isAdmin = User.IsInRole("Admin");
+            if (!isAdmin)
+            {
+                Review existingReview = await this.reviewService.RetrieveReviewByIdAsync(id);
+                if (existingReview is null)
+                    return NotFound(new { message = "Review not found." });
+
+                if (existingReview.ReviewerId != currentUserId)
+                    return Forbid();
+            }
+
             Review deletedReview = await this.reviewService.RemoveReviewByIdAsync(id);
             return Ok(deletedReview);
         }

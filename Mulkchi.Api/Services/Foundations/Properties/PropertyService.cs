@@ -152,13 +152,11 @@ public partial class PropertyService : IPropertyService
         if (queryParams.PropertyType.HasValue)
             query = query.Where(p => p.Type == queryParams.PropertyType.Value);
 
-        int totalCount = await query.CountAsync();
-
         if (!string.IsNullOrWhiteSpace(queryParams.SearchQuery))
         {
             var q = queryParams.SearchQuery.ToLower();
-            query = query.Where(p => 
-                (p.Title != null && p.Title.ToLower().Contains(q)) || 
+            query = query.Where(p =>
+                (p.Title != null && p.Title.ToLower().Contains(q)) ||
                 (p.Description != null && p.Description.ToLower().Contains(q)) ||
                 (p.City != null && p.City.ToLower().Contains(q)));
         }
@@ -178,6 +176,8 @@ public partial class PropertyService : IPropertyService
             query = query.Where(p => p.Area <= queryParams.MaxArea.Value);
         if (queryParams.MaxGuests.HasValue)
             query = query.Where(p => p.MaxGuests >= queryParams.MaxGuests.Value);
+
+        int totalCount = await query.CountAsync();
 
         query = queryParams.SortBy switch {
             "price_asc"  => query.OrderBy(p => p.MonthlyRent ?? p.SalePrice ?? p.PricePerNight),
