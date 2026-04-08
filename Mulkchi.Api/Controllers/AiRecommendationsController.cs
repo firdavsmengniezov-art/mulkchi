@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Mulkchi.Api.Models.Foundations.AIs;
 using Mulkchi.Api.Models.Foundations.AIs.Exceptions;
 using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Services.Foundations.AiRecommendations;
+using System.Security.Claims;
 
 namespace Mulkchi.Api.Controllers;
 
@@ -47,17 +49,17 @@ public class AiRecommendationsController : ControllerBase
 
     [HttpGet]
     [Authorize]
-    public ActionResult<PagedResult<AiRecommendation>> GetAllAiRecommendations([FromQuery] PaginationParams pagination)
+    public async Task<ActionResult<PagedResult<AiRecommendation>>> GetAllAiRecommendations([FromQuery] PaginationParams pagination)
     {
         try
         {
             IQueryable<AiRecommendation> query = this.aiRecommendationService.RetrieveAllAiRecommendations();
-            int totalCount = query.Count();
+            int totalCount = await query.CountAsync();
 
-            var items = query
+            var items = await query
                 .Skip((pagination.Page - 1) * pagination.PageSize)
                 .Take(pagination.PageSize)
-                .ToList();
+                .ToListAsync();
 
             var result = new PagedResult<AiRecommendation>
             {
@@ -117,7 +119,26 @@ public class AiRecommendationsController : ControllerBase
     {
         try
         {
-            AiRecommendation modifiedAiRecommendation = await this.aiRecommendationService.ModifyAiRecommendationAsync(aiRecommendation);
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdClaim is null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
+                return Unauthorized();
+
+            bool isAdmin = User.IsInRole("Admin");
+            if (!isAdmin)
+            {
+                AiRecommendation existing =
+                    await this.aiRecommendationService.RetrieveAiRecommendationByIdAsync(aiRecommendation.Id);
+
+                if (existing is null)
+                    return NotFound(new { message = "AI recommendation not found." });
+
+                if (existing.UserId != currentUserId)
+                    return Forbid();
+            }
+
+            AiRecommendation modifiedAiRecommendation =
+                await this.aiRecommendationService.ModifyAiRecommendationAsync(aiRecommendation);
+
             return Ok(modifiedAiRecommendation);
         }
         catch (AiRecommendationValidationException aiRecommendationValidationException)
@@ -149,7 +170,26 @@ public class AiRecommendationsController : ControllerBase
     {
         try
         {
-            AiRecommendation deletedAiRecommendation = await this.aiRecommendationService.RemoveAiRecommendationByIdAsync(id);
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdClaim is null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
+                return Unauthorized();
+
+            bool isAdmin = User.IsInRole("Admin");
+            if (!isAdmin)
+            {
+                AiRecommendation existing =
+                    await this.aiRecommendationService.RetrieveAiRecommendationByIdAsync(id);
+
+                if (existing is null)
+                    return NotFound(new { message = "AI recommendation not found." });
+
+                if (existing.UserId != currentUserId)
+                    return Forbid();
+            }
+
+            AiRecommendation deletedAiRecommendation =
+                await this.aiRecommendationService.RemoveAiRecommendationByIdAsync(id);
+
             return Ok(deletedAiRecommendation);
         }
         catch (AiRecommendationValidationException aiRecommendationValidationException)

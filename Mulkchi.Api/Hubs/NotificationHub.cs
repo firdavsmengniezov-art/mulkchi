@@ -82,6 +82,10 @@ public class NotificationHub : Hub
         var senderId = Context.UserIdentifier;
         if (string.IsNullOrEmpty(senderId)) return;
 
+        // Only admins may send system-wide announcements
+        if (!Context.User!.IsInRole("Admin"))
+            throw new HubException("Unauthorized: Only administrators can broadcast announcements.");
+
         try
         {
             var announcement = new Notification

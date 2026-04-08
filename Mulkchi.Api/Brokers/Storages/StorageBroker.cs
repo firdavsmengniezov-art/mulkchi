@@ -35,11 +35,10 @@ public partial class StorageBroker : DbContext, IStorageBroker
     {
         this.configuration = configuration;
         this.environment = environment;
-
-        if (!this.environment.IsEnvironment("DesignTime") && !this.environment.IsEnvironment("Testing"))
-        {
-            this.Database.Migrate();
-        }
+        // Database migrations must be applied via a dedicated startup task or
+        // init container (e.g. `dotnet ef database update`), not inside the
+        // DbContext constructor.  Running Migrate() here causes race conditions
+        // when multiple API instances start simultaneously.
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

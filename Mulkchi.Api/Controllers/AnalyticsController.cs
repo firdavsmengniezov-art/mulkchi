@@ -5,7 +5,6 @@ using Mulkchi.Api.Brokers.Storages;
 using Mulkchi.Api.Models.Foundations.AI;
 using Mulkchi.Api.Models.Foundations.Properties;
 using Mulkchi.Api.Services.Foundations.AI;
-using System.Linq;
 
 namespace Mulkchi.Api.Controllers;
 
@@ -35,23 +34,16 @@ public class AnalyticsController : ControllerBase
 
             var totalListings = await properties.CountAsync();
             var totalForSale = await properties.CountAsync(p => p.ListingType == ListingType.Sale);
-            var totalForRent = await properties.CountAsync(p => p.ListingType == ListingType.Rent || p.ListingType == ListingType.ShortTermRent);
-            
-            var saleProperties = await properties
+            var totalForRent = await properties.CountAsync(
+                p => p.ListingType == ListingType.Rent || p.ListingType == ListingType.ShortTermRent);
+
+            var averageSalePrice = await properties
                 .Where(p => p.SalePrice.HasValue && p.SalePrice > 0)
-                .ToListAsync();
-            
-            var rentProperties = await properties
+                .AverageAsync(p => (decimal?)p.SalePrice) ?? 0;
+
+            var averageRentPrice = await properties
                 .Where(p => p.MonthlyRent.HasValue && p.MonthlyRent > 0)
-                .ToListAsync();
-            
-            var averageSalePrice = saleProperties.Any() 
-                ? saleProperties.Average(p => p.SalePrice.Value)
-                : 0;
-            
-            var averageRentPrice = rentProperties.Any() 
-                ? rentProperties.Average(p => p.MonthlyRent.Value)
-                : 0;
+                .AverageAsync(p => (decimal?)p.MonthlyRent) ?? 0;
 
             return Ok(new
             {
@@ -62,9 +54,9 @@ public class AnalyticsController : ControllerBase
                 averageRentPrice
             });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+            return StatusCode(500, new { message = "Internal server error." });
         }
     }
 
@@ -73,31 +65,29 @@ public class AnalyticsController : ControllerBase
     {
         try
         {
-            var properties = await this.storageBroker.Properties
+            // GroupBy executed in the database — no ToListAsync() before grouping
+            var regionData = await this.storageBroker.Properties
                 .Where(p => !p.DeletedDate.HasValue)
-                .ToListAsync();
-
-            var regionData = properties
                 .GroupBy(p => p.Region)
                 .Select(g => new
                 {
                     region = g.Key.ToString(),
                     listingsCount = g.Count(),
-                    averageSalePrice = g.Where(p => p.SalePrice.HasValue && p.SalePrice > 0).Any()
-                        ? g.Where(p => p.SalePrice.HasValue && p.SalePrice > 0).Average(p => p.SalePrice.Value)
-                        : 0,
-                    averageRentPrice = g.Where(p => p.MonthlyRent.HasValue && p.MonthlyRent > 0).Any()
-                        ? g.Where(p => p.MonthlyRent.HasValue && p.MonthlyRent > 0).Average(p => p.MonthlyRent.Value)
-                        : 0
+                    averageSalePrice = g
+                        .Where(p => p.SalePrice.HasValue && p.SalePrice > 0)
+                        .Average(p => (decimal?)p.SalePrice) ?? 0,
+                    averageRentPrice = g
+                        .Where(p => p.MonthlyRent.HasValue && p.MonthlyRent > 0)
+                        .Average(p => (decimal?)p.MonthlyRent) ?? 0
                 })
                 .OrderByDescending(r => r.listingsCount)
-                .ToList();
+                .ToListAsync();
 
             return Ok(regionData);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+            return StatusCode(500, new { message = "Internal server error." });
         }
     }
 
@@ -107,32 +97,27 @@ public class AnalyticsController : ControllerBase
         try
         {
             var twelveMonthsAgo = DateTimeOffset.UtcNow.AddMonths(-12);
-            
-            var properties = await this.storageBroker.Properties
+
+            // GroupBy executed in the database — no ToListAsync() before grouping
+            var priceTrends = await this.storageBroker.Properties
                 .Where(p => !p.DeletedDate.HasValue && p.CreatedDate >= twelveMonthsAgo)
-                .ToListAsync();
-            
-            var priceTrends = properties
-                .GroupBy(p => new { 
-                    Year = p.CreatedDate.Year, 
-                    Month = p.CreatedDate.Month 
-                })
+                .GroupBy(p => new { p.CreatedDate.Year, p.CreatedDate.Month })
                 .Select(g => new
                 {
                     month = $"{g.Key.Year}-{g.Key.Month:D2}",
-                    averagePrice = g.Where(p => p.SalePrice.HasValue && p.SalePrice > 0).Any()
-                        ? g.Where(p => p.SalePrice.HasValue && p.SalePrice > 0).Average(p => p.SalePrice.Value)
-                        : 0,
+                    averagePrice = g
+                        .Where(p => p.SalePrice.HasValue && p.SalePrice > 0)
+                        .Average(p => (decimal?)p.SalePrice) ?? 0,
                     listingsCount = g.Count()
                 })
                 .OrderBy(x => x.month)
-                .ToList();
+                .ToListAsync();
 
             return Ok(priceTrends);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+            return StatusCode(500, new { message = "Internal server error." });
         }
     }
 
@@ -144,14 +129,14 @@ public class AnalyticsController : ControllerBase
             var prediction = await this.priceRecommendationService.PredictPriceAsync(request);
             return Ok(prediction);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+            return StatusCode(500, new { message = "Internal server error." });
         }
     }
 
     [HttpPost("train-model")]
-    [Authorize(Roles = "Admin")] // Only admins can trigger model training
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult> TrainModel()
     {
         try
@@ -159,9 +144,9 @@ public class AnalyticsController : ControllerBase
             await this.priceRecommendationService.TrainModelAsync();
             return Ok(new { message = "Model training completed successfully" });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+            return StatusCode(500, new { message = "Internal server error." });
         }
     }
 
@@ -181,9 +166,9 @@ public class AnalyticsController : ControllerBase
                 needsTraining = trainingDataCount >= 10 && !isTrained
             });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+            return StatusCode(500, new { message = "Internal server error." });
         }
     }
 }
