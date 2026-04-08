@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { LoggingService } from './logging.service';
 
 import {
   CreateHomeRequestRequest,
@@ -16,7 +17,8 @@ import {
 export class HomeRequestService {
   private readonly apiUrl = `${environment.apiUrl}/home-requests`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient,
+    private logger: LoggingService) {}
 
   getHomeRequests(
     page = 1,
@@ -64,7 +66,7 @@ export class HomeRequestService {
   }
 
   private handleError(error: any): Observable<never> {
-    console.error('HomeRequestService error:', error);
+    this.logger.error('HomeRequestService error:', error);
     let errorMessage = 'An error occurred with home requests';
 
     if (error.error?.message) {

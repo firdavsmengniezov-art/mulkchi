@@ -9,6 +9,7 @@ import {
 import { Property } from '../../../core/models/property.model';
 import { BookingService } from '../../../core/services/booking.service';
 import { DiscountService } from '../../../core/services/discount.service';
+import { LoggingService } from '../../../core/services/logging.service';
 
 @Component({
   selector: 'app-booking-form',
@@ -204,7 +205,7 @@ export class BookingFormComponent implements OnInit {
     private fb: FormBuilder,
     private bookingService: BookingService,
     private discountService: DiscountService,
-  ) {}
+    private logger: LoggingService) {}
 
   ngOnInit(): void {
     this.initializeForm();
@@ -299,7 +300,7 @@ export class BookingFormComponent implements OnInit {
       error: (err: any) => {
         this.isValidatingDiscount = false;
         this.discountError = 'Promo kodni tekshirishda xatolik yuz berdi';
-        console.error('Discount validation error:', err);
+        this.logger.error('Discount validation error:', err);
       },
     });
   }

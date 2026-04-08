@@ -9,6 +9,7 @@ import { Property } from '../../core/models';
 import { PropertyService } from '../../core/services/property.service';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { PropertyCardComponent } from '../../shared/components/property-card/property-card.component';
+import { LoggingService } from '../../core/services/logging.service';
 
 interface PagedResult<T> {
   items: T[];
@@ -64,6 +65,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   private propertyService = inject(PropertyService);
   private router = inject(Router);
   private destroy$ = new Subject<void>();
+  private logger = inject(LoggingService);
 
   ngOnInit() {
     this.loading = true;
@@ -83,7 +85,7 @@ export class HomeComponent implements OnInit, OnDestroy {
           this.loading = false;
         },
         error: (err) => {
-          console.error('Error loading properties:', err);
+          this.logger.error('Error loading properties:', err);
           this.loading = false;
         },
       });

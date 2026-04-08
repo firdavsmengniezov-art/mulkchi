@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { LoggingService } from './logging.service';
 
 import { 
   AiRecommendation, 
@@ -17,7 +18,8 @@ import {
 export class AiRecommendationService {
   private readonly apiUrl = `${environment.apiUrl}/ai-recommendations`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient,
+    private logger: LoggingService) {}
 
   // Get recommendations for users
   getRecommendations(request: RecommendationRequest = {}): Observable<AiRecommendation[]> {
@@ -191,7 +193,7 @@ export class AiRecommendationService {
   }
 
   private handleError(error: any): Observable<never> {
-    console.error('AiRecommendationService error:', error);
+    this.logger.error('AiRecommendationService error:', error);
     let errorMessage = 'An error occurred with AI recommendations';
     
     if (error.error?.message) {

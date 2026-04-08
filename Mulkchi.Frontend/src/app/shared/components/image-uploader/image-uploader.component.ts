@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 
 import { PropertyImageService } from '../../../core/services/property-image.service';
 import { PropertyImage, PropertyImageUploadRequest } from '../../../core/models/property-image.model';
+import { LoggingService } from '../../../core/services/logging.service';
 
 @Component({
   selector: 'app-image-uploader',
@@ -29,7 +30,8 @@ export class ImageUploaderComponent implements OnInit {
   isUploading = false;
   dragOver = false;
 
-  constructor(private propertyImageService: PropertyImageService) {}
+  constructor(private propertyImageService: PropertyImageService,
+    private logger: LoggingService) {}
 
   ngOnInit(): void {
     // Initialize with existing images
@@ -135,7 +137,7 @@ export class ImageUploaderComponent implements OnInit {
         }
       },
       error: (error) => {
-        console.error('Upload error:', error);
+        this.logger.error('Upload error:', error);
         alert(`Upload failed: ${error}`);
         this.isUploading = false;
       },
@@ -152,7 +154,7 @@ export class ImageUploaderComponent implements OnInit {
           this.imageDeleted.emit(imageId);
         },
         error: (error) => {
-          console.error('Delete error:', error);
+          this.logger.error('Delete error:', error);
           alert(`Delete failed: ${error}`);
         }
       });
@@ -170,7 +172,7 @@ export class ImageUploaderComponent implements OnInit {
         }
       },
       error: (error) => {
-        console.error('Set primary error:', error);
+        this.logger.error('Set primary error:', error);
         alert(`Failed to set primary image: ${error}`);
       }
     });

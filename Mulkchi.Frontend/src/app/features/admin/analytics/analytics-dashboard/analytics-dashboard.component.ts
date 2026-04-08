@@ -15,6 +15,7 @@ import {
   ViewAnalytics,
 } from '../../../../core/models/dashboard-analytics.model';
 import { DashboardAnalyticsService } from '../../../../core/services/dashboard-analytics.service';
+import { LoggingService } from '../../../../core/services/logging.service';
 
 @Component({
   selector: 'app-analytics-dashboard',
@@ -43,7 +44,8 @@ export class AnalyticsDashboardComponent implements OnInit, OnDestroy {
 
   private subscriptions: Subscription[] = [];
 
-  constructor(private analyticsService: DashboardAnalyticsService) {}
+  constructor(private analyticsService: DashboardAnalyticsService,
+    private logger: LoggingService) {}
 
   ngOnInit(): void {
     this.loadAnalytics();
@@ -67,7 +69,7 @@ export class AnalyticsDashboardComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.error = "Analitik ma'lumotlarni yuklashda xatolik";
-          console.error('Error loading analytics:', err);
+          this.logger.error('Error loading analytics:', err);
           this.loading = false;
         },
       });
@@ -232,7 +234,7 @@ export class AnalyticsDashboardComponent implements OnInit, OnDestroy {
           window.URL.revokeObjectURL(url);
         },
         error: (err) => {
-          console.error('Error exporting data:', err);
+          this.logger.error('Error exporting data:', err);
           alert("Ma'lumotlarni eksport qilishda xatolik");
         },
       });

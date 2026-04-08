@@ -5,6 +5,7 @@ import { NotificationService } from './core/services/notification.service';
 import { AuthService } from './core/services/auth.service';
 import { FavoriteService } from './core/services/favorite.service';
 import { LanguageService } from './core/services/language.service';
+import { LoggingService } from './core/services/logging.service';
 
 @Component({
   selector: 'app-root',
@@ -20,8 +21,8 @@ export class AppComponent implements OnInit {
     private notificationService: NotificationService,
     private authService: AuthService,
     private favoriteService: FavoriteService,
-    private languageService: LanguageService
-  ) {}
+    private languageService: LanguageService,
+    private logger: LoggingService) {}
 
   ngOnInit(): void {
     // Initialize language
@@ -34,7 +35,7 @@ export class AppComponent implements OnInit {
         next: () => this.subscribeToUser(), // Token restored, start services
         error: () => {
           // Token expired. We cleanly wipe state so nothing tries to load auth data
-          console.warn('Session expired. Cleaning up local state.');
+          this.logger.warn('Session expired. Cleaning up local state.');
           this.authService.clearAuth();
           this.subscribeToUser(); 
         }

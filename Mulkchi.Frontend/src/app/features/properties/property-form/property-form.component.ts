@@ -8,6 +8,7 @@ import { PropertyService } from '../../../core/services/property.service';
 import { PropertyImageService } from '../../../core/services/property-image.service';
 import { Property, PropertyImage } from '../../../core/models';
 import { ImageUploaderComponent } from '../../../shared/components/image-uploader/image-uploader.component';
+import { LoggingService } from '../../../core/services/logging.service';
 
 @Component({
   selector: 'app-property-form',
@@ -55,8 +56,8 @@ export class PropertyFormComponent implements OnInit {
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private propertyService: PropertyService,
-    private propertyImageService: PropertyImageService
-  ) {}
+    private propertyImageService: PropertyImageService,
+    private logger: LoggingService) {}
 
   ngOnInit(): void {
     this.checkEditMode();
@@ -81,7 +82,7 @@ export class PropertyFormComponent implements OnInit {
         this.loading = false;
       },
       error: (error: any) => {
-        console.error('Error loading property:', error);
+        this.logger.error('Error loading property:', error);
         alert('Failed to load property');
         this.loading = false;
       }
@@ -96,7 +97,7 @@ export class PropertyFormComponent implements OnInit {
         this.propertyImages = images;
       },
       error: (error: any) => {
-        console.error('Error loading images:', error);
+        this.logger.error('Error loading images:', error);
       }
     });
   }
@@ -131,7 +132,7 @@ export class PropertyFormComponent implements OnInit {
         }
       },
       error: (error: any) => {
-        console.error('Error saving property:', error);
+        this.logger.error('Error saving property:', error);
         alert(`Failed to save property: ${error}`);
         this.saving = false;
       }

@@ -13,6 +13,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { FavoriteService } from '../../../core/services/favorite.service';
 import { Favorite, PagedResult } from '../../../core/models/favorite.models';
+import { LoggingService } from '../../../core/services/logging.service';
 
 @Component({
   selector: 'app-favorites-page',
@@ -44,8 +45,8 @@ export class FavoritesPageComponent implements OnInit, OnDestroy {
 
   constructor(
     private favoriteService: FavoriteService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private logger: LoggingService) {}
 
   ngOnInit(): void {
     this.loadFavorites();
@@ -65,7 +66,7 @@ export class FavoritesPageComponent implements OnInit, OnDestroy {
           this.loading = false;
         },
         error: (err) => {
-          console.error('Failed to load favorites:', err);
+          this.logger.error('Failed to load favorites:', err);
           this.loading = false;
         }
       });
@@ -96,7 +97,7 @@ export class FavoritesPageComponent implements OnInit, OnDestroy {
           }
         },
         error: (err) => {
-          console.error('Failed to remove favorite:', err);
+          this.logger.error('Failed to remove favorite:', err);
         }
       });
   }

@@ -11,6 +11,7 @@ import { finalize, Subject, takeUntil } from 'rxjs';
 import { ReviewService } from '../../../core/services/review.service';
 import { CreateReviewRequest, Review } from '../../../core/models/review.model';
 import { StarRatingComponent } from '../../../shared/components/star-rating/star-rating.component';
+import { LoggingService } from '../../../core/services/logging.service';
 
 export interface ReviewFormDialogData {
   propertyId: string;
@@ -45,8 +46,8 @@ export class ReviewFormComponent implements OnInit {
     private fb: FormBuilder,
     private reviewService: ReviewService,
     public dialogRef: MatDialogRef<ReviewFormComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: ReviewFormDialogData
-  ) {}
+    @Inject(MAT_DIALOG_DATA) public data: ReviewFormDialogData,
+    private logger: LoggingService) {}
 
   ngOnInit(): void {
     this.isEditMode = !!this.data.existingReview;
@@ -104,7 +105,7 @@ export class ReviewFormComponent implements OnInit {
           this.dialogRef.close(review);
         },
         error: (err) => {
-          console.error('Failed to save review:', err);
+          this.logger.error('Failed to save review:', err);
         }
       });
   }

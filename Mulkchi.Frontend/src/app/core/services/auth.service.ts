@@ -4,6 +4,7 @@ import { Observable, BehaviorSubject, tap, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { LoginRequest, RegisterRequest, AuthUserInfo, AuthUser, UserRole } from '../models/auth.model';
+import { LoggingService } from './logging.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -23,7 +24,8 @@ export class AuthService {
    */
   private accessToken$ = new BehaviorSubject<string | null>(null);
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient,
+    private logger: LoggingService) {
     const saved = localStorage.getItem('auth_user');
     if (saved && saved !== 'undefined' && saved !== 'null') {
       try {
@@ -101,7 +103,7 @@ export class AuthService {
   }
 
   private handleError(error: HttpErrorResponse) {
-    console.error('Auth API Error:', error);
+    this.logger.error('Auth API Error:', error);
     return throwError(() => error);
   }
 

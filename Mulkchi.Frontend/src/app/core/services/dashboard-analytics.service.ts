@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { LoggingService } from './logging.service';
 
 import {
   AnalyticsFilters,
@@ -23,7 +24,8 @@ import {
 export class DashboardAnalyticsService {
   private readonly apiUrl = `${environment.apiUrl}/analytics`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient,
+    private logger: LoggingService) {}
 
   // Get complete dashboard analytics
   getDashboardAnalytics(filters?: AnalyticsFilters): Observable<DashboardAnalytics> {
@@ -301,7 +303,7 @@ export class DashboardAnalyticsService {
   }
 
   private handleError(error: any): Observable<never> {
-    console.error('DashboardAnalyticsService error:', error);
+    this.logger.error('DashboardAnalyticsService error:', error);
     let errorMessage = 'An error occurred with analytics data';
 
     if (error.error?.message) {

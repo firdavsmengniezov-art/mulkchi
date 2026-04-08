@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { LoggingService } from '../../../core/services/logging.service';
 
 @Component({
   selector: 'app-contract-view',
@@ -25,11 +26,11 @@ export class ContractViewComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private location: Location
-  ) {}
+    private location: Location,
+    private logger: LoggingService) {}
 
   ngOnInit(): void {
-    console.log('ContractViewComponent initialized');
+    this.logger.log('ContractViewComponent initialized');
   }
 
   goBack(): void {

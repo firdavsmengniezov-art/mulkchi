@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 
 import { Announcement, AnnouncementPriority, AnnouncementType } from '../../../core/models';
 import { AnnouncementService } from '../../../core/services/announcement.service';
+import { LoggingService } from '../../../core/services/logging.service';
 
 @Component({
   selector: 'app-announcement-list',
@@ -34,7 +35,7 @@ export class AnnouncementListComponent implements OnInit {
   constructor(
     private announcementService: AnnouncementService,
     private router: Router,
-  ) {}
+    private logger: LoggingService) {}
 
   ngOnInit(): void {
     this.loadAnnouncements();
@@ -52,7 +53,7 @@ export class AnnouncementListComponent implements OnInit {
       },
       error: (err) => {
         this.error = 'Failed to load announcements';
-        console.error('Error loading announcements:', err);
+        this.logger.error('Error loading announcements:', err);
         this.loading = false;
       },
     });
@@ -80,7 +81,7 @@ export class AnnouncementListComponent implements OnInit {
         }
       },
       error: (err) => {
-        console.error('Error toggling announcement status:', err);
+        this.logger.error('Error toggling announcement status:', err);
         alert('Failed to update announcement status');
       },
     });
@@ -94,7 +95,7 @@ export class AnnouncementListComponent implements OnInit {
           this.totalCount--;
         },
         error: (err) => {
-          console.error('Error deleting announcement:', err);
+          this.logger.error('Error deleting announcement:', err);
           alert('Failed to delete announcement');
         },
       });

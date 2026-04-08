@@ -10,6 +10,7 @@ import {
   UpdateAnnouncementRequest,
 } from '../../../core/models';
 import { AnnouncementService } from '../../../core/services/announcement.service';
+import { LoggingService } from '../../../core/services/logging.service';
 
 @Component({
   selector: 'app-announcement-form',
@@ -45,7 +46,7 @@ export class AnnouncementFormComponent implements OnInit {
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private location: Location,
-  ) {}
+    private logger: LoggingService) {}
 
   ngOnInit(): void {
     this.checkEditMode();
@@ -81,7 +82,7 @@ export class AnnouncementFormComponent implements OnInit {
       },
       error: (err) => {
         this.error = 'Failed to load announcement';
-        console.error('Error loading announcement:', err);
+        this.logger.error('Error loading announcement:', err);
         this.loading = false;
       },
     });
@@ -113,7 +114,7 @@ export class AnnouncementFormComponent implements OnInit {
       },
       error: (err) => {
         this.error = `Failed to ${this.isEditMode ? 'update' : 'create'} announcement`;
-        console.error('Error saving announcement:', err);
+        this.logger.error('Error saving announcement:', err);
         this.saving = false;
       },
     });

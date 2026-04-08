@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { LoggingService } from './logging.service';
 
 import {
   CreateUserRequest,
@@ -20,7 +21,8 @@ import {
 export class UserService {
   private readonly apiUrl = `${environment.apiUrl}/users`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient,
+    private logger: LoggingService) {}
 
   getCurrentUser(): Observable<UserResponse> {
     return this.http.get<UserResponse>(`${this.apiUrl}/me`).pipe(catchError(this.handleError));
@@ -179,7 +181,7 @@ export class UserService {
   }
 
   private handleError(error: any): Observable<never> {
-    console.error('UserService error:', error);
+    this.logger.error('UserService error:', error);
     let errorMessage = 'An error occurred with user operations';
 
     if (error.error?.message) {

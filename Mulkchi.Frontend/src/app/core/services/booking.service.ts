@@ -4,12 +4,14 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { Booking, CreateBookingRequest, BookingResponse, BookingStatus, PagedResult } from '../models';
+import { LoggingService } from './logging.service';
 
 @Injectable({ providedIn: 'root' })
 export class BookingService {
   private readonly apiUrl = environment.apiUrl;
   
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient,
+    private logger: LoggingService) {}
 
   // Get all bookings (admin)
   getBookings(page: number = 1, pageSize: number = 10): Observable<PagedResult<Booking>> { 
@@ -87,7 +89,7 @@ export class BookingService {
   }
 
   private handleError(error: HttpErrorResponse) {
-    console.error('Booking API Error:', error);
+    this.logger.error('Booking API Error:', error);
     return throwError(() => error);
   }
 

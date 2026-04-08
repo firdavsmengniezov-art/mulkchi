@@ -17,6 +17,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { ChatService, Message, Conversation } from '../../../core/services/chat.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { LoggingService } from '../../../core/services/logging.service';
 
 @Component({
   selector: 'app-chat',
@@ -60,8 +61,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     private chatService: ChatService,
     private authService: AuthService,
     private route: ActivatedRoute,
-    private router: Router
-  ) {}
+    private router: Router,
+    private logger: LoggingService) {}
 
   ngOnInit(): void {
     this.currentUserId = this.authService.currentUser$.value?.id || '';
@@ -165,7 +166,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.stopTyping();
       })
       .catch(err => {
-        console.error('Failed to send message:', err);
+        this.logger.error('Failed to send message:', err);
       });
   }
 

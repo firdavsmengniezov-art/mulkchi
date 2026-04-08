@@ -11,6 +11,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { Notification, NotificationType } from '../../../../core/models/notification.models';
 import { RelativeTimePipe } from '../../../../core/pipes/relative-time.pipe';
+import { LoggingService } from '../../../../core/services/logging.service';
 
 @Component({
   selector: 'app-notification-bell',
@@ -36,8 +37,8 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
 
   constructor(
     private notificationService: NotificationService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private logger: LoggingService) {}
 
   ngOnInit(): void {
     this.setupSubscriptions();
@@ -74,7 +75,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
             this.unreadCount = Math.max(0, this.unreadCount - 1);
           },
           error: (err) => {
-            console.error('Failed to mark notification as read:', err);
+            this.logger.error('Failed to mark notification as read:', err);
           }
         });
     }
@@ -90,7 +91,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
           this.unreadCount = 0;
         },
         error: (err) => {
-          console.error('Failed to mark all notifications as read:', err);
+          this.logger.error('Failed to mark all notifications as read:', err);
         }
       });
   }
@@ -109,7 +110,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
           }
         },
         error: (err) => {
-          console.error('Failed to delete notification:', err);
+          this.logger.error('Failed to delete notification:', err);
         }
       });
   }

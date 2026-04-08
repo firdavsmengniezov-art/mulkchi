@@ -12,6 +12,7 @@ import { ReviewService } from '../../../core/services/review.service';
 import { Review, ReviewSummary, PagedResult } from '../../../core/models/review.model';
 import { ReviewFormComponent, ReviewFormDialogData } from '../review-form/review-form.component';
 import { StarRatingComponent } from '../../../shared/components/star-rating/star-rating.component';
+import { LoggingService } from '../../../core/services/logging.service';
 
 @Component({
   selector: 'app-reviews-list',
@@ -46,8 +47,8 @@ export class ReviewsListComponent implements OnInit, OnDestroy {
 
   constructor(
     private reviewService: ReviewService,
-    private dialog: MatDialog
-  ) {}
+    private dialog: MatDialog,
+    private logger: LoggingService) {}
 
   ngOnInit(): void {
     this.loadReviews();
@@ -72,7 +73,7 @@ export class ReviewsListComponent implements OnInit, OnDestroy {
           this.loading = false;
         },
         error: (err) => {
-          console.error('Failed to load reviews:', err);
+          this.logger.error('Failed to load reviews:', err);
           this.loading = false;
         }
       });
@@ -88,7 +89,7 @@ export class ReviewsListComponent implements OnInit, OnDestroy {
           this.reviewSummary = summary;
         },
         error: (err) => {
-          console.error('Failed to load review summary:', err);
+          this.logger.error('Failed to load review summary:', err);
         }
       });
   }
@@ -137,7 +138,7 @@ export class ReviewsListComponent implements OnInit, OnDestroy {
           this.loadReviewSummary();
         },
         error: (err) => {
-          console.error('Failed to delete review:', err);
+          this.logger.error('Failed to delete review:', err);
         }
       });
   }

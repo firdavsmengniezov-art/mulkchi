@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { AiRecommendationService } from '../../../core/services/ai-recommendation.service';
 import { AiRecommendation, RecommendationType } from '../../../core/models/ai-recommendation.model';
 import { Subscription } from 'rxjs';
+import { LoggingService } from '../../../core/services/logging.service';
 
 @Component({
   selector: 'app-ai-recommendations',
@@ -29,8 +30,8 @@ export class AiRecommendationsComponent implements OnInit, OnDestroy {
 
   constructor(
     private aiRecommendationService: AiRecommendationService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private logger: LoggingService) {}
 
   ngOnInit(): void {
     if (this.autoLoad) {
@@ -67,7 +68,7 @@ export class AiRecommendationsComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.error = 'Tavsiyalarni yuklashda xatolik';
-        console.error('Error loading recommendations:', err);
+        this.logger.error('Error loading recommendations:', err);
         this.loading = false;
       }
     });
@@ -78,7 +79,7 @@ export class AiRecommendationsComponent implements OnInit, OnDestroy {
   onViewRecommendation(recommendation: AiRecommendation): void {
     // Track view
     this.aiRecommendationService.trackRecommendationView(recommendation.id).subscribe({
-      error: (err) => console.error('Error tracking view:', err)
+      error: (err) => this.logger.error('Error tracking view:', err)
     });
 
     // Mark as viewed locally
@@ -91,7 +92,7 @@ export class AiRecommendationsComponent implements OnInit, OnDestroy {
   onPropertyClick(propertyId: string, recommendation: AiRecommendation): void {
     // Track click
     this.aiRecommendationService.trackRecommendationClick(recommendation.id).subscribe({
-      error: (err) => console.error('Error tracking click:', err)
+      error: (err) => this.logger.error('Error tracking click:', err)
     });
 
     // Mark as clicked locally

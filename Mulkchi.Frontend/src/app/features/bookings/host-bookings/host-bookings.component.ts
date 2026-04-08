@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { BookingService } from '../../../core/services/booking.service';
 import { Booking, BookingStatus } from '../../../core/models/booking.model';
 import { PagedResult } from '../../../core/models/paged-result.model';
+import { LoggingService } from '../../../core/services/logging.service';
 
 @Component({
   selector: 'app-host-bookings',
@@ -128,7 +129,8 @@ export class HostBookingsComponent implements OnInit {
   totalCount = 0;
   totalPages = 0;
 
-  constructor(private bookingService: BookingService) {}
+  constructor(private bookingService: BookingService,
+    private logger: LoggingService) {}
 
   ngOnInit(): void {
     this.loadBookings();
@@ -144,7 +146,7 @@ export class HostBookingsComponent implements OnInit {
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error loading host bookings:', error);
+        this.logger.error('Error loading host bookings:', error);
         this.isLoading = false;
       }
     });
@@ -177,7 +179,7 @@ export class HostBookingsComponent implements OnInit {
           this.loadBookings();
         },
         error: (error) => {
-          console.error('Error confirming booking:', error);
+          this.logger.error('Error confirming booking:', error);
           alert('Bronni tasdiqlashda xatolik yuz berdi.');
         }
       });
@@ -192,7 +194,7 @@ export class HostBookingsComponent implements OnInit {
           this.loadBookings();
         },
         error: (error) => {
-          console.error('Error cancelling booking:', error);
+          this.logger.error('Error cancelling booking:', error);
           alert('Bronni rad etishda xatolik yuz berdi.');
         }
       });

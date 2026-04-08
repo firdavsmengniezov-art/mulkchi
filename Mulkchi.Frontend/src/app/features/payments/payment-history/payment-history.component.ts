@@ -13,6 +13,7 @@ import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { PaymentService } from '../../../core/services/payment.service';
+import { LoggingService } from '../../../core/services/logging.service';
 import { 
   Payment, 
   PaymentStatus, 
@@ -53,8 +54,8 @@ export class PaymentHistoryComponent implements OnInit, OnDestroy {
 
   constructor(
     private paymentService: PaymentService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private logger: LoggingService) {}
 
   ngOnInit(): void {
     this.loadPayments();
@@ -75,7 +76,7 @@ export class PaymentHistoryComponent implements OnInit, OnDestroy {
           this.loading = false;
         },
         error: (err) => {
-          console.error('Failed to load payments:', err);
+          this.logger.error('Failed to load payments:', err);
           this.loading = false;
         }
       });
@@ -113,7 +114,7 @@ export class PaymentHistoryComponent implements OnInit, OnDestroy {
           payment.status = PaymentStatus.Cancelled;
         },
         error: (err) => {
-          console.error('Failed to cancel payment:', err);
+          this.logger.error('Failed to cancel payment:', err);
         }
       });
   }

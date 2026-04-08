@@ -5,6 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { RegisterRequest } from '../../../core/models/auth.model';
+import { LoggingService } from '../../../core/services/logging.service';
 
 @Component({
   selector: 'app-register',
@@ -29,6 +30,7 @@ export class RegisterComponent {
 
   private authService = inject(AuthService);
   private router = inject(Router);
+  private logger = inject(LoggingService);
 
   register() {
     if (!this.firstName || !this.email || !this.password || !this.phone) {
@@ -63,7 +65,7 @@ export class RegisterComponent {
         } else {
           this.errorMsg = 'Ro\'yxatdan o\'tishda xatolik. Iltimos, qayta urinib ko\'ring.';
         }
-        console.error('Registration error:', err);
+        this.logger.error('Registration error:', err);
       }
     });
   }
