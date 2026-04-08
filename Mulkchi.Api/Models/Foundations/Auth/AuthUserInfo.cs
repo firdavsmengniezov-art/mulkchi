@@ -15,6 +15,9 @@ public class AuthUserInfo
 {
     public Guid UserId { get; set; }
     public string Email { get; set; }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public string AvatarUrl { get; set; }
     public UserRole Role { get; set; }
     public DateTimeOffset ExpiresAt { get; set; }
 
@@ -30,6 +33,9 @@ public class AuthUserInfo
     {
         UserId = response.UserId;
         Email = response.Email;
+        FirstName = response.FirstName;
+        LastName = response.LastName;
+        AvatarUrl = response.AvatarUrl;
         Role = response.Role;
         ExpiresAt = response.ExpiresAt;
         AccessToken = response.Token;

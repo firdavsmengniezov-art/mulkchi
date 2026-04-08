@@ -5,12 +5,6 @@ import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { RegisterRequest } from '../../../core/models/auth.model';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-register',
@@ -19,13 +13,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     CommonModule, 
     FormsModule, 
     RouterModule,
-    TranslateModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressSpinnerModule
+    TranslateModule
   ],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss']
@@ -48,16 +36,10 @@ export class RegisterComponent {
       return;
     }
     
-    // Generate random email for testing
-    const randomSuffix = Math.random().toString(36).substring(7);
-    const testEmail = this.email.includes('@') 
-      ? this.email.split('@')[0] + '+' + randomSuffix + '@' + this.email.split('@')[1]
-      : this.email;
-    
     const registerRequest: RegisterRequest = {
       firstName: this.firstName,
       lastName: this.lastName,
-      email: testEmail, // Random email
+      email: this.email,
       phone: this.phone,
       password: this.password,
       preferredLanguage: 'uz'
@@ -66,7 +48,6 @@ export class RegisterComponent {
     this.loading = true;
     this.errorMsg = '';
     
-    // Use actual AuthService
     this.authService.register(registerRequest).subscribe({
       next: (response) => {
         this.loading = false;
@@ -75,15 +56,13 @@ export class RegisterComponent {
       error: (err) => {
         this.loading = false;
         
-        // Handle specific error cases
         if (err.status === 409) {
           this.errorMsg = 'Bu email allaqachon ro\'yxatdan o\'tgan. Iltimos, boshqa emaildan foydalaning.';
         } else if (err.status === 400) {
           this.errorMsg = 'Ma\'lumotlar noto\'g\'ri. Iltimos, barcha maydonlarni to\'g\'ri to\'ldiring.';
         } else {
-          this.errorMsg = 'Ro\'yxatdan o\'tish xatolik. Iltimos, qayta urinib ko\'ring.';
+          this.errorMsg = 'Ro\'yxatdan o\'tishda xatolik. Iltimos, qayta urinib ko\'ring.';
         }
-        
         console.error('Registration error:', err);
       }
     });

@@ -30,7 +30,6 @@ using Mulkchi.Api.Services.Foundations.Auth;
 using Mulkchi.Api.Services.Foundations.Bookings;
 using Mulkchi.Api.Services.Foundations.AI;
 using Mulkchi.Api.Middleware;
-using Mulkchi.Api.Middlewares;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
@@ -292,7 +291,8 @@ public class Startup
         services.AddScoped<IAnnouncementService, AnnouncementService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IBookingService, BookingService>();
-        services.AddScoped<IUserConnectionTracker, UserConnectionTracker>();
+        // Singleton: connection tracker must outlive individual HTTP requests
+        services.AddSingleton<IUserConnectionTracker, UserConnectionTracker>();
         services.AddScoped<IPriceRecommendationService, PriceRecommendationService>();
         
         // Configure EmailSettings

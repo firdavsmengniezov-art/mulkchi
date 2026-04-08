@@ -12,7 +12,7 @@ import { ProfileEditComponent } from './profile-edit.component';
   template: `
     <div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
       <div *ngIf="loading" class="flex justify-center items-center py-20">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-brand"></div>
       </div>
 
       <div *ngIf="!loading && user" class="bg-white shadow rounded-lg overflow-hidden">
@@ -57,7 +57,7 @@ import { ProfileEditComponent } from './profile-edit.component';
             <button
               *ngIf="!editing"
               (click)="editing = true"
-              class="inline-flex cursor-pointer items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+              class="inline-flex cursor-pointer items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-brand hover:opacity-90 transition"
             >
               Edit Profile
             </button>

@@ -83,8 +83,9 @@ export class AuthService {
       id: res.userId,
       email: res.email,
       role: res.role,
-      firstName: '',
-      lastName: ''
+      firstName: res.firstName ?? '',
+      lastName: res.lastName ?? '',
+      avatarUrl: res.avatarUrl ?? undefined
     };
     localStorage.setItem('auth_user', JSON.stringify(user));
     this.currentUser$.next(user);
@@ -93,7 +94,7 @@ export class AuthService {
     this.accessToken$.next(res.accessToken ?? null);
   }
 
-  private clearAuth(): void {
+  clearAuth(): void {
     localStorage.removeItem('auth_user');
     this.currentUser$.next(null);
     this.accessToken$.next(null);
