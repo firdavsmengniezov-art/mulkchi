@@ -8,6 +8,7 @@ using Mulkchi.Api.Brokers.DateTimes;
 using Mulkchi.Api.Brokers.Loggings;
 using Mulkchi.Api.Brokers.Storages;
 using Mulkchi.Api.Brokers.Tokens;
+using Mulkchi.Api.Brokers.Notifications;
 using Mulkchi.Api.Models.Foundations.Auth;
 using Mulkchi.Api.Models.Foundations.Users;
 using Mulkchi.Api.Services.Foundations.Auth;
@@ -20,6 +21,7 @@ public partial class AuthServiceTests
     private readonly Mock<ILoggingBroker> loggingBrokerMock;
     private readonly Mock<IDateTimeBroker> dateTimeBrokerMock;
     private readonly Mock<ITokenBroker> tokenBrokerMock;
+    private readonly Mock<IEmailBroker> emailBrokerMock;
     private readonly IAuthService authService;
 
     public AuthServiceTests()
@@ -28,12 +30,14 @@ public partial class AuthServiceTests
         this.loggingBrokerMock = new Mock<ILoggingBroker>();
         this.dateTimeBrokerMock = new Mock<IDateTimeBroker>();
         this.tokenBrokerMock = new Mock<ITokenBroker>();
+        this.emailBrokerMock = new Mock<IEmailBroker>();
 
         this.authService = new AuthService(
             this.storageBrokerMock.Object,
             this.loggingBrokerMock.Object,
             this.dateTimeBrokerMock.Object,
-            this.tokenBrokerMock.Object);
+            this.tokenBrokerMock.Object,
+            this.emailBrokerMock.Object);
     }
 
     private static IConfiguration CreateTestConfiguration() =>

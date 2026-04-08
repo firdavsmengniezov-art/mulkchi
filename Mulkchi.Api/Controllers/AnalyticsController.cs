@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Mulkchi.Api.Brokers.Storages;
 using Mulkchi.Api.Models.Foundations.AI;
-using Mulkchi.Api.Models.Foundations.Properties;
 using Mulkchi.Api.Services.Foundations.AI;
+using Mulkchi.Api.Services.Foundations.Analytics;
+using System;
+using System.Threading.Tasks;
 
 namespace Mulkchi.Api.Controllers;
 
@@ -12,14 +12,14 @@ namespace Mulkchi.Api.Controllers;
 [Route("api/[controller]")]
 public class AnalyticsController : ControllerBase
 {
-    private readonly StorageBroker storageBroker;
+    private readonly IAnalyticsService analyticsService;
     private readonly IPriceRecommendationService priceRecommendationService;
 
     public AnalyticsController(
-        StorageBroker storageBroker,
+        IAnalyticsService analyticsService,
         IPriceRecommendationService priceRecommendationService)
     {
-        this.storageBroker = storageBroker;
+        this.analyticsService = analyticsService;
         this.priceRecommendationService = priceRecommendationService;
     }
 
@@ -28,31 +28,8 @@ public class AnalyticsController : ControllerBase
     {
         try
         {
-            var properties = this.storageBroker.Properties
-                .Where(p => !p.DeletedDate.HasValue)
-                .AsQueryable();
-
-            var totalListings = await properties.CountAsync();
-            var totalForSale = await properties.CountAsync(p => p.ListingType == ListingType.Sale);
-            var totalForRent = await properties.CountAsync(
-                p => p.ListingType == ListingType.Rent || p.ListingType == ListingType.ShortTermRent);
-
-            var averageSalePrice = await properties
-                .Where(p => p.SalePrice.HasValue && p.SalePrice > 0)
-                .AverageAsync(p => (decimal?)p.SalePrice) ?? 0;
-
-            var averageRentPrice = await properties
-                .Where(p => p.MonthlyRent.HasValue && p.MonthlyRent > 0)
-                .AverageAsync(p => (decimal?)p.MonthlyRent) ?? 0;
-
-            return Ok(new
-            {
-                totalListings,
-                totalForSale,
-                totalForRent,
-                averageSalePrice,
-                averageRentPrice
-            });
+            var overview = await this.analyticsService.GetMarketOverviewAsync();
+            return Ok(overview);
         }
         catch (Exception)
         {
@@ -65,24 +42,7 @@ public class AnalyticsController : ControllerBase
     {
         try
         {
-            // GroupBy executed in the database — no ToListAsync() before grouping
-            var regionData = await this.storageBroker.Properties
-                .Where(p => !p.DeletedDate.HasValue)
-                .GroupBy(p => p.Region)
-                .Select(g => new
-                {
-                    region = g.Key.ToString(),
-                    listingsCount = g.Count(),
-                    averageSalePrice = g
-                        .Where(p => p.SalePrice.HasValue && p.SalePrice > 0)
-                        .Average(p => (decimal?)p.SalePrice) ?? 0,
-                    averageRentPrice = g
-                        .Where(p => p.MonthlyRent.HasValue && p.MonthlyRent > 0)
-                        .Average(p => (decimal?)p.MonthlyRent) ?? 0
-                })
-                .OrderByDescending(r => r.listingsCount)
-                .ToListAsync();
-
+            var regionData = await this.analyticsService.GetAnalyticsByRegionAsync();
             return Ok(regionData);
         }
         catch (Exception)
@@ -96,24 +56,8 @@ public class AnalyticsController : ControllerBase
     {
         try
         {
-            var twelveMonthsAgo = DateTimeOffset.UtcNow.AddMonths(-12);
-
-            // GroupBy executed in the database — no ToListAsync() before grouping
-            var priceTrends = await this.storageBroker.Properties
-                .Where(p => !p.DeletedDate.HasValue && p.CreatedDate >= twelveMonthsAgo)
-                .GroupBy(p => new { p.CreatedDate.Year, p.CreatedDate.Month })
-                .Select(g => new
-                {
-                    month = $"{g.Key.Year}-{g.Key.Month:D2}",
-                    averagePrice = g
-                        .Where(p => p.SalePrice.HasValue && p.SalePrice > 0)
-                        .Average(p => (decimal?)p.SalePrice) ?? 0,
-                    listingsCount = g.Count()
-                })
-                .OrderBy(x => x.month)
-                .ToListAsync();
-
-            return Ok(priceTrends);
+            var trends = await this.analyticsService.GetPriceTrendsAsync();
+            return Ok(trends);
         }
         catch (Exception)
         {
