@@ -9,6 +9,7 @@ import {
   UpdateDiscountRequest,
 } from '../../../../core/models';
 import { DiscountService } from '../../../../core/services/discount.service';
+import { LoggingService } from '../../../../core/services/logging.service';
 
 @Component({
   selector: 'app-discount-form',
@@ -50,7 +51,7 @@ export class DiscountFormComponent implements OnInit {
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private location: Location,
-  ) {}
+    private logger: LoggingService) {}
 
   ngOnInit(): void {
     this.checkEditMode();
@@ -93,7 +94,7 @@ export class DiscountFormComponent implements OnInit {
       },
       error: (err) => {
         this.error = 'Failed to load discount';
-        console.error('Error loading discount:', err);
+        this.logger.error('Error loading discount:', err);
         this.loading = false;
       },
     });
@@ -133,7 +134,7 @@ export class DiscountFormComponent implements OnInit {
       },
       error: (err) => {
         this.error = `Failed to ${this.isEditMode ? 'update' : 'create'} discount`;
-        console.error('Error saving discount:', err);
+        this.logger.error('Error saving discount:', err);
         this.saving = false;
       },
     });

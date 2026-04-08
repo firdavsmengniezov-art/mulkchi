@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { AnalyticsService } from '../../core/services/analytics.service';
 import { PricePredictionRequest, PricePredictionResponse, REGION_MAP } from '../../core/models';
+import { LoggingService } from '../../core/services/logging.service';
 
 @Component({
   selector: 'app-ai-price',
@@ -38,7 +39,8 @@ export class AiPriceComponent {
     'Qoraqalpogiston', 'Toshkent viloyati'
   ];
 
-  constructor(private analyticsService: AnalyticsService) {}
+  constructor(private analyticsService: AnalyticsService,
+    private logger: LoggingService) {}
 
   predictPrice() {
     if (!this.area || !this.bedrooms) {
@@ -70,7 +72,7 @@ export class AiPriceComponent {
       error: (err) => {
         this.loading = false;
         this.errorMsg = 'Narx hisoblanmadi. Keyinroq urinib koring.';
-        console.error(err);
+        this.logger.error(err);
       }
     });
   }

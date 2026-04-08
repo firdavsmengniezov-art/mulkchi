@@ -4,6 +4,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { SavedSearch, CreateSavedSearchRequest, SavedSearchResponse, SavedSearchesResponse } from '../models/saved-search.model';
+import { LoggingService } from './logging.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +12,8 @@ import { SavedSearch, CreateSavedSearchRequest, SavedSearchResponse, SavedSearch
 export class SavedSearchService {
   private readonly apiUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient,
+    private logger: LoggingService) {}
 
   // Get all saved searches for current user
   getSavedSearches(page: number = 1, pageSize: number = 10): Observable<SavedSearchesResponse> {
@@ -60,7 +62,7 @@ export class SavedSearchService {
   }
 
   private handleError(error: HttpErrorResponse) {
-    console.error('SavedSearch API Error:', error);
+    this.logger.error('SavedSearch API Error:', error);
     return throwError(() => error);
   }
 

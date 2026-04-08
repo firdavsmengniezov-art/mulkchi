@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { BookingService } from '../../../core/services/booking.service';
 import { Booking, BookingStatus } from '../../../core/models/booking.model';
 import { PagedResult } from '../../../core/models/paged-result.model';
+import { LoggingService } from '../../../core/services/logging.service';
 
 @Component({
   selector: 'app-my-bookings',
@@ -116,7 +117,8 @@ export class MyBookingsComponent implements OnInit {
   totalCount = 0;
   totalPages = 0;
 
-  constructor(private bookingService: BookingService) {}
+  constructor(private bookingService: BookingService,
+    private logger: LoggingService) {}
 
   ngOnInit(): void {
     this.loadBookings();
@@ -132,7 +134,7 @@ export class MyBookingsComponent implements OnInit {
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error loading bookings:', error);
+        this.logger.error('Error loading bookings:', error);
         this.isLoading = false;
       }
     });
@@ -165,7 +167,7 @@ export class MyBookingsComponent implements OnInit {
           this.loadBookings();
         },
         error: (error) => {
-          console.error('Error cancelling booking:', error);
+          this.logger.error('Error cancelling booking:', error);
           alert('Bronni bekor qilishda xatolik yuz berdi.');
         }
       });

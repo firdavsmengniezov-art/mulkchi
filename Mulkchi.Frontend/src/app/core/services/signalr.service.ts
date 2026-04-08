@@ -5,6 +5,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { environment } from '../../../environments/environment';
 import { Message } from '../models';
 import { AuthService } from './auth.service';
+import { LoggingService } from './logging.service';
 
 export interface NotificationPayload {
   id: string;
@@ -28,8 +29,8 @@ export class SignalRService {
 
   constructor(
     private snackBar: MatSnackBar,
-    private authService: AuthService
-  ) {}
+    private authService: AuthService,
+    private logger: LoggingService) {}
 
   async startConnections(): Promise<void> {
     // The access token is kept in memory by AuthService (never in localStorage).
@@ -58,11 +59,11 @@ export class SignalRService {
     for (let i = 0; i < maxRetries; i++) {
       try {
         await hub.start();
-        console.log(`${hubName} connected successfully`);
+        this.logger.log(`${hubName} connected successfully`);
         this.isConnected = true;
         return;
       } catch (err) {
-        console.error(`${hubName} connection attempt ${i + 1} failed:`, err);
+        this.logger.error(`${hubName} connection attempt ${i + 1} failed:`, err);
         if (i === maxRetries - 1) {
           this.isConnected = false;
           this.snackBar.open(
@@ -111,7 +112,7 @@ export class SignalRService {
       await this.notifHub?.stop();
       this.isConnected = false;
     } catch (err) {
-      console.error('Error stopping SignalR connections:', err);
+      this.logger.error('Error stopping SignalR connections:', err);
     }
   }
 }

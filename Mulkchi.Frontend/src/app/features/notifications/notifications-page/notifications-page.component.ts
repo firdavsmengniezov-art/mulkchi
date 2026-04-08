@@ -18,6 +18,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { NotificationService } from '../../../core/services/notification.service';
 import { Notification, NotificationType } from '../../../core/models/notification.models';
 import { RelativeTimePipe } from '../../../core/pipes/relative-time.pipe';
+import { LoggingService } from '../../../core/services/logging.service';
 
 @Component({
   selector: 'app-notifications-page',
@@ -58,8 +59,8 @@ export class NotificationsPageComponent implements OnInit, OnDestroy {
 
   constructor(
     private notificationService: NotificationService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private logger: LoggingService) {}
 
   ngOnInit(): void {
     this.setupSubscriptions();
@@ -141,7 +142,7 @@ export class NotificationsPageComponent implements OnInit, OnDestroy {
             this.applyFilters();
           },
           error: (err) => {
-            console.error('Failed to mark notification as read:', err);
+            this.logger.error('Failed to mark notification as read:', err);
           }
         });
     }
@@ -157,7 +158,7 @@ export class NotificationsPageComponent implements OnInit, OnDestroy {
           this.applyFilters();
         },
         error: (err) => {
-          console.error('Failed to mark all notifications as read:', err);
+          this.logger.error('Failed to mark all notifications as read:', err);
         }
       });
   }
@@ -174,7 +175,7 @@ export class NotificationsPageComponent implements OnInit, OnDestroy {
           this.applyFilters();
         },
         error: (err) => {
-          console.error('Failed to delete notification:', err);
+          this.logger.error('Failed to delete notification:', err);
         }
       });
   }

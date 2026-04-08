@@ -3,13 +3,13 @@ using System.Security.Cryptography;
 using BCrypt.Net;
 using Mulkchi.Api.Brokers.DateTimes;
 using Mulkchi.Api.Brokers.Loggings;
+using Mulkchi.Api.Brokers.Notifications;
 using Mulkchi.Api.Brokers.Storages;
 using Mulkchi.Api.Brokers.Tokens;
 using Mulkchi.Api.Models.Foundations.Auth;
 using Mulkchi.Api.Models.Foundations.Auth.Exceptions;
 using Mulkchi.Api.Models.Foundations.Users;
 using Mulkchi.Api.Models.Foundations.Users.Exceptions;
-using Serilog;
 
 namespace Mulkchi.Api.Services.Foundations.Auth;
 
@@ -22,17 +22,20 @@ public partial class AuthService : IAuthService
     private readonly ILoggingBroker loggingBroker;
     private readonly IDateTimeBroker dateTimeBroker;
     private readonly ITokenBroker tokenBroker;
+    private readonly IEmailBroker emailBroker;
 
     public AuthService(
         IStorageBroker storageBroker,
         ILoggingBroker loggingBroker,
         IDateTimeBroker dateTimeBroker,
-        ITokenBroker tokenBroker)
+        ITokenBroker tokenBroker,
+        IEmailBroker emailBroker)
     {
         this.storageBroker = storageBroker;
         this.loggingBroker = loggingBroker;
         this.dateTimeBroker = dateTimeBroker;
         this.tokenBroker = tokenBroker;
+        this.emailBroker = emailBroker;
     }
 
     public ValueTask<AuthResponse> LoginAsync(LoginRequest request) =>
@@ -263,22 +266,19 @@ public partial class AuthService : IAuthService
         return Convert.ToHexString(bytes).ToLowerInvariant();
     }
 
-    private Task SendPasswordResetEmailAsync(string email, string token)
+    private async Task SendPasswordResetEmailAsync(string email, string token)
     {
-        // TODO: Implement email sending using IEmailBroker
-        // For now, just log token (in production, send actual email)
         var resetUrl = $"https://mulkchi.uz/reset-password?token={token}";
-        
-        // Log for debugging - remove in production
-        Log.Information("Password reset link generated for {Email}: {ResetUrl}", email, resetUrl);
-        
-        // In production:
-        // this.emailBroker.SendEmailAsync(
-        //     email,
-        //     "Password Reset Request",
-        //     $"<h2>Password Reset</h2><p>Click <a href='{resetUrl}'>here</a> to reset your password.</p><p>This link will expire in 1 hour.</p>");
-        
-        return Task.CompletedTask;
+
+        await this.emailBroker.SendEmailAsync(
+            email,
+            "Parolni tiklash so'rovi / Password Reset Request",
+            $"<h2>Parolni tiklash</h2>" +
+            $"<p>Parolni tiklash uchun quyidagi havolani bosing:</p>" +
+            $"<p><a href='{resetUrl}'>Parolni tiklash</a></p>" +
+            $"<p>Bu havola 1 soat davomida amal qiladi.</p>" +
+            $"<hr/>" +
+            $"<p>If you did not request a password reset, please ignore this email.</p>");
     }
 
     private static void ValidateEmail(string email)

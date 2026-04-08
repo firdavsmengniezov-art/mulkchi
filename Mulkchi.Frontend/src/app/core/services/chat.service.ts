@@ -4,6 +4,7 @@ import { HubConnection, HubConnectionBuilder, LogLevel, HttpTransportType } from
 import { BehaviorSubject, Observable, Subject, takeUntil } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
+import { LoggingService } from './logging.service';
 
 export interface Message {
   id: string;
@@ -47,8 +48,8 @@ export class ChatService implements OnDestroy {
 
   constructor(
     private http: HttpClient,
-    private authService: AuthService
-  ) {
+    private authService: AuthService,
+    private logger: LoggingService) {
     this.hubConnection = new HubConnectionBuilder()
       .withUrl(`${environment.hubUrl}/hubs/chat`, {
         accessTokenFactory: () => this.authService.getToken() || '',
@@ -106,7 +107,7 @@ export class ChatService implements OnDestroy {
   async startConnection(): Promise<void> {
     try {
       if (!this.authService.isAuthenticated() || !this.authService.getToken()) {
-        console.warn('No access token found, skipping SignalR connection');
+        this.logger.warn('No access token found, skipping SignalR connection');
         this.connectionStatus$.next(false);
         return;
       }
@@ -123,7 +124,7 @@ export class ChatService implements OnDestroy {
       await this.hubConnection.start();
       this.connectionStatus$.next(true);
     } catch (err) {
-      console.error('Chat hub connection failed:', err);
+      this.logger.error('Chat hub connection failed:', err);
       this.connectionStatus$.next(false);
       if (err instanceof Error && (err.message.includes('401') || err.message.includes('not in the \'Disconnected\' state'))) {
         return;
@@ -136,7 +137,7 @@ export class ChatService implements OnDestroy {
     try {
       await this.hubConnection.invoke('SendMessage', receiverId, content);
     } catch (err) {
-      console.error('Failed to send message:', err);
+      this.logger.error('Failed to send message:', err);
       throw err;
     }
   }
@@ -145,7 +146,7 @@ export class ChatService implements OnDestroy {
     try {
       await this.hubConnection.invoke('SendTypingIndicator', receiverId, isTyping);
     } catch (err) {
-      console.error('Failed to send typing indicator:', err);
+      this.logger.error('Failed to send typing indicator:', err);
     }
   }
 
@@ -153,7 +154,7 @@ export class ChatService implements OnDestroy {
     try {
       await this.hubConnection.invoke('MarkAsRead', messageId);
     } catch (err) {
-      console.error('Failed to mark message as read:', err);
+      this.logger.error('Failed to mark message as read:', err);
     }
   }
 
@@ -161,7 +162,7 @@ export class ChatService implements OnDestroy {
     try {
       await this.hubConnection.invoke('JoinPropertyRoom', propertyId);
     } catch (err) {
-      console.error('Failed to join property room:', err);
+      this.logger.error('Failed to join property room:', err);
     }
   }
 
@@ -169,7 +170,7 @@ export class ChatService implements OnDestroy {
     try {
       await this.hubConnection.invoke('LeavePropertyRoom', propertyId);
     } catch (err) {
-      console.error('Failed to leave property room:', err);
+      this.logger.error('Failed to leave property room:', err);
     }
   }
 
@@ -181,7 +182,7 @@ export class ChatService implements OnDestroy {
           this.conversations$.next(conversations);
         },
         error: (err) => {
-          console.error('Failed to load conversations:', err);
+          this.logger.error('Failed to load conversations:', err);
         }
       });
   }
@@ -194,7 +195,7 @@ export class ChatService implements OnDestroy {
           this.messages$.next(messages);
         },
         error: (err) => {
-          console.error('Failed to load conversation messages:', err);
+          this.logger.error('Failed to load conversation messages:', err);
         }
       });
   }

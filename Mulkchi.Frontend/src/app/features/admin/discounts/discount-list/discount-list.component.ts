@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { Discount, DiscountType } from '../../../../core/models';
 import { DiscountUsageService } from '../../../../core/services/discount-usage.service';
 import { DiscountService } from '../../../../core/services/discount.service';
+import { LoggingService } from '../../../../core/services/logging.service';
 
 @Component({
   selector: 'app-discount-list',
@@ -34,7 +35,7 @@ export class DiscountListComponent implements OnInit {
     public discountService: DiscountService,
     private discountUsageService: DiscountUsageService,
     private router: Router,
-  ) {}
+    private logger: LoggingService) {}
 
   ngOnInit(): void {
     this.loadDiscounts();
@@ -52,7 +53,7 @@ export class DiscountListComponent implements OnInit {
       },
       error: (err) => {
         this.error = 'Failed to load discounts';
-        console.error('Error loading discounts:', err);
+        this.logger.error('Error loading discounts:', err);
         this.loading = false;
       },
     });
@@ -79,7 +80,7 @@ export class DiscountListComponent implements OnInit {
         }
       },
       error: (err) => {
-        console.error('Error toggling discount status:', err);
+        this.logger.error('Error toggling discount status:', err);
         alert('Failed to update discount status');
       },
     });
@@ -95,7 +96,7 @@ export class DiscountListComponent implements OnInit {
           this.totalCount--;
         },
         error: (err) => {
-          console.error('Error deleting discount:', err);
+          this.logger.error('Error deleting discount:', err);
           alert('Failed to delete discount');
         },
       });
@@ -220,7 +221,7 @@ export class DiscountListComponent implements OnInit {
         alert('Discount duplicated successfully!');
       },
       error: (err) => {
-        console.error('Error duplicating discount:', err);
+        this.logger.error('Error duplicating discount:', err);
         alert('Failed to duplicate discount');
       },
     });

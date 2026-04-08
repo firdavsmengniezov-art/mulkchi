@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { LoggingService } from './logging.service';
 
 import { 
   DiscountUsage, 
@@ -16,7 +17,8 @@ import {
 export class DiscountUsageService {
   private readonly apiUrl = `${environment.apiUrl}/discount-usages`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient,
+    private logger: LoggingService) {}
 
   // Admin operations
   getDiscountUsages(page = 1, pageSize = 10, discountId?: string): Observable<{ items: DiscountUsage[]; totalCount: number; page: number; pageSize: number }> {
@@ -60,7 +62,7 @@ export class DiscountUsageService {
   }
 
   private handleError(error: any): Observable<never> {
-    console.error('DiscountUsageService error:', error);
+    this.logger.error('DiscountUsageService error:', error);
     let errorMessage = 'An error occurred with discount usages';
     
     if (error.error?.message) {

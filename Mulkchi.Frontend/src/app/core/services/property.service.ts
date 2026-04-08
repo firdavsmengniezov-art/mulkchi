@@ -4,12 +4,14 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { PagedResult, Property, PropertySearchParams } from '../models';
+import { LoggingService } from './logging.service';
 
 @Injectable({ providedIn: 'root' })
 export class PropertyService {
   private apiUrl = `${environment.apiUrl}/properties`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient,
+    private logger: LoggingService) {}
 
   getProperties(page = 1, size = 10): Observable<PagedResult<Property>> {
     return this.http
@@ -62,7 +64,7 @@ export class PropertyService {
   }
 
   private handleError(error: HttpErrorResponse) {
-    console.error('API Error:', error);
+    this.logger.error('API Error:', error);
     return throwError(() => error);
   }
 }

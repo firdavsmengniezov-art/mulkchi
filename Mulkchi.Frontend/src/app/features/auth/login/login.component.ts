@@ -5,6 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { LoginRequest } from '../../../core/models/auth.model';
+import { LoggingService } from '../../../core/services/logging.service';
 
 @Component({
   selector: 'app-login',
@@ -21,6 +22,7 @@ export class LoginComponent {
 
   private authService = inject(AuthService);
   private router = inject(Router);
+  private logger = inject(LoggingService);
 
   login() {
     if (!this.email || !this.password) {
@@ -45,7 +47,7 @@ export class LoginComponent {
       error: (err) => {
         this.loading = false;
         this.errorMsg = 'Login xatolik. Email yoki parol noto\'g\'ri.';
-        console.error('Login error:', err);
+        this.logger.error('Login error:', err);
       }
     });
   }

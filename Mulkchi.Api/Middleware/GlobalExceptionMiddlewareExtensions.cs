@@ -1,4 +1,4 @@
-namespace Mulkchi.Api.Middlewares;
+namespace Mulkchi.Api.Middleware;
 
 public static class GlobalExceptionMiddlewareExtensions
 {

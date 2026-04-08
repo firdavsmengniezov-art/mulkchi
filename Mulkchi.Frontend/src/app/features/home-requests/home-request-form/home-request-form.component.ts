@@ -10,6 +10,7 @@ import {
   PropertyType,
 } from '../../../core/models';
 import { HomeRequestService } from '../../../core/services/home-request.service';
+import { LoggingService } from '../../../core/services/logging.service';
 
 @Component({
   selector: 'app-home-request-form',
@@ -63,7 +64,7 @@ export class HomeRequestFormComponent implements OnInit {
   constructor(
     private homeRequestService: HomeRequestService,
     public router: Router,
-  ) {}
+    private logger: LoggingService) {}
 
   ngOnInit(): void {}
 
@@ -83,7 +84,7 @@ export class HomeRequestFormComponent implements OnInit {
       },
       error: (err) => {
         this.error = 'Failed to submit home request. Please try again.';
-        console.error('Error creating home request:', err);
+        this.logger.error('Error creating home request:', err);
         this.loading = false;
       },
     });

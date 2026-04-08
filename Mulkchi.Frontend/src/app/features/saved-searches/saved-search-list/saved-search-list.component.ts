@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { SavedSearchService } from '../../../core/services/saved-search.service';
 import { SavedSearch } from '../../../core/models/saved-search.model';
+import { LoggingService } from '../../../core/services/logging.service';
 
 @Component({
   selector: 'app-saved-search-list',
@@ -119,7 +120,8 @@ export class SavedSearchListComponent implements OnInit {
   totalCount = 0;
   totalPages = 0;
 
-  constructor(private savedSearchService: SavedSearchService) {}
+  constructor(private savedSearchService: SavedSearchService,
+    private logger: LoggingService) {}
 
   ngOnInit(): void {
     this.loadSavedSearches();
@@ -137,7 +139,7 @@ export class SavedSearchListComponent implements OnInit {
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error loading saved searches:', error);
+        this.logger.error('Error loading saved searches:', error);
         this.isLoading = false;
       }
     });
@@ -161,12 +163,12 @@ export class SavedSearchListComponent implements OnInit {
     // Navigate to properties page with search parameters
     const params = this.buildSearchParams(search);
     // this.router.navigate(['/properties'], { queryParams: params });
-    console.log('Searching with params:', params);
+    this.logger.log('Searching with params:', params);
   }
 
   editSearch(search: SavedSearch): void {
     // Open edit modal or navigate to edit page
-    console.log('Editing search:', search);
+    this.logger.log('Editing search:', search);
   }
 
   deleteSearch(id: string): void {
@@ -178,7 +180,7 @@ export class SavedSearchListComponent implements OnInit {
           }
         },
         error: (error) => {
-          console.error('Error deleting saved search:', error);
+          this.logger.error('Error deleting saved search:', error);
         }
       });
     }
@@ -196,7 +198,7 @@ export class SavedSearchListComponent implements OnInit {
         }
       },
       error: (error) => {
-        console.error('Error toggling saved search:', error);
+        this.logger.error('Error toggling saved search:', error);
       }
     });
   }

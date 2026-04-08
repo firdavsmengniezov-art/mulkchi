@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 
 import { User, UserRole, UserStatus } from '../../../../core/models/user.model';
 import { UserService } from '../../../../core/services/user.service';
+import { LoggingService } from '../../../../core/services/logging.service';
 
 @Component({
   selector: 'app-user-list',
@@ -37,7 +38,7 @@ export class UserListComponent implements OnInit {
   constructor(
     private userService: UserService,
     private router: Router,
-  ) {}
+    private logger: LoggingService) {}
 
   ngOnInit(): void {
     this.loadUsers();
@@ -61,7 +62,7 @@ export class UserListComponent implements OnInit {
           },
           error: (err) => {
             this.error = 'Failed to load users';
-            console.error('Error loading users:', err);
+            this.logger.error('Error loading users:', err);
             this.loading = false;
           },
         });
@@ -74,7 +75,7 @@ export class UserListComponent implements OnInit {
         this.statistics = stats;
       },
       error: (err) => {
-        console.error('Error loading statistics:', err);
+        this.logger.error('Error loading statistics:', err);
       },
     });
   }
@@ -94,7 +95,7 @@ export class UserListComponent implements OnInit {
       },
       error: (err) => {
         this.error = 'Failed to search users';
-        console.error('Error searching users:', err);
+        this.logger.error('Error searching users:', err);
         this.loading = false;
       },
     });
@@ -123,7 +124,7 @@ export class UserListComponent implements OnInit {
         alert(`User role updated to ${newRole}`);
       },
       error: (err) => {
-        console.error('Error updating user role:', err);
+        this.logger.error('Error updating user role:', err);
         alert('Failed to update user role');
       },
     });
@@ -144,7 +145,7 @@ export class UserListComponent implements OnInit {
         alert(`User ${action}ed successfully`);
       },
       error: (err) => {
-        console.error('Error updating user status:', err);
+        this.logger.error('Error updating user status:', err);
         alert(`Failed to ${action} user`);
       },
     });
@@ -175,7 +176,7 @@ export class UserListComponent implements OnInit {
           alert('User deleted successfully');
         },
         error: (err) => {
-          console.error('Error deleting user:', err);
+          this.logger.error('Error deleting user:', err);
           alert('Failed to delete user');
         },
       });

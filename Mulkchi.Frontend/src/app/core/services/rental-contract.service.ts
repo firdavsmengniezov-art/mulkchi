@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { LoggingService } from './logging.service';
 
 import { 
   RentalContract, 
@@ -17,7 +18,8 @@ import {
 export class RentalContractService {
   private readonly apiUrl = `${environment.apiUrl}/rental-contracts`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient,
+    private logger: LoggingService) {}
 
   // Contract CRUD operations
   getContracts(page = 1, pageSize = 10, status?: string): Observable<{ items: RentalContract[]; totalCount: number; page: number; pageSize: number }> {
@@ -120,7 +122,7 @@ export class RentalContractService {
         window.URL.revokeObjectURL(url);
       },
       error: (err) => {
-        console.error('Error downloading contract PDF:', err);
+        this.logger.error('Error downloading contract PDF:', err);
         alert('Failed to download contract PDF');
       }
     });
@@ -211,7 +213,7 @@ export class RentalContractService {
   }
 
   private handleError(error: any): Observable<never> {
-    console.error('RentalContractService error:', error);
+    this.logger.error('RentalContractService error:', error);
     let errorMessage = 'An error occurred with rental contracts';
     
     if (error.error?.message) {

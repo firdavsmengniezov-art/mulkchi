@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { LoggingService } from './logging.service';
 
 import {
   Announcement,
@@ -16,7 +17,8 @@ import {
 export class AnnouncementService {
   private readonly apiUrl = `${environment.apiUrl}/announcements`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient,
+    private logger: LoggingService) {}
 
   getAnnouncements(
     page = 1,
@@ -57,7 +59,7 @@ export class AnnouncementService {
   }
 
   private handleError(error: any): Observable<never> {
-    console.error('AnnouncementService error:', error);
+    this.logger.error('AnnouncementService error:', error);
     let errorMessage = 'An error occurred with announcements';
 
     if (error.error?.message) {

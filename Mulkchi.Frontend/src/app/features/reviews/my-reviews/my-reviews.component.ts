@@ -13,6 +13,7 @@ import { ReviewService } from '../../../core/services/review.service';
 import { Review, PagedResult } from '../../../core/models/review.model';
 import { ReviewFormComponent, ReviewFormDialogData } from '../review-form/review-form.component';
 import { StarRatingComponent } from '../../../shared/components/star-rating/star-rating.component';
+import { LoggingService } from '../../../core/services/logging.service';
 
 @Component({
   selector: 'app-my-reviews',
@@ -44,8 +45,8 @@ export class MyReviewsComponent implements OnInit, OnDestroy {
 
   constructor(
     private reviewService: ReviewService,
-    private dialog: MatDialog
-  ) {}
+    private dialog: MatDialog,
+    private logger: LoggingService) {}
 
   ngOnInit(): void {
     this.loadMyReviews();
@@ -63,7 +64,7 @@ export class MyReviewsComponent implements OnInit, OnDestroy {
           this.loading = false;
         },
         error: (err) => {
-          console.error('Failed to load my reviews:', err);
+          this.logger.error('Failed to load my reviews:', err);
           this.loading = false;
         }
       });
@@ -106,7 +107,7 @@ export class MyReviewsComponent implements OnInit, OnDestroy {
           this.loadMyReviews();
         },
         error: (err) => {
-          console.error('Failed to delete review:', err);
+          this.logger.error('Failed to delete review:', err);
         }
       });
   }

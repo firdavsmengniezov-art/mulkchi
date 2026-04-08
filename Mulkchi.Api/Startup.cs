@@ -29,7 +29,6 @@ using Mulkchi.Api.Services.Foundations.Announcements;
 using Mulkchi.Api.Services.Foundations.Auth;
 using Mulkchi.Api.Services.Foundations.Bookings;
 using Mulkchi.Api.Services.Foundations.AI;
-using Mulkchi.Api.Middleware;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 

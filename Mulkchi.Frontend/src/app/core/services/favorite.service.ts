@@ -4,13 +4,15 @@ import { BehaviorSubject, Observable, tap, map, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { Favorite, FavoriteToggleResult, PagedResult } from '../models/favorite.models';
+import { LoggingService } from './logging.service';
 
 @Injectable({ providedIn: 'root' })
 export class FavoriteService {
   private favoriteIds$ = new BehaviorSubject<Set<string>>(new Set());
   private favoritesCount$ = new BehaviorSubject<number>(0);
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient,
+    private logger: LoggingService) {}
 
   loadUserFavorites(): void {
     this.http.get<Favorite[]>(`${environment.apiUrl}/favorites`)
@@ -21,7 +23,7 @@ export class FavoriteService {
           this.favoritesCount$.next(favorites.length);
         },
         error: (err) => {
-          console.error('Failed to load favorites:', err);
+          this.logger.error('Failed to load favorites:', err);
         }
       });
   }
@@ -60,7 +62,7 @@ export class FavoriteService {
   }
 
   private handleError(error: HttpErrorResponse) {
-    console.error('Favorite API Error:', error);
+    this.logger.error('Favorite API Error:', error);
     return throwError(() => error);
   }
 

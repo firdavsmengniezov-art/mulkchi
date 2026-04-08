@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { LoggingService } from './logging.service';
 
 import {
   CreatePropertyImageRequest,
@@ -17,7 +18,8 @@ import {
 export class PropertyImageService {
   private readonly apiUrl = `${environment.apiUrl}/property-images`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient,
+    private logger: LoggingService) {}
 
   // Basic CRUD operations
   getPropertyImages(propertyId: string): Observable<PropertyImage[]> {
@@ -101,7 +103,7 @@ export class PropertyImageService {
   }
 
   private handleError(error: any): Observable<never> {
-    console.error('PropertyImageService error:', error);
+    this.logger.error('PropertyImageService error:', error);
     let errorMessage = 'An error occurred with property images';
 
     if (error.error?.message) {

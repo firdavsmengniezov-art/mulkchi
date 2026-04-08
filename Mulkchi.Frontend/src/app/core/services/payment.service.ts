@@ -3,6 +3,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { LoggingService } from './logging.service';
 import { 
   Payment, 
   CreatePaymentRequest, 
@@ -14,7 +15,8 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class PaymentService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient,
+    private logger: LoggingService) {}
 
   createPayment(request: CreatePaymentRequest): Observable<Payment> {
     return this.http.post<Payment>(`${environment.apiUrl}/payments`, request).pipe(
@@ -54,7 +56,7 @@ export class PaymentService {
   }
 
   private handleError(error: HttpErrorResponse) {
-    console.error('Payment API Error:', error);
+    this.logger.error('Payment API Error:', error);
     return throwError(() => error);
   }
 
