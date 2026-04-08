@@ -104,7 +104,7 @@ public class AnalyticsController : ControllerBase
                 .GroupBy(p => new { p.CreatedDate.Year, p.CreatedDate.Month })
                 .Select(g => new
                 {
-                    month = g.Key.Year.ToString() + "-" + g.Key.Month.ToString("D2"),
+                    month = $"{g.Key.Year}-{g.Key.Month:D2}",
                     averagePrice = g
                         .Where(p => p.SalePrice.HasValue && p.SalePrice > 0)
                         .Average(p => (decimal?)p.SalePrice) ?? 0,

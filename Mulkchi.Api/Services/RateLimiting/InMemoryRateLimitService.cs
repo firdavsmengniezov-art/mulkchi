@@ -28,7 +28,7 @@ public class InMemoryRateLimitService : IRateLimitService
             var queue = _store.GetOrAdd(key, _ => new Queue<long>());
 
             // Evict timestamps outside the current window
-            while (queue.Count > 0 && queue.Peek() <= windowStart)
+            while (queue.Count > 0 && queue.Peek() < windowStart)
                 queue.Dequeue();
 
             if (queue.Count >= maxRequests)
