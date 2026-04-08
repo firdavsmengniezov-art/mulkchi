@@ -21,4 +21,6 @@ public interface IPropertyService
     ValueTask<Property> RetrievePropertyByIdAsync(Guid propertyId);
     ValueTask<Property> ModifyPropertyAsync(Property property);
     ValueTask<Property> RemovePropertyByIdAsync(Guid propertyId);
+
+    ValueTask<(IEnumerable<PropertyResponse> Items, int TotalCount)> SearchPropertiesAsync(PropertySearchParams searchParams);
 }

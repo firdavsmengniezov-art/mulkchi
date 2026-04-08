@@ -5,6 +5,7 @@ using Mulkchi.Api.Brokers.Loggings;
 using Mulkchi.Api.Brokers.Storages;
 using Mulkchi.Api.Services.Foundations.Auth;
 using Microsoft.Extensions.Localization;
+using Mulkchi.Api.Models.Foundations.Properties.Extensions;
 using Mulkchi.Api.Resources;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -192,6 +193,66 @@ public partial class PropertyService : IPropertyService
             .Take(queryParams.PageSize)
             .ToListAsync();
 
+        var responseItems = properties.Select(ToPropertyResponse).ToList();
+
+        return (responseItems, totalCount);
+    }
+
+    public async ValueTask<(IEnumerable<PropertyResponse> Items, int TotalCount)> SearchPropertiesAsync(PropertySearchParams searchParams)
+    {
+        IQueryable<Property> query = this.storageBroker.SelectAllProperties()
+            .Where(p => p.DeletedDate == null);
+
+        if (!string.IsNullOrWhiteSpace(searchParams.City))
+            query = query.Where(p => p.City == searchParams.City);
+
+        if (searchParams.MinPrice.HasValue)
+            query = query.Where(p => p.MonthlyRent >= searchParams.MinPrice || p.SalePrice >= searchParams.MinPrice || p.PricePerNight >= searchParams.MinPrice);
+
+        if (searchParams.MaxPrice.HasValue)
+            query = query.Where(p => p.MonthlyRent <= searchParams.MaxPrice || p.SalePrice <= searchParams.MaxPrice || p.PricePerNight <= searchParams.MaxPrice);
+
+        if (searchParams.Bedrooms.HasValue)
+            query = query.Where(p => p.NumberOfBedrooms == searchParams.Bedrooms);
+
+        if (searchParams.ListingType.HasValue)
+            query = query.Where(p => p.ListingType == searchParams.ListingType.Value);
+
+        if (searchParams.PropertyType.HasValue)
+            query = query.Where(p => p.Type == searchParams.PropertyType.Value);
+
+        if (searchParams.HasWifi.HasValue && searchParams.HasWifi.Value)
+            query = query.Where(p => p.HasWifi);
+        if (searchParams.HasParking.HasValue && searchParams.HasParking.Value)
+            query = query.Where(p => p.HasParking);
+        if (searchParams.HasPool.HasValue && searchParams.HasPool.Value)
+            query = query.Where(p => p.HasPool);
+
+        if (searchParams.Latitude.HasValue && searchParams.Longitude.HasValue)
+        {
+            var radius = searchParams.RadiusKm ?? 10.0;
+            query = query.WithinRadius(searchParams.Latitude.Value, searchParams.Longitude.Value, radius);
+        }
+
+        int totalCount = await query.CountAsync();
+
+        if (searchParams.Latitude.HasValue && searchParams.Longitude.HasValue && string.IsNullOrEmpty(searchParams.SortBy))
+        {
+            query = query.OrderByDistance(searchParams.Latitude.Value, searchParams.Longitude.Value);
+        }
+        else
+        {
+            query = searchParams.SortBy switch {
+                "price_asc"  => query.OrderBy(p => p.MonthlyRent ?? p.SalePrice ?? p.PricePerNight),
+                "price_desc" => query.OrderByDescending(p => p.MonthlyRent ?? p.SalePrice ?? p.PricePerNight),
+                "rating"     => query.OrderByDescending(p => p.AverageRating),
+                "newest"     => query.OrderByDescending(p => p.CreatedDate),
+                _            => query.OrderByDescending(p => p.IsFeatured).ThenByDescending(p => p.AverageRating)
+            };
+        }
+
+        // Apply a default limit to the search size since there is no pagination params in PropertySearchParams
+        var properties = await query.Take(50).ToListAsync();
         var responseItems = properties.Select(ToPropertyResponse).ToList();
 
         return (responseItems, totalCount);

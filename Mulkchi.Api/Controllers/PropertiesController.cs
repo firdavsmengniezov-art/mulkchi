@@ -148,4 +148,28 @@ public class PropertiesController : ControllerBase
             return StatusCode(500, new { message = ex.Message });
         }
     }
+
+    [HttpGet("search")]
+    [AllowAnonymous]
+    public async Task<ActionResult<PagedResult<PropertyResponse>>> SearchProperties([FromQuery] PropertySearchParams searchParams)
+    {
+        try
+        {
+            var (items, total) = await this.propertyService.SearchPropertiesAsync(searchParams);
+
+            var result = new PagedResult<PropertyResponse>
+            {
+                Items = items,
+                TotalCount = total,
+                Page = 1,
+                PageSize = 50 // Fixed size since no pagination fields
+            };
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = ex.Message });
+        }
+    }
 }
