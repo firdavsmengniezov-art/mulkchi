@@ -43,7 +43,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
         *ngIf="isUploading"
         class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 rounded-full"
       >
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-brand"></div>
       </div>
     </div>
   `,

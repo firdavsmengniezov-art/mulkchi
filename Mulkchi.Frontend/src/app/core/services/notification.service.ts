@@ -5,8 +5,8 @@ import { environment } from '../../../environments/environment';
 import { LoggingService } from './logging.service';
 import { Notification, NotificationType, PagedResult } from '../models/notification.models';
 import { HttpClient } from '@angular/common/http';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
+import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService implements OnDestroy {
@@ -17,13 +17,13 @@ export class NotificationService implements OnDestroy {
 
   constructor(
     private http: HttpClient,
-    private snackBar: MatSnackBar,
     private router: Router,
-    private loggingService: LoggingService
+    private loggingService: LoggingService,
+    private authService: AuthService
   ) {
     this.hubConnection = new HubConnectionBuilder()
-      .withUrl(`${environment.hubUrl}/notificationhub`, {
-        accessTokenFactory: () => sessionStorage.getItem('access_token') || ''
+      .withUrl(`${environment.hubUrl}/hubs/notifications`, {
+        accessTokenFactory: () => this.authService.getToken() || ''
       })
       .withAutomaticReconnect([0, 2000, 5000, 10000])
       .configureLogging(LogLevel.Warning)
@@ -87,6 +87,15 @@ export class NotificationService implements OnDestroy {
 
   async startConnection(): Promise<void> {
     try {
+      if (!this.authService.isAuthenticated() || !this.authService.getToken()) {
+        this.loggingService.log('Skipping notification hub connection: User not authenticated');
+        return;
+      }
+      
+      if (this.hubConnection.state === 'Connected') {
+        return;
+      }
+
       await this.hubConnection.start();
       this.loggingService.log('Notification hub connection established');
     } catch (err) {
@@ -136,17 +145,43 @@ export class NotificationService implements OnDestroy {
 
   private showSnackBarNotification(notification: Notification): void {
     const title = this.getLocalizedTitle(notification);
-    const message = this.getLocalizedBody(notification);
-    
-    const snackBarRef = this.snackBar.open(title, 'Ko\'rish', {
-      duration: 4000,
-      horizontalPosition: 'right',
-      verticalPosition: 'top'
+
+    // Create a Tailwind-compatible floating toast
+    const toast = document.createElement('div');
+    toast.style.cssText = [
+      'position:fixed', 'top:1.25rem', 'right:1.25rem', 'z-index:9999',
+      'display:flex', 'align-items:center', 'gap:0.75rem',
+      'background:#1e293b', 'color:#f8fafc',
+      'padding:0.875rem 1.25rem', 'border-radius:0.75rem',
+      'box-shadow:0 10px 25px rgba(0,0,0,0.3)',
+      'font-size:0.875rem', 'font-weight:500',
+      'max-width:360px', 'cursor:pointer',
+      'transition:opacity 0.3s ease',
+      'border-left:4px solid #6366f1'
+    ].join(';');
+
+    toast.innerHTML = `
+      <span style="font-size:1.25rem">${this.getNotificationIcon(notification.type) === 'chat' ? '💬' :
+        this.getNotificationIcon(notification.type) === 'star' ? '⭐' :
+        this.getNotificationIcon(notification.type) === 'payment' ? '💳' :
+        this.getNotificationIcon(notification.type) === 'warning' ? '⚠️' : '🔔'}</span>
+      <span>${title}</span>
+    `;
+
+    toast.addEventListener('click', () => {
+      this.router.navigate(['/notifications']);
+      document.body.removeChild(toast);
     });
 
-    snackBarRef.onAction().pipe(takeUntil(this.destroy$)).subscribe(() => {
-      this.router.navigate(['/notifications']);
-    });
+    document.body.appendChild(toast);
+
+    // Auto-remove after 4 seconds
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      setTimeout(() => {
+        if (document.body.contains(toast)) document.body.removeChild(toast);
+      }, 300);
+    }, 4000);
   }
 
   private getLocalizedTitle(notification: Notification): string {

@@ -174,6 +174,9 @@ public partial class AuthService : IAuthService
             ExpiresAt = expiresAt,
             UserId = user.Id,
             Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            AvatarUrl = user.AvatarUrl,
             Role = user.Role
         };
     }

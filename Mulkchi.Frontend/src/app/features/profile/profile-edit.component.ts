@@ -22,7 +22,7 @@ import { UserResponse, UserUpdateDto } from '../../core/models/user.model';
             [(ngModel)]="dto.firstName"
             name="firstName"
             required
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand p-2 border"
           />
         </div>
         <div>
@@ -32,7 +32,7 @@ import { UserResponse, UserUpdateDto } from '../../core/models/user.model';
             [(ngModel)]="dto.lastName"
             name="lastName"
             required
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand p-2 border"
           />
         </div>
       </div>
@@ -43,7 +43,7 @@ import { UserResponse, UserUpdateDto } from '../../core/models/user.model';
           type="text"
           [(ngModel)]="dto.phoneNumber"
           name="phoneNumber"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand p-2 border"
         />
       </div>
 
@@ -52,7 +52,7 @@ import { UserResponse, UserUpdateDto } from '../../core/models/user.model';
         <select
           [(ngModel)]="dto.preferredLanguage"
           name="preferredLanguage"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand p-2 border"
         >
           <option value="uz">O'zbekcha</option>
           <option value="ru">Русский</option>
@@ -66,7 +66,7 @@ import { UserResponse, UserUpdateDto } from '../../core/models/user.model';
           [(ngModel)]="dto.bio"
           name="bio"
           rows="4"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand p-2 border"
         ></textarea>
       </div>
 
@@ -81,7 +81,7 @@ import { UserResponse, UserUpdateDto } from '../../core/models/user.model';
         <button
           type="submit"
           [disabled]="saving"
-          class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+          class="bg-brand text-white px-4 py-2 rounded-md hover:opacity-90 disabled:opacity-50 transition"
         >
           <span *ngIf="saving">Saving...</span>
           <span *ngIf="!saving">Save</span>

@@ -79,6 +79,31 @@ public class PropertiesController : ControllerBase
         }
     }
 
+    [HttpGet("{id:guid}")]
+    [AllowAnonymous]
+    public async Task<ActionResult<PropertyResponse>> GetPropertyByIdAsync(Guid id)
+    {
+        try
+        {
+            var property = await this.propertyService.RetrievePropertyByIdAsync(id);
+            if (property is null)
+                return NotFound(new { message = $"Property with id '{id}' was not found." });
+            return Ok(property);
+        }
+        catch (PropertyDependencyValidationException propertyDependencyValidationException)
+        {
+            return NotFound(new { message = propertyDependencyValidationException.InnerException?.Message ?? "Not found." });
+        }
+        catch (PropertyDependencyException)
+        {
+            return StatusCode(500, new { message = "Internal server error." });
+        }
+        catch (PropertyServiceException)
+        {
+            return StatusCode(500, new { message = "Internal server error." });
+        }
+    }
+
     [HttpGet("autocomplete")]
     [AllowAnonymous]
     public async Task<ActionResult<IEnumerable<string>>> Autocomplete([FromQuery] string query)

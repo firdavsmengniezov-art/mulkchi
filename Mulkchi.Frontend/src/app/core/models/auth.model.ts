@@ -31,6 +31,9 @@ export interface AuthUser {
 export interface AuthUserInfo {
   userId: string;
   email: string;
+  firstName: string;
+  lastName: string;
+  avatarUrl?: string;
   role: UserRole;
   expiresAt: string;
   /** For SignalR only. Store in memory, never in localStorage/sessionStorage. */

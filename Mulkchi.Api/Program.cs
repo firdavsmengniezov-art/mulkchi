@@ -48,6 +48,9 @@ public partial class Program
 
     static async Task SeedTestData(WebApplication app)
     {
+        // Only seed in Development — never in Production or Staging
+        if (!app.Environment.IsDevelopment()) return;
+
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<IStorageBroker>();
         

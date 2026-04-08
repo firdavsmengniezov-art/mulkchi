@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Models.Foundations.Payments;
 using Mulkchi.Api.Models.Foundations.Payments.Exceptions;
@@ -66,7 +67,7 @@ public class PaymentsController : ControllerBase
 
     [HttpGet]
     [Authorize]
-    public ActionResult<PagedResult<Payment>> GetAllPayments([FromQuery] PaginationParams pagination)
+    public async Task<ActionResult<PagedResult<Payment>>> GetAllPayments([FromQuery] PaginationParams pagination)
     {
         try
         {
@@ -79,12 +80,12 @@ public class PaymentsController : ControllerBase
                 ? this.paymentService.RetrieveAllPayments()
                 : this.paymentService.RetrieveAllPayments().Where(p => p.PayerId == userId || p.ReceiverId == userId);
 
-            int totalCount = query.Count();
+            int totalCount = await query.CountAsync();
 
-            var items = query
+            var items = await query
                 .Skip((pagination.Page - 1) * pagination.PageSize)
                 .Take(pagination.PageSize)
-                .ToList();
+                .ToListAsync();
 
             var result = new PagedResult<Payment>
             {

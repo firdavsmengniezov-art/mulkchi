@@ -1,121 +1,176 @@
 @if (loading) {
-<div class="loading-page">
-  <div class="spinner"></div>
+<div class="flex items-center justify-center min-h-[60vh]">
+  <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-brand"></div>
 </div>
 }
 @if (property && !loading) {
-<div class="detail-page">
-  <div class="back-bar">
-    <div class="container">
-      <button class="btn-back" (click)="goBack()">← {{ 'COMMON.BACK' | translate }}</button>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mb-20 text-gray-900">
+  <!-- Top Section (Title, Basic info) -->
+  <div class="mb-6">
+    <div class="flex items-center justify-between mb-4">
+       <button (click)="goBack()" class="flex items-center text-sm font-medium text-gray-600 hover:text-gray-900 transition cursor-pointer">
+         <svg class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+         </svg>
+         {{ 'COMMON.BACK' | translate }}
+       </button>
+       <div class="flex gap-4">
+         <button class="flex items-center text-sm font-semibold underline hover:bg-gray-100 px-3 py-2 rounded-lg transition -mr-3">
+           <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+           Share
+         </button>
+         <app-favorite-button [propertyId]="property.id"></app-favorite-button>
+       </div>
+    </div>
+    
+    <h1 class="text-2xl sm:text-3xl font-semibold mb-2">{{ property.title }}</h1>
+    
+    <div class="flex flex-wrap items-center text-sm text-gray-800 gap-4 font-medium">
+      <span class="flex items-center gap-1">
+         <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+         {{ property.averageRating || ('PROPERTY.NEW' | translate) }}
+      </span>
+      <span>·</span>
+      <span class="underline">{{ property.district }}, {{ property.city }}, {{ property.region }}</span>
     </div>
   </div>
-  <!-- GALLERY -->
-  <div class="gallery">
-    <img [src]="getImage()" [alt]="property.title" class="main-img">
+
+  <!-- Image Gallery -->
+  <div class="w-full h-[300px] sm:h-[400px] md:h-[500px] bg-gray-200 rounded-2xl overflow-hidden mb-10 group">
+      <img [src]="getImage()" [alt]="property.title" class="w-full h-full object-cover transition duration-300 group-hover:scale-105">
   </div>
 
-  <div class="container detail-body">
-    <!-- LEFT -->
-    <div class="detail-left">
-      <div class="detail-badges">
-        <span class="listing-badge" [class]="'badge-' + property.listingType.toLowerCase()">
-          {{ property.listingType === 'Rent' ? ('PROPERTY.RENT' | translate) : property.listingType === 'Sale' ?
-          ('PROPERTY.SALE' | translate) : ('PROPERTY.DAILY' | translate) }}
-        </span>
-        <span class="type-badge">{{ property.type }}</span>
-      </div>
-      <h1>{{ property.title }}</h1>
-      <div class="detail-meta">
-        <span>📍 {{ property.district }}, {{ property.city }}</span>
-        <span>⭐ {{ property.averageRating || ('PROPERTY.NEW' | translate) }}</span>
-        <span>👁 {{ property.viewsCount }} {{ 'PROPERTY.VIEWS' | translate }}</span>
-        <span>❤️ {{ property.favoritesCount || 0 }} {{ 'PROPERTY.FAVORITES_COUNT' | translate }}</span>
-        <app-favorite-button [propertyId]="property.id"></app-favorite-button>
-      </div>
-      <div class="detail-stats">
-        <div class="ds"><strong>{{ property.numberOfBedrooms }}</strong><span>{{ 'PROPERTY.BEDROOMS' | translate
-            }}</span></div>
-        <div class="ds"><strong>{{ property.numberOfBathrooms }}</strong><span>{{ 'PROPERTY.BATHROOMS' | translate
-            }}</span></div>
-        <div class="ds"><strong>{{ property.area }}</strong><span>m²</span></div>
-        @if (property.maxGuests) {
-        <div class="ds"><strong>{{ property.maxGuests }}</strong><span>{{ 'PROPERTY.GUESTS' | translate }}</span></div>
-        }
+  <div class="flex flex-col lg:flex-row gap-12 relative items-start">
+    <!-- Left Column: Details -->
+    <div class="flex-1 w-full">
+      <div class="pb-6 border-b border-gray-200">
+        <h2 class="text-xl sm:text-2xl font-semibold mb-1">{{ property.type }} mezboni: {{ property.ownerName || 'User' }}</h2>
+        <div class="text-gray-800 font-light flex flex-wrap gap-x-1">
+          @if (property.maxGuests) { <span>{{ property.maxGuests }} {{ 'PROPERTY.GUESTS' | translate }} &middot; </span> }
+          <span>{{ property.numberOfBedrooms }} {{ 'PROPERTY.BEDROOMS' | translate }} &middot; </span>
+          <span>{{ property.numberOfBathrooms }} {{ 'PROPERTY.BATHROOMS' | translate }} &middot; </span>
+          <span>{{ property.area }} m²</span>
+        </div>
       </div>
 
-      <div class="location-badges" style="margin-top: 15px; display: flex; flex-wrap: wrap; gap: 10px;">
-        @if (property.hasMetroNearby) { <span class="loc-badge"
-          style="background:#e0e7ff; color:#4338ca; padding:4px 10px; border-radius:20px; font-size:13px; font-weight:600; display:flex; align-items:center; gap:4px">🚆
-          Metroga yaqin</span> }
-        @if (property.hasMarketNearby) { <span class="loc-badge"
-          style="background:#fce7f3; color:#4f46e5; padding:4px 10px; border-radius:20px; font-size:13px; font-weight:600; display:flex; align-items:center; gap:4px">🛒
-          Bozor/Magazin yaqin</span> }
-        @if (property.hasSchoolNearby) { <span class="loc-badge"
-          style="background:#dcfce7; color:#15803d; padding:4px 10px; border-radius:20px; font-size:13px; font-weight:600; display:flex; align-items:center; gap:4px">🏫
-          Maktab yaqin</span> }
-        @if (property.hasHospitalNearby) { <span class="loc-badge"
-          style="background:#fee2e2; color:#b91c1c; padding:4px 10px; border-radius:20px; font-size:13px; font-weight:600; display:flex; align-items:center; gap:4px">🏥
-          Kasalxona yaqin</span> }
-        @if (property.distanceToCityCenter > 0) { <span class="loc-badge"
-          style="background:#f3f4f6; color:#374151; padding:4px 10px; border-radius:20px; font-size:13px; font-weight:600; display:flex; align-items:center; gap:4px">📍
-          Markazgacha: {{ property.distanceToCityCenter }} km</span> }
+      <!-- Description -->
+      <div class="py-8 border-b border-gray-200">
+        <p class="text-gray-700 leading-relaxed font-light line-clamp-[10]">{{ property.description }}</p>
       </div>
 
-      <h3>{{ 'PROPERTY.DESCRIPTION' | translate }}</h3>
-      <p class="desc">{{ property.description }}</p>
-      <h3>{{ 'PROPERTY.AMENITIES' | translate }}</h3>
-      <div class="amenities-grid">
-        @for (a of getAmenities(); track a) {
-        <span class="amenity-chip">{{ a }}</span>
-        }
+      <!-- Location Advantages -->
+      <div class="py-8 border-b border-gray-200">
+         <h3 class="text-[22px] font-semibold mb-6">Atrofdagi qulayliklar</h3>
+         <div class="flex flex-wrap gap-4">
+           @if (property.hasMetroNearby) { 
+             <div class="flex items-center gap-4 w-full sm:w-[calc(50%-1rem)]">
+               <span class="text-2xl">🚆</span>
+               <div class="font-medium">Metro bekatiga yaqin</div>
+             </div> 
+           }
+           @if (property.hasMarketNearby) { 
+             <div class="flex items-center gap-4 w-full sm:w-[calc(50%-1rem)]">
+               <span class="text-2xl">🛒</span>
+               <div class="font-medium">Savdo markazi / do'kon</div>
+             </div> 
+           }
+           @if (property.hasSchoolNearby) { 
+             <div class="flex items-center gap-4 w-full sm:w-[calc(50%-1rem)]">
+               <span class="text-2xl">🏫</span>
+               <div class="font-medium">Maktab</div>
+             </div> 
+           }
+           @if (property.hasHospitalNearby) { 
+             <div class="flex items-center gap-4 w-full sm:w-[calc(50%-1rem)]">
+               <span class="text-2xl">🏥</span>
+               <div class="font-medium">Kasalxona</div>
+             </div> 
+           }
+         </div>
       </div>
-      <h3>{{ 'PROPERTY.ADDRESS' | translate }}</h3>
-      <p class="address">📍 {{ property.address }}, {{ property.district }}, {{ property.city }}, {{ property.region }}
-      </p>
+
+      <!-- Key Amenities -->
+      <div class="py-8 border-b border-gray-200">
+         <h3 class="text-[22px] font-semibold mb-6">{{ 'PROPERTY.AMENITIES' | translate }}</h3>
+         <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-4 font-light text-gray-800">
+           @for (a of getAmenities(); track a) {
+             <div class="flex items-center">
+               <!-- Basic checkmark since we don't have distinct icons for everything yet -->
+               <svg class="h-6 w-6 mr-4 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 13l4 4L19 7" /></svg>
+               {{ a }}
+             </div>
+           }
+         </div>
+      </div>
+
+      <!-- Reviews -->
+      <div class="py-8">
+        <app-reviews-list [propertyId]="property.id"></app-reviews-list>
+      </div>
+
     </div>
 
-    <!-- REVIEWS SECTION -->
-    <div class="reviews-section">
-      <app-reviews-list [propertyId]="property.id"></app-reviews-list>
-    </div>
-
-    <!-- BOOKING CARD -->
-    <div class="booking-card">
-      <div class="booking-price">{{ getPrice() }}</div>
-      <div class="booking-rating">⭐ {{ property.averageRating || 'Yangi' }}</div>
-
-      @if (bookingSuccess) {
-      <div class="success-msg">✅ {{ 'BOOKING.BOOKING_SUCCESS' | translate }}</div>
-      } @else {
-      @if (property.listingType !== 'Sale') {
-      <form>
-        <div class="date-inputs">
-          <div class="date-input">
-            <label>{{ 'BOOKING.CHECK_IN' | translate }}</label>
-            <input type="date" [(ngModel)]="checkIn" name="checkIn">
+    <!-- Right Column: Booking Card (Sticky) -->
+    <div class="w-full lg:w-[380px] lg:sticky lg:top-28 z-10 bottom-4">
+       <!-- Card UI -->
+       <div class="bg-white border border-gray-200 lg:shadow-xl rounded-2xl p-6 shadow-md drop-shadow-sm">
+          <div class="mb-6 flex justify-between items-end">
+            <div>
+               <span class="text-2xl font-bold">{{ getPrice() }}</span>
+            </div>
+            <div class="text-sm font-semibold flex items-center gap-1 line-through text-gray-400 invisible">
+               <!-- Placeholder for original price if implemented later -->
+            </div>
           </div>
-          <div class="date-input">
-            <label>{{ 'BOOKING.CHECK_OUT' | translate }}</label>
-            <input type="date" [(ngModel)]="checkOut" name="checkOut">
+
+          @if (bookingSuccess) {
+            <div class="bg-green-50 text-green-800 p-4 rounded-xl border border-green-200 font-medium text-center">
+              ✅ {{ 'BOOKING.BOOKING_SUCCESS' | translate }}
+            </div>
+          } @else {
+             @if (property.listingType !== 'Sale') {
+                <div class="border border-gray-400 rounded-xl overflow-hidden mb-4 shadow-sm">
+                  <div class="flex border-b border-gray-400">
+                    <div class="p-3 w-1/2 border-r border-gray-400 focus-within:bg-gray-50 focus-within:ring-2 ring-black relative">
+                      <label class="block text-[10px] uppercase font-bold text-gray-900 leading-3">{{ 'BOOKING.CHECK_IN' | translate }}</label>
+                      <input type="date" [(ngModel)]="checkIn" class="w-full text-sm outline-none bg-transparent pt-1 text-gray-700 cursor-pointer">
+                    </div>
+                    <div class="p-3 w-1/2 focus-within:bg-gray-50 focus-within:ring-2 ring-black relative">
+                      <label class="block text-[10px] uppercase font-bold text-gray-900 leading-3">{{ 'BOOKING.CHECK_OUT' | translate }}</label>
+                      <input type="date" [(ngModel)]="checkOut" class="w-full text-sm outline-none bg-transparent pt-1 text-gray-700 cursor-pointer">
+                    </div>
+                  </div>
+                  <div class="p-3 focus-within:bg-gray-50 focus-within:ring-2 ring-black relative">
+                     <label class="block text-[10px] uppercase font-bold text-gray-900 leading-3">{{ 'PROPERTY.GUEST_COUNT' | translate }}</label>
+                     <input type="number" [(ngModel)]="guests" class="w-full text-sm outline-none bg-transparent pt-1 text-gray-700" [max]="property.maxGuests || 10" min="1">
+                  </div>
+                </div>
+
+                @if (bookingError) {
+                   <div class="text-brand text-sm mb-4 font-medium">⚠️ {{ bookingError }}</div>
+                }
+
+                <button (click)="book()" [disabled]="bookingLoading" class="w-full bg-brand text-white font-semibold py-3.5 rounded-lg hover:opacity-95 transition disabled:opacity-50 mt-2 bg-gradient-to-r from-brand to-[#d70466]">
+                   {{ bookingLoading ? ('COMMON.LOADING' | translate) : ('BOOKING.CREATE' | translate) }}
+                </button>
+                <div class="text-center text-sm text-gray-500 mt-3 hidden sm:block">You won't be charged yet</div>
+             }
+
+             <div class="mt-6 pt-6 border-t border-gray-200">
+               <button (click)="goToChat()" class="w-full bg-white border border-gray-900 text-gray-900 font-semibold py-3 rounded-lg hover:bg-gray-50 transition active:scale-95">
+                 {{ 'PROPERTY.CONTACT_HOST' | translate }}
+               </button>
+             </div>
+          }
+       </div>
+       
+       <!-- Mobile quick booking bar (only visible on small screens at the absolute bottom) -->
+       <div class="fixed bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-white lg:hidden z-50 flex justify-between items-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+          <div>
+             <span class="font-bold text-lg">{{ getPrice() }}</span>
           </div>
-        </div>
-        <div class="guests-input">
-          <label>{{ 'PROPERTY.GUEST_COUNT' | translate }}</label>
-          <input type="number" [(ngModel)]="guests" name="guests" min="1" [max]="property.maxGuests || 10">
-        </div>
-      </form>
-      @if (bookingError) {
-      <div class="error-msg">⚠️ {{ bookingError }}</div>
-      }
-      <button class="btn-book" (click)="book()" [disabled]="bookingLoading">
-        {{ bookingLoading ? ('COMMON.LOADING' | translate) : ('BOOKING.CREATE' | translate) }}
-      </button>
-      }
-      <button class="btn-chat" (click)="goToChat()">
-        💬 {{ 'PROPERTY.CONTACT_HOST' | translate }}
-      </button>
-      }
+          <button (click)="book()" class="bg-brand text-white px-6 py-3 rounded-lg font-bold">Reserva qiling</button>
+       </div>
     </div>
   </div>
 </div>

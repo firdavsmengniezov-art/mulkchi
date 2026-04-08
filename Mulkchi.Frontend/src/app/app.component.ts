@@ -27,9 +27,29 @@ export class AppComponent implements OnInit {
     // Initialize language
     this.languageService.init();
 
-    // Start notification service when user is logged in
+    // Recover session on page reload
+    const savedUser = localStorage.getItem('auth_user');
+    if (savedUser && savedUser !== 'undefined' && savedUser !== 'null' && !this.authService.getToken()) {
+      this.authService.refreshToken().subscribe({
+        next: () => this.subscribeToUser(), // Token restored, start services
+        error: () => {
+          // Token expired. We cleanly wipe state so nothing tries to load auth data
+          console.warn('Session expired. Cleaning up local state.');
+          this.authService.clearAuth();
+          this.subscribeToUser(); 
+        }
+      });
+    } else {
+      // Already clean guest state or already valid session
+      this.subscribeToUser();
+    }
+  }
+
+  private subscribeToUser(): void {
+    // Start notification service and load favorites when user is confirmed fully logged in
     this.authService.currentUser$.subscribe(user => {
-      if (user) {
+      // Must have both user and active token to perform authenticated calls
+      if (user && this.authService.getToken()) {
         this.notificationService.startConnection();
         this.favoriteService.loadUserFavorites();
       }
