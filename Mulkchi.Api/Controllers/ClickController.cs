@@ -33,6 +33,9 @@ public class ClickController : ControllerBase
     private const int ErrTransactionCancelled = -9;
     private const int ErrInvalidAmount        = -2;
 
+    // Maximum allowed difference between Click-reported and stored amounts (UZS)
+    private const double AmountToleranceUzs = 0.01;
+
     private readonly IPaymentService paymentService;
     private readonly IConfiguration configuration;
 
@@ -78,7 +81,7 @@ public class ClickController : ControllerBase
         }
 
         // 3. Validate amount (Click sends in UZS, no conversion needed)
-        if (Math.Abs(request.Amount - (double)payment.Amount) > 0.01)
+        if (Math.Abs(request.Amount - (double)payment.Amount) > AmountToleranceUzs)
         {
             response.Error = ErrInvalidAmount;
             response.ErrorNote = "Invalid amount.";

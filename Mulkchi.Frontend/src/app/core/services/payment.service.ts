@@ -69,6 +69,7 @@ export class PaymentService {
   /**
    * Initiate a Click payment by redirecting to the Click checkout page.
    * URL format: https://my.click.uz/services/pay?service_id=<sid>&merchant_id=<mid>&amount=<amount>&transaction_param=<paymentId>
+   * NOTE: returnUrl must be a trusted origin from your own application.
    */
   initiateClickPayment(
     paymentId: string,
@@ -77,12 +78,15 @@ export class PaymentService {
     merchantId: string,
     returnUrl: string
   ): string {
+    // Only allow relative paths or same-origin URLs as return URLs
+    const safeReturnUrl = returnUrl.startsWith('/') ? returnUrl : '/';
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
     const params = new URLSearchParams({
       service_id: serviceId,
       merchant_id: merchantId,
       amount: amountUzs.toString(),
       transaction_param: paymentId,
-      return_url: returnUrl,
+      return_url: origin + safeReturnUrl,
     });
     return `https://my.click.uz/services/pay?${params.toString()}`;
   }

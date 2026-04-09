@@ -74,7 +74,7 @@ public class PaymeController : ControllerBase
             return Error(request.Id, ErrOrderNotFound, "Order not found.");
 
         // Amount is in tiyin (1/100 of UZS), so 1 UZS = 100 tiyin
-        if (amount != (long)(payment.Amount * 100))
+        if (amount != (long)Math.Round(payment.Amount * 100, MidpointRounding.AwayFromZero))
             return Error(request.Id, ErrInvalidAmount, "Invalid amount.");
 
         return Success(request.Id, new { allow = true });
@@ -94,7 +94,7 @@ public class PaymeController : ControllerBase
         if (payment is null)
             return Error(request.Id, ErrOrderNotFound, "Order not found.");
 
-        if (amount != (long)(payment.Amount * 100))
+        if (amount != (long)Math.Round(payment.Amount * 100, MidpointRounding.AwayFromZero))
             return Error(request.Id, ErrInvalidAmount, "Invalid amount.");
 
         // If already linked to this transaction — return existing info

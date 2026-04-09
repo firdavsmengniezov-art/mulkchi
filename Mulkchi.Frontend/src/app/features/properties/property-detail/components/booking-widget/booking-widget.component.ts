@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -9,7 +9,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './booking-widget.component.html',
   styleUrls: ['./booking-widget.component.scss'],
 })
-export class BookingWidgetComponent {
+export class BookingWidgetComponent implements OnChanges {
   @Input() property: any;
   @Input() reviewSummary: any;
   @Input() blockedDates: string[] = [];
@@ -18,6 +18,37 @@ export class BookingWidgetComponent {
   checkInDate: string = '';
   checkOutDate: string = '';
   guestsCount: number = 1;
+
+  /** Cached result — recomputed whenever dates or blocked list change. */
+  hasBlockedDatesInRange = false;
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['blockedDates']) {
+      this.recomputeBlocked();
+    }
+  }
+
+  private recomputeBlocked() {
+    if (!this.checkInDate || !this.checkOutDate || this.blockedDates.length === 0) {
+      this.hasBlockedDatesInRange = false;
+      return;
+    }
+    const start = new Date(this.checkInDate);
+    const end = new Date(this.checkOutDate);
+    const current = new Date(start);
+    while (current < end) {
+      if (this.blockedDates.includes(current.toISOString().split('T')[0])) {
+        this.hasBlockedDatesInRange = true;
+        return;
+      }
+      current.setDate(current.getDate() + 1);
+    }
+    this.hasBlockedDatesInRange = false;
+  }
+
+  onDateChange() {
+    this.recomputeBlocked();
+  }
 
   get priceNode(): number {
     return (
@@ -54,20 +85,6 @@ export class BookingWidgetComponent {
 
   get finalTotal(): number {
     return this.calculatedPrice + this.serviceFee;
-  }
-
-  /** Returns true if any date in the selected range is blocked. */
-  get hasBlockedDatesInRange(): boolean {
-    if (!this.checkInDate || !this.checkOutDate || this.blockedDates.length === 0) return false;
-    const start = new Date(this.checkInDate);
-    const end = new Date(this.checkOutDate);
-    const current = new Date(start);
-    while (current < end) {
-      const iso = current.toISOString().split('T')[0];
-      if (this.blockedDates.includes(iso)) return true;
-      current.setDate(current.getDate() + 1);
-    }
-    return false;
   }
 
   canBook(): boolean {

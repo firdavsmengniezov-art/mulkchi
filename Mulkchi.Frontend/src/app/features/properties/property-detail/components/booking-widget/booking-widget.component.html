@@ -13,11 +13,11 @@
 		<div class="date-inputs">
 			<div class="input-cell half border-right">
 				<label>KIRISH</label>
-				<input type="date" [(ngModel)]="checkInDate" [min]="todayStr()" />
+				<input type="date" [(ngModel)]="checkInDate" [min]="todayStr()" (ngModelChange)="onDateChange()" />
 			</div>
 			<div class="input-cell half">
 				<label>CHIQISH</label>
-				<input type="date" [(ngModel)]="checkOutDate" [min]="checkInDate || todayStr()" />
+				<input type="date" [(ngModel)]="checkOutDate" [min]="checkInDate || todayStr()" (ngModelChange)="onDateChange()" />
 			</div>
 			<div class="input-cell full border-top">
 				<label>MEHMONLAR</label>

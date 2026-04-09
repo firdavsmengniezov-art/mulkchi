@@ -46,7 +46,7 @@ export interface MapMarker {
   `],
 })
 export class PropertyMapComponent implements AfterViewInit, OnChanges, OnDestroy {
-  @ViewChild('mapContainer', { static: true }) mapContainer!: ElementRef<HTMLDivElement>;
+  @ViewChild('mapContainer', { static: false }) mapContainer!: ElementRef<HTMLDivElement>;
 
   /** Single-marker convenience inputs */
   @Input() lat?: number | null;
