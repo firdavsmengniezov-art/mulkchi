@@ -7,6 +7,7 @@ import { PropertyService } from '../../../core/services/property.service';
 import { PropertyCardComponent } from '../components/property-card/property-card.component';
 import { PropertyFilterBarComponent } from '../components/property-filter-bar/property-filter-bar.component';
 import { PropertySkeletonComponent } from '../components/property-skeleton/property-skeleton.component';
+import { PropertyMapComponent, MapMarker } from '../../../shared/components/property-map/property-map.component';
 
 @Component({
   selector: 'app-property-search-page',
@@ -18,6 +19,7 @@ import { PropertySkeletonComponent } from '../components/property-skeleton/prope
     PropertyFilterBarComponent,
     PropertyCardComponent,
     PropertySkeletonComponent,
+    PropertyMapComponent,
   ],
   templateUrl: './property-search-page.component.html',
   styleUrls: ['./property-search-page.component.scss'],
@@ -27,6 +29,7 @@ export class PropertySearchPageComponent implements OnInit {
   totalCount = 0;
   isLoading = true;
   params: PropertySearchParams = { page: 1, pageSize: 12 };
+  showMapView = false;
 
   constructor(
     private propertyService: PropertyService,
@@ -84,6 +87,21 @@ export class PropertySearchPageComponent implements OnInit {
   onFavoriteToggled(propertyId: string) {
     // Not fully implemented on backend in this context example, so stub call if needed
     // this.propertyService.toggleFavorite(propertyId).subscribe();
+  }
+
+  toggleView() {
+    this.showMapView = !this.showMapView;
+  }
+
+  get mapMarkers(): MapMarker[] {
+    return this.properties
+      .filter((p) => p.latitude != null && p.longitude != null)
+      .map((p) => ({
+        lat: p.latitude!,
+        lng: p.longitude!,
+        title: p.title,
+        popup: `<strong>${p.title}</strong><br>${p.address || ''}`,
+      }));
   }
 
   get skeletonArray() {

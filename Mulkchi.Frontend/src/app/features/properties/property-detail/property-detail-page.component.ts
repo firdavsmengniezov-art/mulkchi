@@ -15,6 +15,7 @@ import { HostCardComponent } from './components/host-card/host-card.component';
 import { PropertyImageGalleryComponent } from './components/property-image-gallery/property-image-gallery.component';
 import { PropertyReviewsComponent } from './components/property-reviews/property-reviews.component';
 import { LoggingService } from '../../../core/services/logging.service';
+import { PropertyMapComponent } from '../../../shared/components/property-map/property-map.component';
 
 @Component({
   selector: 'app-property-detail-page',
@@ -28,6 +29,7 @@ import { LoggingService } from '../../../core/services/logging.service';
     HostCardComponent,
     PropertyReviewsComponent,
     PropertyCardComponent,
+    PropertyMapComponent,
   ],
   templateUrl: './property-detail-page.component.html',
   styleUrls: ['./property-detail-page.component.scss'],

@@ -17,6 +17,9 @@ namespace Mulkchi.Api.Services.Foundations.Bookings
         ValueTask<BookingResponse> ConfirmBookingAsync(Guid bookingId);
         ValueTask<BookingResponse> CancelBookingAsync(Guid bookingId);
         
+        // Availability: returns all booked/blocked dates for a property in a given month
+        Task<IEnumerable<DateOnly>> RetrieveBlockedDatesAsync(Guid propertyId, int year, int month);
+
         // Legacy methods maintained if internally referenced
         IQueryable<Booking> RetrieveAllBookings();
         ValueTask<Booking> ModifyBookingAsync(Booking booking);

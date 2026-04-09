@@ -56,9 +56,24 @@ export class BookingWidgetComponent {
     return this.calculatedPrice + this.serviceFee;
   }
 
+  /** Returns true if any date in the selected range is blocked. */
+  get hasBlockedDatesInRange(): boolean {
+    if (!this.checkInDate || !this.checkOutDate || this.blockedDates.length === 0) return false;
+    const start = new Date(this.checkInDate);
+    const end = new Date(this.checkOutDate);
+    const current = new Date(start);
+    while (current < end) {
+      const iso = current.toISOString().split('T')[0];
+      if (this.blockedDates.includes(iso)) return true;
+      current.setDate(current.getDate() + 1);
+    }
+    return false;
+  }
+
   canBook(): boolean {
     return (
       this.totalNights > 0 &&
+      !this.hasBlockedDatesInRange &&
       this.guestsCount > 0 &&
       this.guestsCount <= (this.property?.maxGuests || 10)
     );
@@ -82,5 +97,3 @@ export class BookingWidgetComponent {
   todayStr(): string { return new Date().toISOString().split('T')[0]; }
   guestsArray(max: number): number[] { return Array.from({length: max}, (_, i) => i + 1); }
 }
-
-

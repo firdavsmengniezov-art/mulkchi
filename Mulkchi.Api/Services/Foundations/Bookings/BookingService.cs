@@ -186,6 +186,37 @@ namespace Mulkchi.Api.Services.Foundations.Bookings
         public IQueryable<Booking> RetrieveAllBookings() =>
             TryCatch(() => this.storageBroker.SelectAllBookings());
 
+        public async Task<IEnumerable<DateOnly>> RetrieveBlockedDatesAsync(Guid propertyId, int year, int month)
+        {
+            var startOfMonth = new DateTimeOffset(year, month, 1, 0, 0, 0, TimeSpan.Zero);
+            var endOfMonth = startOfMonth.AddMonths(1);
+
+            var bookings = await this.storageBroker.SelectAllBookings()
+                .Where(b =>
+                    b.PropertyId == propertyId &&
+                    b.Status != BookingStatus.Cancelled &&
+                    b.CheckInDate < endOfMonth &&
+                    b.CheckOutDate > startOfMonth)
+                .Select(b => new { b.CheckInDate, b.CheckOutDate })
+                .ToListAsync();
+
+            var blocked = new HashSet<DateOnly>();
+            foreach (var b in bookings)
+            {
+                var current = b.CheckInDate.Date;
+                var end = b.CheckOutDate.Date;
+                while (current < end)
+                {
+                    var d = DateOnly.FromDateTime(current);
+                    if (d.Year == year && d.Month == month)
+                        blocked.Add(d);
+                    current = current.AddDays(1);
+                }
+            }
+
+            return blocked.OrderBy(d => d);
+        }
+
         public ValueTask<Booking> ModifyBookingAsync(Booking booking) =>
             TryCatch(async () =>
             {

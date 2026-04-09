@@ -30,7 +30,10 @@
 		<button class="btn-book" [disabled]="!canBook()" (click)="onBookClicked()">
 			Band qilish
 		</button>
-		<p class="no-charge-msg">Sizdan hozircha pul yechib olinmaydi</p>
+		<p class="no-charge-msg" *ngIf="!hasBlockedDatesInRange">Sizdan hozircha pul yechib olinmaydi</p>
+		<p class="blocked-warning" *ngIf="hasBlockedDatesInRange">
+			⚠️ Tanlangan sanalar oralig'ida band qilingan kunlar mavjud. Iltimos, boshqa sanalarni tanlang.
+		</p>
 
 		<!-- Breakdown -->
 		<div class="price-breakdown" *ngIf="totalNights > 0">
