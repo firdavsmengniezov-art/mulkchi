@@ -13,11 +13,11 @@
 		<div class="date-inputs">
 			<div class="input-cell half border-right">
 				<label>KIRISH</label>
-				<input type="date" [(ngModel)]="checkInDate" [min]="todayStr()" />
+				<input type="date" [(ngModel)]="checkInDate" [min]="todayStr()" (ngModelChange)="onDateChange()" />
 			</div>
 			<div class="input-cell half">
 				<label>CHIQISH</label>
-				<input type="date" [(ngModel)]="checkOutDate" [min]="checkInDate || todayStr()" />
+				<input type="date" [(ngModel)]="checkOutDate" [min]="checkInDate || todayStr()" (ngModelChange)="onDateChange()" />
 			</div>
 			<div class="input-cell full border-top">
 				<label>MEHMONLAR</label>
@@ -30,7 +30,10 @@
 		<button class="btn-book" [disabled]="!canBook()" (click)="onBookClicked()">
 			Band qilish
 		</button>
-		<p class="no-charge-msg">Sizdan hozircha pul yechib olinmaydi</p>
+		<p class="no-charge-msg" *ngIf="!hasBlockedDatesInRange">Sizdan hozircha pul yechib olinmaydi</p>
+		<p class="blocked-warning" *ngIf="hasBlockedDatesInRange">
+			⚠️ Tanlangan sanalar oralig'ida band qilingan kunlar mavjud. Iltimos, boshqa sanalarni tanlang.
+		</p>
 
 		<!-- Breakdown -->
 		<div class="price-breakdown" *ngIf="totalNights > 0">

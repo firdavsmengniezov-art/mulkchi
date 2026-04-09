@@ -55,6 +55,42 @@ export class PaymentService {
     );
   }
 
+  /**
+   * Initiate a Payme payment by creating a payment record and returning the Payme checkout URL.
+   * The checkout URL format: https://checkout.paycom.uz/{base64(m=<merchantId>;ac.order_id=<paymentId>;a=<amountTiyin>)}
+   */
+  initiatePaymePayment(paymentId: string, amountUzs: number, merchantId: string): string {
+    const amountTiyin = Math.round(amountUzs * 100);
+    const params = `m=${merchantId};ac.order_id=${paymentId};a=${amountTiyin}`;
+    const encoded = btoa(params);
+    return `https://checkout.paycom.uz/${encoded}`;
+  }
+
+  /**
+   * Initiate a Click payment by redirecting to the Click checkout page.
+   * URL format: https://my.click.uz/services/pay?service_id=<sid>&merchant_id=<mid>&amount=<amount>&transaction_param=<paymentId>
+   * NOTE: returnUrl must be a trusted origin from your own application.
+   */
+  initiateClickPayment(
+    paymentId: string,
+    amountUzs: number,
+    serviceId: string,
+    merchantId: string,
+    returnUrl: string
+  ): string {
+    // Only allow relative paths or same-origin URLs as return URLs
+    const safeReturnUrl = returnUrl.startsWith('/') ? returnUrl : '/';
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const params = new URLSearchParams({
+      service_id: serviceId,
+      merchant_id: merchantId,
+      amount: amountUzs.toString(),
+      transaction_param: paymentId,
+      return_url: origin + safeReturnUrl,
+    });
+    return `https://my.click.uz/services/pay?${params.toString()}`;
+  }
+
   private handleError(error: HttpErrorResponse) {
     this.logger.error('Payment API Error:', error);
     return throwError(() => error);

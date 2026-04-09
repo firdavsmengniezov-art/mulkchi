@@ -7,13 +7,35 @@
 		<div class="results-count" *ngIf="!isLoading">
 			<strong>{{ totalCount }}</strong> <span>ta mulk topildi</span>
 		</div>
-		<select class="sort-select" [(ngModel)]="params.sortBy" (change)="loadProperties()">
-			<option [ngValue]="undefined">Saralash</option>
-			<option value="price_asc">💰 Arzon birinchi</option>
-			<option value="price_desc">💎 Qimmat birinchi</option>
-			<option value="rating">⭐ Reyting bo'yicha</option>
-			<option value="newest">🆕 Yangi birinchi</option>
-		</select>
+		<div class="header-actions">
+			<button class="view-toggle-btn" (click)="toggleView()" title="{{ showMapView ? 'Ro\'yxat ko\'rinishi' : 'Xarita ko\'rinishi' }}">
+				<span *ngIf="!showMapView">🗺️ Xarita</span>
+				<span *ngIf="showMapView">☰ Ro'yxat</span>
+			</button>
+			<select class="sort-select" [(ngModel)]="params.sortBy" (change)="loadProperties()">
+				<option [ngValue]="undefined">Saralash</option>
+				<option value="price_asc">💰 Arzon birinchi</option>
+				<option value="price_desc">💎 Qimmat birinchi</option>
+				<option value="rating">⭐ Reyting bo'yicha</option>
+				<option value="newest">🆕 Yangi birinchi</option>
+			</select>
+		</div>
+	</div>
+
+	<!-- Map view -->
+	<div class="map-view" *ngIf="showMapView && !isLoading">
+		<app-property-map
+			*ngIf="mapMarkers.length > 0; else noMapMarkers"
+			[markers]="mapMarkers"
+			[zoom]="11"
+			height="600px">
+		</app-property-map>
+		<ng-template #noMapMarkers>
+			<div class="empty-state">
+				<div class="empty-icon">🗺️</div>
+				<p>Xaritada ko'rsatish uchun koordinatali mulklar topilmadi.</p>
+			</div>
+		</ng-template>
 	</div>
 
 	<!-- Skeleton loading -->
@@ -21,8 +43,8 @@
 		<app-property-skeleton *ngFor="let s of skeletonArray"></app-property-skeleton>
 	</div>
 
-	<!-- Results grid -->
-	<div class="properties-grid" *ngIf="!isLoading && properties.length > 0">
+	<!-- Results grid (hidden when map view is active) -->
+	<div class="properties-grid" *ngIf="!isLoading && !showMapView && properties.length > 0">
 		<app-property-card *ngFor="let property of properties" [property]="property"
 			(favoriteToggled)="onFavoriteToggled($event)"></app-property-card>
 	</div>
@@ -37,8 +59,8 @@
 		</button>
 	</div>
 
-	<!-- Pagination -->
-	<div class="pagination" *ngIf="!isLoading && totalPages > 1">
+	<!-- Pagination (only in list view) -->
+	<div class="pagination" *ngIf="!isLoading && !showMapView && totalPages > 1">
 		<button [disabled]="params.page === 1" (click)="onPageChange(params.page! - 1)">‹</button>
 		<span class="page-info">{{ params.page }} / {{ totalPages }}</span>
 		<button [disabled]="params.page === totalPages" (click)="onPageChange(params.page! + 1)">›</button>

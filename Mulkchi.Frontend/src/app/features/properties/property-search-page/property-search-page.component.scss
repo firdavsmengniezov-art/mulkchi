@@ -26,6 +26,30 @@
     }
   }
 
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .view-toggle-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    background: white;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+
+    &:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-soft);
+    }
+  }
+
   .sort-select {
     padding: 8px 36px 8px 14px;
     border: 1px solid var(--border);
@@ -46,6 +70,12 @@
       border-color: var(--accent);
     }
   }
+}
+
+.map-view {
+  margin-bottom: 40px;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
 }
 
 .properties-grid {

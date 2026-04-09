@@ -1,6 +1,7 @@
 #nullable disable
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
@@ -175,6 +176,26 @@ namespace Mulkchi.Api.Controllers
             catch (UnauthorizedAccessException ex)
             {
                 return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Internal server error." });
+            }
+        }
+
+        [HttpGet("availability/{propertyId}")]
+        [AllowAnonymous]
+        public async Task<ActionResult> GetPropertyAvailability(Guid propertyId, [FromQuery] int year, [FromQuery] int month)
+        {
+            try
+            {
+                if (year <= 0) year = DateTimeOffset.UtcNow.Year;
+                if (month <= 0 || month > 12) month = DateTimeOffset.UtcNow.Month;
+
+                var blocked = await this.bookingService.RetrieveBlockedDatesAsync(propertyId, year, month);
+                var blockedStrings = blocked.Select(d => d.ToString("yyyy-MM-dd")).ToList();
+
+                return Ok(new { propertyId, year, month, blockedDates = blockedStrings });
             }
             catch (Exception)
             {

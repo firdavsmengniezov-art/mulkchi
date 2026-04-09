@@ -54,10 +54,23 @@
 				<h2>Joylashuv</h2>
 				<p class="map-address">{{ property.address }}, {{ property.city }}, {{ property.region }}</p>
 				<div class="map-placeholder">
-					<!-- iframe map -->
-					<iframe *ngIf="mapUrl" [src]="mapUrl" width="100%" height="450"
-						style="border-radius:12px; border:1px solid #ddd;">
-					</iframe>
+					<!-- Leaflet map when coordinates are available -->
+					<app-property-map
+						*ngIf="property.latitude && property.longitude; else googleMapFallback"
+						[lat]="property.latitude"
+						[lng]="property.longitude"
+						[title]="property.title"
+						[popup]="property.address + ', ' + property.city"
+						[zoom]="15"
+						height="450px">
+					</app-property-map>
+
+					<!-- Fallback: Google Maps iframe when no coordinates -->
+					<ng-template #googleMapFallback>
+						<iframe *ngIf="mapUrl" [src]="mapUrl" width="100%" height="450"
+							style="border-radius:12px; border:1px solid #ddd;">
+						</iframe>
+					</ng-template>
 				</div>
 			</section>
 
