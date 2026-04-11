@@ -16,7 +16,7 @@ import { LoggingService } from '../../../core/services/logging.service';
 export class ImageUploaderComponent implements OnInit {
   @Input() propertyId: string | null = null;
   @Input() existingImages: PropertyImage[] = [];
-  @Input() maxFiles: number = 10;
+  @Input() maxFiles: number = 20;
   @Input() maxFileSize: number = 5 * 1024 * 1024; // 5MB
   @Input() acceptedTypes: string[] = ['image/jpeg', 'image/png', 'image/webp'];
   

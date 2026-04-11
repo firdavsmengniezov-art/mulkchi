@@ -232,5 +232,72 @@ namespace Mulkchi.Api.Controllers
                 return StatusCode(500, new { message = "Internal server error." });
             }
         }
+
+        /// <summary>
+        /// Sanalarni 10 daqiqa davomida bloklaydi (phantom booking himoyasi).
+        /// POST /api/Bookings/hold
+        /// </summary>
+        [HttpPost("hold")]
+        [Authorize]
+        public async ValueTask<ActionResult> CreateBookingHold([FromBody] BookingHoldRequest request)
+        {
+            try
+            {
+                var hold = await this.bookingService.CreateBookingHoldAsync(
+                    request.PropertyId, request.CheckInDate, request.CheckOutDate);
+
+                return Ok(new
+                {
+                    holdId = hold.Id,
+                    propertyId = hold.PropertyId,
+                    checkInDate = hold.CheckInDate,
+                    checkOutDate = hold.CheckOutDate,
+                    expiresAt = hold.ExpiresAt,
+                    message = "Sanalar 10 daqiqa davomida siz uchun band qilindi."
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Internal server error." });
+            }
+        }
+
+        /// <summary>
+        /// Aktiv holdni bekor qiladi.
+        /// DELETE /api/Bookings/hold/{holdId}
+        /// </summary>
+        [HttpDelete("hold/{holdId}")]
+        [Authorize]
+        public async ValueTask<ActionResult> ReleaseBookingHold(Guid holdId)
+        {
+            try
+            {
+                await this.bookingService.ReleaseBookingHoldAsync(holdId);
+                return NoContent();
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Internal server error." });
+            }
+        }
     }
+
+    /// <summary>Request body for creating a booking hold.</summary>
+    public record BookingHoldRequest(
+        Guid PropertyId,
+        DateTimeOffset CheckInDate,
+        DateTimeOffset CheckOutDate);
 }
+

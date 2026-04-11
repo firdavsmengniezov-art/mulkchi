@@ -1,233 +1,295 @@
-<div class="property-form container mx-auto px-4 py-8">
-  <div class="max-w-4xl mx-auto">
-    <!-- Header -->
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900 mb-2">
-        {{ isEditMode ? 'Edit Property' : 'Create New Property' }}
-      </h1>
-      <p class="text-gray-600">
-        {{ isEditMode ? 'Update your property information' : 'Fill in the details to list your property' }}
-      </p>
+<div class="property-form">
+  <!-- Header -->
+  <div class="form-header">
+    <h1>{{ isEditMode ? 'Mulkni tahrirlash' : 'Yangi mulk qo\'shish' }}</h1>
+    <p>{{ isEditMode ? 'Mulk ma\'lumotlarini yangilang' : 'E\'lon berish uchun barcha maydonlarni to\'ldiring' }}</p>
+  </div>
+
+  <!-- Stepper (bosqich ko'rsatkichi) -->
+  <div class="stepper" *ngIf="!loading">
+    <div
+      *ngFor="let step of steps; let i = index"
+      class="step"
+      [class.active]="i === currentStep"
+      [class.completed]="isStepCompleted(i)"
+      (click)="goToStep(i)"
+      role="button"
+      [attr.aria-current]="i === currentStep ? 'step' : null"
+    >
+      <div class="step-icon">
+        <span *ngIf="!isStepCompleted(i)">{{ step.icon }}</span>
+        <span *ngIf="isStepCompleted(i)">✅</span>
+      </div>
+      <span class="step-label">{{ step.label }}</span>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Ma'lumotlar yuklanmoqda...</p>
+  </div>
+
+  <!-- ─── Step forms ─── -->
+  <div class="form-body" *ngIf="!loading">
+
+    <!-- ═══ 1-bosqich: Asosiy ma'lumotlar ═══ -->
+    <div class="step-panel" *ngIf="currentStep === 0">
+      <h2 class="step-title">📋 Asosiy ma'lumotlar</h2>
+
+      <div class="field-group">
+        <label class="field-label">Sarlavha *</label>
+        <input type="text"
+               [(ngModel)]="property.title"
+               name="title"
+               class="field-input"
+               placeholder="Masalan: Shahar markazida zamonaviy 3 xonali kvartira"
+               required />
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Tavsif *</label>
+        <textarea [(ngModel)]="property.description"
+                  name="description"
+                  rows="5"
+                  class="field-input"
+                  placeholder="Mulkingizni batafsil tasvirlab bering..."
+                  required></textarea>
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label">Mulk turi</label>
+          <select [(ngModel)]="property.propertyType" name="propertyType" class="field-input">
+            <option *ngFor="let t of propertyTypes" [value]="t">{{ t }}</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">E'lon turi</label>
+          <select [(ngModel)]="property.listingType" name="listingType" class="field-input">
+            <option value="Sale">Sotish</option>
+            <option value="Rent">Ijaraga berish (oylik)</option>
+            <option value="ShortTermRent">Kunlik ijara</option>
+          </select>
+        </div>
+      </div>
     </div>
 
-    <!-- Loading State -->
-    <div class="text-center py-12" *ngIf="loading">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-      <p class="mt-4 text-gray-600">Loading property details...</p>
+    <!-- ═══ 2-bosqich: Parametrlar ═══ -->
+    <div class="step-panel" *ngIf="currentStep === 1">
+      <h2 class="step-title">📐 Parametrlar</h2>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label">Maydon (m²) *</label>
+          <input type="number" [(ngModel)]="property.area" name="area"
+                 min="1" class="field-input" placeholder="0" required />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Xonalar soni *</label>
+          <input type="number" [(ngModel)]="property.roomsCount" name="roomsCount"
+                 min="1" class="field-input" />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Hammomlar soni</label>
+          <input type="number" [(ngModel)]="property.bathroomsCount" name="bathroomsCount"
+                 min="1" class="field-input" />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Qurilish yili</label>
+          <input type="number" [(ngModel)]="property.yearBuilt" name="yearBuilt"
+                 min="1900" [max]="currentYear + 1" class="field-input" />
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Qulayliklar</label>
+        <div class="amenities-grid">
+          <label class="amenity-item"><input type="checkbox" [(ngModel)]="property.hasParking" name="hasParking" /><span>🚗 Avtoturargoh</span></label>
+          <label class="amenity-item"><input type="checkbox" [(ngModel)]="property.hasFurniture" name="hasFurniture" /><span>🛋️ Mebel</span></label>
+          <label class="amenity-item"><input type="checkbox" [(ngModel)]="property.hasAirConditioning" name="hasAirConditioning" /><span>❄️ Konditsioner</span></label>
+          <label class="amenity-item"><input type="checkbox" [(ngModel)]="property.hasHeating" name="hasHeating" /><span>🔥 Isitish</span></label>
+          <label class="amenity-item"><input type="checkbox" [(ngModel)]="property.hasWifi" name="hasWifi" /><span>📶 Wi-Fi</span></label>
+          <label class="amenity-item"><input type="checkbox" [(ngModel)]="property.hasPool" name="hasPool" /><span>🏊 Havuz</span></label>
+          <label class="amenity-item"><input type="checkbox" [(ngModel)]="property.hasSecurity" name="hasSecurity" /><span>🔒 Xavfsizlik</span></label>
+          <label class="amenity-item"><input type="checkbox" [(ngModel)]="property.hasElevator" name="hasElevator" /><span>🛗 Lift</span></label>
+          <label class="amenity-item"><input type="checkbox" [(ngModel)]="property.hasGenerator" name="hasGenerator" /><span>⚡ Generator</span></label>
+          <label class="amenity-item"><input type="checkbox" [(ngModel)]="property.hasGas" name="hasGas" /><span>🔵 Gaz</span></label>
+          <label class="amenity-item"><input type="checkbox" [(ngModel)]="property.hasWasher" name="hasWasher" /><span>🧺 Kir yuvish mashinasi</span></label>
+          <label class="amenity-item"><input type="checkbox" [(ngModel)]="property.hasKitchen" name="hasKitchen" /><span>🍳 Oshxona</span></label>
+          <label class="amenity-item"><input type="checkbox" [(ngModel)]="property.hasTV" name="hasTV" /><span>📺 Televizor</span></label>
+          <label class="amenity-item"><input type="checkbox" [(ngModel)]="property.hasWorkspace" name="hasWorkspace" /><span>💼 Ish joyi</span></label>
+          <label class="amenity-item"><input type="checkbox" [(ngModel)]="property.petsAllowed" name="petsAllowed" /><span>🐾 Uy hayvonlari</span></label>
+          <label class="amenity-item"><input type="checkbox" [(ngModel)]="property.isChildFriendly" name="isChildFriendly" /><span>👶 Bolalarga mos</span></label>
+          <label class="amenity-item"><input type="checkbox" [(ngModel)]="property.isAccessible" name="isAccessible" /><span>♿ Nogironlar uchun</span></label>
+        </div>
+      </div>
     </div>
 
-    <!-- Form -->
-    <form (ngSubmit)="onSubmit()" *ngIf="!loading">
-      <!-- Basic Information -->
-      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 class="text-xl font-semibold mb-4 text-gray-900">Basic Information</h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Title -->
-          <div class="md:col-span-2">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Property Title *</label>
-            <input type="text" 
-                   [(ngModel)]="property.title" 
-                   name="title"
-                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                   placeholder="e.g., Modern 3-Bedroom Apartment in City Center"
-                   required>
-          </div>
+    <!-- ═══ 3-bosqich: Narx va shartlar ═══ -->
+    <div class="step-panel" *ngIf="currentStep === 2">
+      <h2 class="step-title">💰 Narx va shartlar</h2>
 
-          <!-- Description -->
-          <div class="md:col-span-2">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
-            <textarea [(ngModel)]="property.description" 
-                      name="description"
-                      rows="4"
-                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Describe your property in detail..."
-                      required></textarea>
-          </div>
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label">
+            Narx *
+            <span class="field-hint">
+              {{ property.listingType === 'Sale' ? '(sotish narxi)' : property.listingType === 'ShortTermRent' ? '(kunlik narx)' : '(oylik ijara)' }}
+            </span>
+          </label>
+          <input type="number" [(ngModel)]="property.price" name="price"
+                 min="0" class="field-input" placeholder="0" required />
+        </div>
 
-          <!-- Price -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Price (UZS) *</label>
-            <input type="number" 
-                   [(ngModel)]="property.price" 
-                   name="price"
-                   min="0"
-                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                   placeholder="0"
-                   required>
-          </div>
-
-          <!-- Area -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Area (m²) *</label>
-            <input type="number" 
-                   [(ngModel)]="property.area" 
-                   name="area"
-                   min="1"
-                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                   placeholder="0"
-                   required>
-          </div>
+        <div class="field-group">
+          <label class="field-label">Valyuta</label>
+          <select [(ngModel)]="property.currency" name="currency" class="field-input">
+            <option *ngFor="let c of currencies" [value]="c">{{ c }}</option>
+          </select>
         </div>
       </div>
 
-      <!-- Property Details -->
-      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 class="text-xl font-semibold mb-4 text-gray-900">Property Details</h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <!-- Property Type -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Property Type</label>
-            <select [(ngModel)]="property.propertyType" 
-                    name="propertyType"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option *ngFor="let type of propertyTypes" [value]="type">{{ type }}</option>
-            </select>
-          </div>
+      <div class="field-group" *ngIf="property.listingType !== 'Sale'">
+        <label class="field-label">Kafolatli to'lov (depozit)</label>
+        <input type="number" [(ngModel)]="property.securityDeposit" name="securityDeposit"
+               min="0" class="field-input" placeholder="0" />
+        <p class="field-hint">Ijarachilar kirishdan oldin to'laydigan depozit miqdori</p>
+      </div>
 
-          <!-- Listing Type -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Listing Type</label>
-            <select [(ngModel)]="property.listingType" 
-                    name="listingType"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option *ngFor="let type of listingTypes" [value]="type">{{ type }}</option>
-            </select>
-          </div>
+      <div class="info-box">
+        <p>💡 <strong>Eslatma:</strong> Narxni to'g'ri ko'rsating — bu qidiruv natijalariga va tavsiya tizimiga ta'sir qiladi.</p>
+      </div>
+    </div>
 
-          <!-- Rooms -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Rooms</label>
-            <input type="number" 
-                   [(ngModel)]="property.roomsCount" 
-                   name="roomsCount"
-                   min="1"
-                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-          </div>
+    <!-- ═══ 4-bosqich: Manzil ═══ -->
+    <div class="step-panel" *ngIf="currentStep === 3">
+      <h2 class="step-title">📍 Manzil va joylashuv</h2>
 
-          <!-- Bathrooms -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Bathrooms</label>
-            <input type="number" 
-                   [(ngModel)]="property.bathroomsCount" 
-                   name="bathroomsCount"
-                   min="1"
-                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-          </div>
+      <div class="field-group">
+        <label class="field-label">To'liq manzil *</label>
+        <input type="text" [(ngModel)]="property.address" name="address"
+               class="field-input" placeholder="Ko'cha, uy raqami" required />
+      </div>
 
-          <!-- Year Built -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Year Built</label>
-            <input type="number" 
-                   [(ngModel)]="property.yearBuilt" 
-                   name="yearBuilt"
-                   min="1900"
-                   max="{{currentYear + 1}}"
-                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-          </div>
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label">Shahar *</label>
+          <input type="text" [(ngModel)]="property.city" name="city"
+                 class="field-input" placeholder="Shahar nomi" required />
         </div>
 
-        <!-- Features -->
-        <div class="mt-6">
-          <label class="block text-sm font-medium text-gray-700 mb-3">Features</label>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <label class="flex items-center">
-              <input type="checkbox" [(ngModel)]="property.hasParking" name="hasParking" class="mr-2">
-              <span>Parking</span>
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" [(ngModel)]="property.hasFurniture" name="hasFurniture" class="mr-2">
-              <span>Furnished</span>
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" [(ngModel)]="property.hasAirConditioning" name="hasAirConditioning" class="mr-2">
-              <span>Air Conditioning</span>
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" [(ngModel)]="property.hasHeating" name="hasHeating" class="mr-2">
-              <span>Heating</span>
-            </label>
-          </div>
+        <div class="field-group">
+          <label class="field-label">Tuman</label>
+          <input type="text" [(ngModel)]="property.district" name="district"
+                 class="field-input" placeholder="Tuman nomi" />
         </div>
       </div>
 
-      <!-- Location -->
-      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 class="text-xl font-semibold mb-4 text-gray-900">Location</h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Address -->
-          <div class="md:col-span-2">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Address *</label>
-            <input type="text" 
-                   [(ngModel)]="property.address" 
-                   name="address"
-                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                   placeholder="Full address"
-                   required>
-          </div>
+      <div class="field-group">
+        <label class="field-label">Viloyat *</label>
+        <select [(ngModel)]="property.region" name="region" class="field-input" required>
+          <option value="">Viloyatni tanlang</option>
+          <option *ngFor="let r of regions" [value]="r">{{ r }}</option>
+        </select>
+      </div>
 
-          <!-- City -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">City *</label>
-            <input type="text" 
-                   [(ngModel)]="property.city" 
-                   name="city"
-                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                   placeholder="City name"
-                   required>
-          </div>
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label">Kenglik (Latitude)</label>
+          <input type="number" [(ngModel)]="property.latitude" name="latitude"
+                 step="any" class="field-input" placeholder="41.2995" />
+        </div>
 
-          <!-- Region -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Region *</label>
-            <select [(ngModel)]="property.region" 
-                    name="region"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required>
-              <option value="">Select Region</option>
-              <option *ngFor="let region of regions" [value]="region">{{ region }}</option>
-            </select>
-          </div>
+        <div class="field-group">
+          <label class="field-label">Uzunlik (Longitude)</label>
+          <input type="number" [(ngModel)]="property.longitude" name="longitude"
+                 step="any" class="field-input" placeholder="69.2401" />
         </div>
       </div>
 
-      <!-- Image Upload -->
-      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 class="text-xl font-semibold mb-4 text-gray-900">Property Images</h2>
-        <app-image-uploader 
-          [propertyId]="propertyId"
-          [existingImages]="propertyImages"
-          [maxFiles]="10"
-          (imagesUploaded)="onImagesUploaded($event)"
-          (imageDeleted)="onImageDeleted($event)"
-          (primaryImageSet)="onPrimaryImageSet($event)">
-        </app-image-uploader>
+      <div class="info-box">
+        <p>🗺️ Koordinatalarni <a href="https://www.google.com/maps" target="_blank" rel="noopener">Google Maps</a> dan olish mumkin: xaritada sichqonchani o'ng tugmasini bosib "Bu yerning koordinatalari" ni tanlang.</p>
+      </div>
+    </div>
+
+    <!-- ═══ 5-bosqich: Rasmlar ═══ -->
+    <div class="step-panel" *ngIf="currentStep === 4">
+      <h2 class="step-title">🖼️ Rasmlar va media</h2>
+
+      <div *ngIf="!propertyId" class="info-box warning">
+        <p>⚠️ Rasm yuklash uchun avval mulkni saqlang (tugmani bosing).</p>
       </div>
 
-      <!-- Form Actions -->
-      <div class="flex justify-end space-x-4">
-        <button type="button" 
-                (click)="onCancel()"
-                class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-          Cancel
+      <app-image-uploader
+        [propertyId]="propertyId"
+        [existingImages]="propertyImages"
+        [maxFiles]="20"
+        (imagesUploaded)="onImagesUploaded($event)"
+        (imageDeleted)="onImageDeleted($event)"
+        (primaryImageSet)="onPrimaryImageSet($event)">
+      </app-image-uploader>
+
+      <div class="info-box">
+        <p>📸 Maksimal <strong>20 ta rasm</strong> yuklash mumkin. Rasmlar avtomatik ravishda WebP formatiga o'tkaziladi va turli o'lchamlarda (thumbnail, medium, full) saqlanadi.</p>
+      </div>
+    </div>
+
+    <!-- ─── Navigation buttons ─── -->
+    <div class="step-actions">
+      <button type="button" class="btn btn-cancel" (click)="onCancel()">Bekor qilish</button>
+
+      <div class="step-nav">
+        <button type="button" class="btn btn-secondary"
+                *ngIf="!isFirstStep"
+                (click)="prevStep()">
+          ← Orqaga
         </button>
-        <button type="submit" 
+
+        <!-- Forward / Submit -->
+        <button type="button" class="btn btn-primary"
+                *ngIf="!isLastStep && !isMediaStep"
+                [disabled]="!isStepValid(currentStep)"
+                (click)="nextStep()">
+          Keyingi →
+        </button>
+
+        <!-- On step 3 (Location) show "Save & Continue" to create property before media -->
+        <button type="button" class="btn btn-success"
+                *ngIf="currentStep === 3 && !isEditMode && !propertyId"
                 [disabled]="!isFormValid || saving"
-                class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors">
-          <span *ngIf="!saving">
-            {{ isEditMode ? 'Update Property' : 'Create Property' }}
-          </span>
-          <span *ngIf="saving" class="flex items-center">
-            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            {{ isEditMode ? 'Updating...' : 'Creating...' }}
-          </span>
+                (click)="onSubmit()">
+          <span *ngIf="!saving">💾 Saqlash va davom etish</span>
+          <span *ngIf="saving">Saqlanmoqda...</span>
+        </button>
+
+        <!-- Edit mode update on last step -->
+        <button type="button" class="btn btn-success"
+                *ngIf="isEditMode && isLastStep"
+                [disabled]="!isFormValid || saving"
+                (click)="onSubmit()">
+          <span *ngIf="!saving">✅ Yangilash</span>
+          <span *ngIf="saving">Yangilanmoqda...</span>
+        </button>
+
+        <!-- Navigate to media step once property is saved -->
+        <button type="button" class="btn btn-primary"
+                *ngIf="currentStep === 3 && !isEditMode && propertyId"
+                (click)="nextStep()">
+          Rasmlar →
+        </button>
+
+        <!-- Finish on media step -->
+        <button type="button" class="btn btn-success"
+                *ngIf="isLastStep && (isEditMode || propertyId)"
+                (click)="router.navigate(['/properties', propertyId])">
+          ✅ Tugatish
         </button>
       </div>
-    </form>
+    </div>
   </div>
 </div>

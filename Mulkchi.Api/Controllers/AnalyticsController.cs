@@ -291,6 +291,7 @@ public class AnalyticsController : ControllerBase
     }
 
     [HttpGet("market-overview")]
+    [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any, NoStore = false)]
     public async Task<ActionResult> GetMarketOverview()
     {
         try
@@ -305,6 +306,7 @@ public class AnalyticsController : ControllerBase
     }
 
     [HttpGet("by-region")]
+    [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any, NoStore = false)]
     public async Task<ActionResult> GetAnalyticsByRegion()
     {
         try
@@ -319,6 +321,7 @@ public class AnalyticsController : ControllerBase
     }
 
     [HttpGet("price-trends")]
+    [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any, NoStore = false)]
     public async Task<ActionResult> GetPriceTrends()
     {
         try

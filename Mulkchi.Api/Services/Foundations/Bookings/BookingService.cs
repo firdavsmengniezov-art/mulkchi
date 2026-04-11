@@ -43,6 +43,28 @@ namespace Mulkchi.Api.Services.Foundations.Bookings
             }
 
             var now = DateTimeOffset.UtcNow;
+
+            // Conflict check: active holds by other users
+            bool holdConflict = await this.storageBroker
+                .SelectActiveBookingHolds(dto.PropertyId)
+                .AnyAsync(h =>
+                    h.CheckInDate < dto.CheckOutDate &&
+                    h.CheckOutDate > dto.CheckInDate &&
+                    h.UserId != currentUserId.Value);
+
+            if (holdConflict)
+                throw new InvalidOperationException("Ushbu sana boshqa foydalanuvchi tomonidan vaqtincha band qilingan.");
+
+            // Conflict check: confirmed / pending bookings
+            bool bookingConflict = await this.storageBroker.SelectAllBookings()
+                .AnyAsync(b =>
+                    b.PropertyId == dto.PropertyId &&
+                    b.Status != BookingStatus.Cancelled &&
+                    b.CheckInDate < dto.CheckOutDate &&
+                    b.CheckOutDate > dto.CheckInDate);
+
+            if (bookingConflict)
+                throw new InvalidOperationException("Tanlangan sanalar allaqachon band.");
             
             var booking = new Booking
             {
@@ -215,6 +237,75 @@ namespace Mulkchi.Api.Services.Foundations.Bookings
             }
 
             return blocked.OrderBy(d => d);
+        }
+
+        // ── Phantom-booking protection ────────────────────────────────────
+
+        private static readonly TimeSpan HoldDuration = TimeSpan.FromMinutes(10);
+
+        public async ValueTask<BookingHold> CreateBookingHoldAsync(
+            Guid propertyId,
+            DateTimeOffset checkIn,
+            DateTimeOffset checkOut)
+        {
+            var currentUserId = this.currentUserService.GetCurrentUserId();
+            if (!currentUserId.HasValue)
+                throw new UnauthorizedAccessException("Foydalanuvchi aniqlanmadi.");
+
+            // Remove stale holds before checking conflicts
+            await this.storageBroker.DeleteExpiredBookingHoldsAsync();
+
+            // Check for overlapping active holds
+            bool holdConflict = await this.storageBroker
+                .SelectActiveBookingHolds(propertyId)
+                .AnyAsync(h =>
+                    h.CheckInDate < checkOut &&
+                    h.CheckOutDate > checkIn &&
+                    h.UserId != currentUserId.Value);
+
+            if (holdConflict)
+                throw new InvalidOperationException("Ushbu sana boshqa foydalanuvchi tomonidan vaqtincha band qilingan. Iltimos 10 daqiqadan keyin urinib ko'ring.");
+
+            // Check for confirmed/pending bookings that overlap
+            bool bookingConflict = await this.storageBroker.SelectAllBookings()
+                .AnyAsync(b =>
+                    b.PropertyId == propertyId &&
+                    b.Status != BookingStatus.Cancelled &&
+                    b.CheckInDate < checkOut &&
+                    b.CheckOutDate > checkIn);
+
+            if (bookingConflict)
+                throw new InvalidOperationException("Tanlangan sanalar allaqachon band.");
+
+            var now = DateTimeOffset.UtcNow;
+            var hold = new BookingHold
+            {
+                Id = Guid.NewGuid(),
+                PropertyId = propertyId,
+                UserId = currentUserId.Value,
+                CheckInDate = checkIn,
+                CheckOutDate = checkOut,
+                ExpiresAt = now.Add(HoldDuration),
+                CreatedDate = now,
+            };
+
+            return await this.storageBroker.InsertBookingHoldAsync(hold);
+        }
+
+        public async ValueTask ReleaseBookingHoldAsync(Guid holdId)
+        {
+            var currentUserId = this.currentUserService.GetCurrentUserId();
+            var hold = await this.storageBroker.SelectBookingHoldByIdAsync(holdId);
+
+            if (hold is null) return; // Already expired or released
+
+            if (currentUserId.HasValue && hold.UserId != currentUserId.Value &&
+                !this.currentUserService.IsInRole("Admin"))
+            {
+                throw new UnauthorizedAccessException("Bu hold sizga tegishli emas.");
+            }
+
+            await this.storageBroker.DeleteBookingHoldAsync(holdId);
         }
 
         public ValueTask<Booking> ModifyBookingAsync(Booking booking) =>
