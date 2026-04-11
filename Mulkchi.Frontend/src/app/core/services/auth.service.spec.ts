@@ -82,6 +82,13 @@ describe('AuthService', () => {
     const token = `${header}.${payload}.signature`;
     localStorage.setItem('accessToken', token);
     localStorage.setItem('user', JSON.stringify({ id: '1', email: 'test@test.com', role: 0 }));
+    service.currentUser$.next({
+      id: '1',
+      email: 'test@test.com',
+      role: 0,
+      firstName: 'Test',
+      lastName: 'User',
+    });
     expect(service.isAuthenticated()).toBeTrue();
   });
 
