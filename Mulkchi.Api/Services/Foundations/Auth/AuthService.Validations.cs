@@ -43,7 +43,8 @@ public partial class AuthService
             invalidRegisterRequestException.UpsertDataList(nameof(RegisterRequest.Phone), "Phone format is invalid.");
 
         if (IsWeakPassword(request.Password))
-            invalidRegisterRequestException.UpsertDataList(nameof(RegisterRequest.Password), "Password must be at least 6 characters.");
+            invalidRegisterRequestException.UpsertDataList(nameof(RegisterRequest.Password),
+                "Password must be at least 8 characters and contain uppercase, lowercase, digit, and special character.");
 
         invalidRegisterRequestException.ThrowIfContainsErrors();
     }
@@ -62,5 +63,8 @@ public partial class AuthService
 
     private static bool IsWeakPassword(string password) =>
         string.IsNullOrWhiteSpace(password)
-            || password.Length < 6;
+            || password.Length < 8
+            || !System.Text.RegularExpressions.Regex.IsMatch(
+                password,
+                @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$");
 }

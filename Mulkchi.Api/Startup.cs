@@ -308,6 +308,9 @@ public class Startup
         
         // Register email broker
         services.AddTransient<IEmailBroker, SmtpEmailBroker>();
+        
+        // Register SMS broker (stub — replace with real provider in production)
+        services.AddTransient<ISmsBroker, StubSmsBroker>();
     }
 
     private void AddDbContext(IServiceCollection services)

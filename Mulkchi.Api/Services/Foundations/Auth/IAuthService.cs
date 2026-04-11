@@ -14,4 +14,18 @@ public interface IAuthService
     ValueTask<User> RetrieveUserByIdAsync(Guid userId);
     ValueTask<User> ModifyUserProfileAsync(Guid userId, UpdateProfileRequest request);
     ValueTask RemoveUserByIdAsync(Guid userId);
+
+    // Email verification
+    ValueTask VerifyEmailAsync(string token);
+
+    // Phone OTP
+    ValueTask SendPhoneOtpAsync(Guid userId, string phone);
+    ValueTask VerifyPhoneOtpAsync(string phone, string code);
+
+    // Google OAuth
+    ValueTask<AuthResponse> LoginWithGoogleAsync(string idToken);
+
+    // Telegram auth
+    ValueTask<AuthResponse> LoginWithTelegramAsync(TelegramAuthRequest request);
 }
+

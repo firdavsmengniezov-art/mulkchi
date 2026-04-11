@@ -37,8 +37,10 @@ export class RegisterComponent {
       return;
     }
 
-    if (this.password.length < 6) {
-      this.errorMsg = "Parol kamida 6 ta belgidan iborat bo'lishi kerak";
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+    if (!passwordRegex.test(this.password)) {
+      this.errorMsg =
+        "Parol kamida 8 ta belgi, katta harf, kichik harf, raqam va maxsus belgi bo'lishi kerak";
       return;
     }
 

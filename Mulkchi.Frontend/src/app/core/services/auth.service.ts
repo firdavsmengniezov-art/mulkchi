@@ -226,4 +226,19 @@ export class AuthService {
     const r = this.getUserRole() as unknown;
     return r === UserRole.Admin || r === 'Admin';
   }
+
+  isAgent(): boolean {
+    const r = this.getUserRole() as unknown;
+    return r === UserRole.Agent || r === 'Agent';
+  }
+
+  isSeller(): boolean {
+    const r = this.getUserRole() as unknown;
+    return r === UserRole.Seller || r === 'Seller';
+  }
+
+  isBuyer(): boolean {
+    const r = this.getUserRole() as unknown;
+    return r === UserRole.Buyer || r === 'Buyer';
+  }
 }

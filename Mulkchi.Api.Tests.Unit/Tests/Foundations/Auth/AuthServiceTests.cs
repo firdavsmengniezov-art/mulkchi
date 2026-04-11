@@ -22,6 +22,7 @@ public partial class AuthServiceTests
     private readonly Mock<IDateTimeBroker> dateTimeBrokerMock;
     private readonly Mock<ITokenBroker> tokenBrokerMock;
     private readonly Mock<IEmailBroker> emailBrokerMock;
+    private readonly Mock<ISmsBroker> smsBrokerMock;
     private readonly IAuthService authService;
 
     public AuthServiceTests()
@@ -31,13 +32,16 @@ public partial class AuthServiceTests
         this.dateTimeBrokerMock = new Mock<IDateTimeBroker>();
         this.tokenBrokerMock = new Mock<ITokenBroker>();
         this.emailBrokerMock = new Mock<IEmailBroker>();
+        this.smsBrokerMock = new Mock<ISmsBroker>();
 
         this.authService = new AuthService(
             this.storageBrokerMock.Object,
             this.loggingBrokerMock.Object,
             this.dateTimeBrokerMock.Object,
             this.tokenBrokerMock.Object,
-            this.emailBrokerMock.Object);
+            this.emailBrokerMock.Object,
+            this.smsBrokerMock.Object,
+            CreateTestConfiguration());
     }
 
     private static IConfiguration CreateTestConfiguration() =>
@@ -47,7 +51,7 @@ public partial class AuthServiceTests
                 ["JwtSettings:Secret"] = "TestSecretKeyThatIsAtLeast32CharactersLong!!",
                 ["JwtSettings:Issuer"] = "TestIssuer",
                 ["JwtSettings:Audience"] = "TestAudience",
-                ["JwtSettings:ExpiryDays"] = "7"
+                ["JwtSettings:ExpiryMinutes"] = "15"
             })
             .Build();
 
@@ -59,7 +63,7 @@ public partial class AuthServiceTests
         var filler = new Filler<RegisterRequest>();
         filler.Setup()
             .OnProperty(r => r.Email).Use(() => $"user{Random.Shared.Next(1000, 9999)}@example.com")
-            .OnProperty(r => r.Password).Use(() => $"Pass{Random.Shared.Next(1000, 9999)}word1")
+            .OnProperty(r => r.Password).Use(() => $"Pass{Random.Shared.Next(1000, 9999)}Word!")
             .OnProperty(r => r.Phone).Use(() => $"+998{Random.Shared.Next(100000000, 999999999)}");
 
         return filler.Create();
