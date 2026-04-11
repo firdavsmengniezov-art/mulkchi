@@ -327,6 +327,7 @@ export class AiRecommendationService {
       userId: recommendation.userId,
       propertyId: recommendation.propertyId,
       recommendationType: this.mapRecommendationType(recommendation.recommendationType),
+      abVariant: recommendation.abVariant,
       score: recommendation.score,
       reason: recommendation.reason,
       createdAt: recommendation.createdAt,

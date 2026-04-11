@@ -363,6 +363,12 @@
               <p class="text-sm text-gray-600">Konversiya: {{ formatPercentage(recommendations?.conversionRate || 0) }}
               </p>
               <p class="text-sm text-gray-600">CTR: {{ formatPercentage(recommendations?.clickThroughRate || 0) }}</p>
+              <p class="text-sm text-gray-600" *ngIf="recommendations?.abTestPerformance">
+                A/B: A={{ recommendations?.abTestPerformance?.variantA?.count || 0 }} ({{
+                formatPercentage(recommendations?.abTestPerformance?.variantA?.ctr || 0) }})
+                | B={{ recommendations?.abTestPerformance?.variantB?.count || 0 }} ({{
+                formatPercentage(recommendations?.abTestPerformance?.variantB?.ctr || 0) }})
+              </p>
             </div>
           </div>
         </div>

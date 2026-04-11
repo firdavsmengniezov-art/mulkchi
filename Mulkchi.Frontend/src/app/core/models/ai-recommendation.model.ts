@@ -3,6 +3,7 @@ export interface AiRecommendation {
   userId?: string;
   propertyId: string;
   recommendationType: RecommendationType;
+  abVariant?: string;
   score: number;
   reason: string;
   property: RecommendationProperty;
@@ -67,6 +68,7 @@ export interface HybridRecommendationResponse {
   userId?: string;
   propertyId: string;
   recommendationType: string;
+  abVariant?: string;
   score: number;
   reason: string;
   property: HybridRecommendationPropertyResponse;

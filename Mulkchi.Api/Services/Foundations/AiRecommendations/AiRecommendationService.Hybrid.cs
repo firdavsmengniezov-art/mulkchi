@@ -149,6 +149,7 @@ public partial class AiRecommendationService
                 UserId = userId,
                 PropertyId = x.Property.Id,
                 RecommendationType = x.Collaborative ? "PreferenceBased" : "PopularInArea",
+                AbVariant = ResolveAbVariant(x.Property.Id, userId),
                 Score = x.Score,
                 Reason = reason,
                 CreatedAt = now,
@@ -282,6 +283,13 @@ public partial class AiRecommendationService
         }
 
         return "Tavsiya sababi: " + string.Join(", ", reasons.Take(3));
+    }
+
+    private static string ResolveAbVariant(Guid propertyId, Guid? userId)
+    {
+        Guid stableUserId = userId ?? Guid.Empty;
+        int hash = HashCode.Combine(propertyId, stableUserId);
+        return Math.Abs(hash) % 2 == 0 ? "A" : "B";
     }
 
 }

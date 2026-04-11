@@ -252,7 +252,19 @@ export interface RecommendationAnalytics {
   clickThroughRate: number;
   topRecommendationTypes: RecommendationTypeStats[];
   recommendationPerformance: RecommendationPerformance[];
+  abTestPerformance?: RecommendationAbTestPerformance;
   userEngagement: RecommendationUserEngagement;
+}
+
+export interface RecommendationAbTestPerformance {
+  variantA: {
+    count: number;
+    ctr: number;
+  };
+  variantB: {
+    count: number;
+    ctr: number;
+  };
 }
 
 export interface RecommendationTypeStats {
@@ -308,5 +320,5 @@ export enum AnalyticsPeriod {
   Month = 'Month',
   Quarter = 'Quarter',
   Year = 'Year',
-  All = 'All'
+  All = 'All',
 }
