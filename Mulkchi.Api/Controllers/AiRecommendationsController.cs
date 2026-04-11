@@ -214,4 +214,34 @@ public class AiRecommendationsController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
         }
     }
+
+    [HttpPost("hybrid")]
+    [AllowAnonymous]
+    public async Task<ActionResult<IEnumerable<HybridRecommendationResponse>>> GetHybridRecommendationsAsync(
+        [FromBody] HybridRecommendationRequest? request)
+    {
+        try
+        {
+            var normalizedRequest = request ?? new HybridRecommendationRequest();
+
+            string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (Guid.TryParse(userIdClaim, out Guid claimUserId))
+            {
+                normalizedRequest.UserId = claimUserId;
+            }
+
+            IEnumerable<HybridRecommendationResponse> recommendations =
+                await this.aiRecommendationService.RetrieveHybridRecommendationsAsync(normalizedRequest);
+
+            return Ok(recommendations);
+        }
+        catch (AiRecommendationDependencyException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+        catch (AiRecommendationServiceException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+    }
 }

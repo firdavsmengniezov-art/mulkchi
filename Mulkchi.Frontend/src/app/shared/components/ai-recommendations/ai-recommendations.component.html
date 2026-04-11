@@ -7,16 +7,15 @@
         <p class="text-gray-600 mt-1">AI tomonidan shaxsiy tavsiya etilgan</p>
       </div>
       <div class="flex space-x-2">
-        <button (click)="refreshRecommendations()" 
-                class="p-2 text-gray-600 hover:text-gray-800 transition-colors"
-                title="Yangilash">
+        <button (click)="refreshRecommendations()" class="p-2 text-gray-600 hover:text-gray-800 transition-colors"
+          title="Yangilash">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
         </button>
-        <button (click)="onViewAll()" 
-                *ngIf="showViewAll && recommendations.length > 0"
-                class="text-blue-600 hover:text-blue-800 font-medium transition-colors">
+        <button (click)="onViewAll()" *ngIf="showViewAll && recommendations.length > 0"
+          class="text-blue-600 hover:text-blue-800 font-medium transition-colors">
           Barchasini ko'rish
         </button>
       </div>
@@ -41,10 +40,12 @@
   <div class="error-state" *ngIf="error">
     <div class="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
       <svg class="w-12 h-12 text-red-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
       <p class="text-red-800 font-medium">{{ error }}</p>
-      <button (click)="refreshRecommendations()" class="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+      <button (click)="refreshRecommendations()"
+        class="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
         Qayta urinish
       </button>
     </div>
@@ -55,21 +56,19 @@
     <!-- Horizontal Scroll for Mobile -->
     <div class="horizontal-scroll md:hidden">
       <div class="flex space-x-4 overflow-x-auto pb-4">
-        <div class="recommendation-card flex-shrink-0 w-80" 
-             *ngFor="let recommendation of recommendations"
-             (click)="onPropertyClick(recommendation.property.id, recommendation)">
-          
+        <div class="recommendation-card flex-shrink-0 w-80" *ngFor="let recommendation of recommendations"
+          (click)="onPropertyClick(recommendation.property.id, recommendation)">
+
           <!-- Property Image -->
           <div class="relative">
-            <img [src]="getRecommendationImage(recommendation)" 
-                 [alt]="recommendation.property.title"
-                 class="w-full h-48 object-cover rounded-lg"
-                 (error)="$event.target.src='/assets/images/placeholder-property.jpg'">
-            
+            <img [src]="getRecommendationImage(recommendation)" [alt]="recommendation.property.title"
+              class="w-full h-48 object-cover rounded-lg"
+              (error)="$event.target.src='/assets/images/placeholder-property.jpg'">
+
             <!-- Recommendation Badge -->
             <div class="absolute top-2 left-2">
               <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                    [class]="getRecommendationTypeColor(recommendation.recommendationType)">
+                [class]="getRecommendationTypeColor(recommendation.recommendationType)">
                 {{ getRecommendationTypeLabel(recommendation.recommendationType) }}
               </span>
             </div>
@@ -77,7 +76,7 @@
             <!-- Score Badge -->
             <div class="absolute top-2 right-2">
               <div class="bg-white bg-opacity-90 rounded-full px-2 py-1 text-xs font-medium"
-                   [class]="getScoreColor(recommendation.score)">
+                [class]="getScoreColor(recommendation.score)">
                 {{ formatScore(recommendation.score) }}
               </div>
             </div>
@@ -95,27 +94,37 @@
             <h3 class="font-semibold text-gray-900 text-lg mb-1 line-clamp-1">
               {{ recommendation.property.title }}
             </h3>
-            
+
             <p class="text-gray-600 text-sm mb-2 line-clamp-2">
               {{ truncateText(recommendation.property.description, 80) }}
             </p>
 
             <div class="flex items-center text-sm text-gray-500 mb-2">
               <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
               {{ recommendation.property.city }}, {{ recommendation.property.region }}
+            </div>
+
+            <div class="flex items-center text-xs text-gray-500 mb-2"
+              *ngIf="recommendation.property.distanceKm != null">
+              <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-1">
+                {{ recommendation.property.distanceKm | number:'1.0-1' }} km uzoqlikda
+              </span>
             </div>
 
             <div class="flex items-center justify-between">
               <div class="text-lg font-bold text-blue-600">
                 {{ formatPrice(recommendation.property.price) }}
               </div>
-              
+
               <div class="flex items-center text-sm text-gray-500">
                 <svg class="w-4 h-4 mr-1 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                  <path
+                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                 </svg>
                 {{ formatRating(recommendation.property.rating) }}
                 <span class="ml-1">({{ recommendation.property.reviewsCount }})</span>
@@ -133,21 +142,19 @@
 
     <!-- Desktop Grid -->
     <div class="hidden md:grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-      <div class="recommendation-card" 
-           *ngFor="let recommendation of recommendations"
-           (click)="onPropertyClick(recommendation.property.id, recommendation)">
-        
+      <div class="recommendation-card" *ngFor="let recommendation of recommendations"
+        (click)="onPropertyClick(recommendation.property.id, recommendation)">
+
         <!-- Property Image -->
         <div class="relative">
-          <img [src]="getRecommendationImage(recommendation)" 
-               [alt]="recommendation.property.title"
-               class="w-full h-48 object-cover rounded-lg"
-               (error)="$event.target.src='/assets/images/placeholder-property.jpg'">
-          
+          <img [src]="getRecommendationImage(recommendation)" [alt]="recommendation.property.title"
+            class="w-full h-48 object-cover rounded-lg"
+            (error)="$event.target.src='/assets/images/placeholder-property.jpg'">
+
           <!-- Recommendation Badge -->
           <div class="absolute top-2 left-2">
             <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                  [class]="getRecommendationTypeColor(recommendation.recommendationType)">
+              [class]="getRecommendationTypeColor(recommendation.recommendationType)">
               {{ getRecommendationTypeLabel(recommendation.recommendationType) }}
             </span>
           </div>
@@ -155,7 +162,7 @@
           <!-- Score Badge -->
           <div class="absolute top-2 right-2">
             <div class="bg-white bg-opacity-90 rounded-full px-2 py-1 text-xs font-medium"
-                 [class]="getScoreColor(recommendation.score)">
+              [class]="getScoreColor(recommendation.score)">
               {{ formatScore(recommendation.score) }}
             </div>
           </div>
@@ -173,27 +180,36 @@
           <h3 class="font-semibold text-gray-900 text-lg mb-1 line-clamp-1">
             {{ recommendation.property.title }}
           </h3>
-          
+
           <p class="text-gray-600 text-sm mb-2 line-clamp-2">
             {{ truncateText(recommendation.property.description, 100) }}
           </p>
 
           <div class="flex items-center text-sm text-gray-500 mb-2">
             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
             {{ recommendation.property.city }}, {{ recommendation.property.region }}
+          </div>
+
+          <div class="flex items-center text-xs text-gray-500 mb-2" *ngIf="recommendation.property.distanceKm != null">
+            <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-1">
+              {{ recommendation.property.distanceKm | number:'1.0-1' }} km uzoqlikda
+            </span>
           </div>
 
           <div class="flex items-center justify-between mb-2">
             <div class="text-lg font-bold text-blue-600">
               {{ formatPrice(recommendation.property.price) }}
             </div>
-            
+
             <div class="flex items-center text-sm text-gray-500">
               <svg class="w-4 h-4 mr-1 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                <path
+                  d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
               </svg>
               {{ formatRating(recommendation.property.rating) }}
               <span class="ml-1">({{ recommendation.property.reviewsCount }})</span>
@@ -220,7 +236,8 @@
   <div class="empty-state" *ngIf="isEmpty">
     <div class="text-center py-12">
       <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
       </svg>
       <h3 class="text-lg font-medium text-gray-900 mb-2">Tavsiyalar topilmadi</h3>
       <p class="text-gray-500 mb-4">AI hali siz uchun tavsiyalar tayyorlamadi</p>

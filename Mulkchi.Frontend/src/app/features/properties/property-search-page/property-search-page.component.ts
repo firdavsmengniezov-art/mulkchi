@@ -2,12 +2,15 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { PropertySearchParams, Property } from '../../../core/models/property.model';
+import { Property, PropertySearchParams } from '../../../core/models/property.model';
 import { PropertyService } from '../../../core/services/property.service';
+import {
+  MapMarker,
+  PropertyMapComponent,
+} from '../../../shared/components/property-map/property-map.component';
 import { PropertyCardComponent } from '../components/property-card/property-card.component';
 import { PropertyFilterBarComponent } from '../components/property-filter-bar/property-filter-bar.component';
 import { PropertySkeletonComponent } from '../components/property-skeleton/property-skeleton.component';
-import { PropertyMapComponent, MapMarker } from '../../../shared/components/property-map/property-map.component';
 
 @Component({
   selector: 'app-property-search-page',
@@ -44,11 +47,15 @@ export class PropertySearchPageComponent implements OnInit {
         page: +qp['page'] || 1,
         pageSize: 12,
         city: qp['city'],
+        region: qp['region'],
         listingType: qp['listingType'] as any,
         minPrice: qp['minPrice'] ? +qp['minPrice'] : undefined,
         maxPrice: qp['maxPrice'] ? +qp['maxPrice'] : undefined,
         bedrooms: qp['bedrooms'] ? +qp['bedrooms'] : undefined,
         sortBy: qp['sortBy'],
+        latitude: qp['latitude'] ? +qp['latitude'] : undefined,
+        longitude: qp['longitude'] ? +qp['longitude'] : undefined,
+        radiusKm: qp['radiusKm'] ? +qp['radiusKm'] : undefined,
       };
       this.loadProperties();
     });
@@ -112,4 +119,3 @@ export class PropertySearchPageComponent implements OnInit {
     return Math.ceil(this.totalCount / this.params.pageSize!);
   }
 }
-

@@ -4,11 +4,13 @@ import { Observable, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { Property } from '../models/property.model';
+import { AuthService } from './auth.service';
 import { LoggingService } from './logging.service';
 import { PropertyService } from './property.service';
 
 import {
   AiRecommendation,
+  HybridRecommendationResponse,
   RecommendationAnalytics,
   RecommendationRequest,
   RecommendationType,
@@ -23,6 +25,7 @@ export class AiRecommendationService {
   constructor(
     private http: HttpClient,
     private propertyService: PropertyService,
+    private authService: AuthService,
     private logger: LoggingService,
   ) {}
 
@@ -46,20 +49,49 @@ export class AiRecommendationService {
       );
     }
 
-    return this.propertyService.getFeaturedProperties(limit).pipe(
-      map((properties) =>
-        this.mapToRecommendations(
-          properties,
+    if (request.latitude != null && request.longitude != null) {
+      return this.getHybridRecommendations(request);
+    }
+
+    return this.getHybridRecommendations(request).pipe(
+      map((recommendations) => {
+        if (recommendations.length > 0) {
+          return recommendations;
+        }
+
+        return this.mapToRecommendations(
+          [],
           request.recommendationType ?? RecommendationType.Featured,
-        ),
-      ),
+        );
+      }),
       catchError(this.handleError),
     );
   }
 
   // Get personalized recommendations for current user
   getPersonalizedRecommendations(limit = 10): Observable<AiRecommendation[]> {
-    return this.getRecommendations({ limit, includeViewed: false, includeClicked: false });
+    return this.getHybridRecommendations({
+      limit,
+      includeViewed: false,
+      includeClicked: false,
+    });
+  }
+
+  getHybridRecommendations(request: RecommendationRequest = {}): Observable<AiRecommendation[]> {
+    const currentUserId = request.userId || this.authService.getCurrentUser()?.id;
+
+    const payload: any = {
+      userId: currentUserId,
+      latitude: request.latitude,
+      longitude: request.longitude,
+      radiusKm: request.radiusKm,
+      limit: request.limit ?? 10,
+    };
+
+    return this.http.post<HybridRecommendationResponse[]>(`${this.apiUrl}/hybrid`, payload).pipe(
+      map((recommendations) => this.mapHybridRecommendations(recommendations || [])),
+      catchError(this.handleError),
+    );
   }
 
   // Get similar properties for a specific property
@@ -285,6 +317,50 @@ export class AiRecommendationService {
         },
       };
     });
+  }
+
+  private mapHybridRecommendations(
+    recommendations: HybridRecommendationResponse[],
+  ): AiRecommendation[] {
+    return recommendations.map((recommendation) => ({
+      id: recommendation.id,
+      userId: recommendation.userId,
+      propertyId: recommendation.propertyId,
+      recommendationType: this.mapRecommendationType(recommendation.recommendationType),
+      score: recommendation.score,
+      reason: recommendation.reason,
+      createdAt: recommendation.createdAt,
+      isViewed: recommendation.isViewed,
+      isClicked: recommendation.isClicked,
+      property: {
+        id: recommendation.property.id,
+        title: recommendation.property.title,
+        description: recommendation.property.description,
+        price: recommendation.property.price,
+        address: recommendation.property.address,
+        city: recommendation.property.city,
+        region: recommendation.property.region,
+        propertyType: recommendation.property.propertyType,
+        listingType: recommendation.property.listingType,
+        area: recommendation.property.area,
+        roomsCount: recommendation.property.roomsCount,
+        bathroomsCount: recommendation.property.bathroomsCount,
+        imageUrl: recommendation.property.imageUrl,
+        images: recommendation.property.images,
+        hostId: recommendation.property.hostId,
+        hostName: recommendation.property.hostName,
+        rating: recommendation.property.rating,
+        reviewsCount: recommendation.property.reviewsCount,
+        viewsCount: recommendation.property.viewsCount,
+        distanceKm: recommendation.property.distanceKm,
+        isFeatured: recommendation.property.isFeatured,
+        isVerified: recommendation.property.isVerified,
+      },
+    }));
+  }
+
+  private mapRecommendationType(type: string): RecommendationType {
+    return (type as RecommendationType) || RecommendationType.PreferenceBased;
   }
 
   private handleError(error: any): Observable<never> {

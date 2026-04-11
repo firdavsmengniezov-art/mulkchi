@@ -9,4 +9,5 @@ public interface IAiRecommendationService
     ValueTask<AiRecommendation> RetrieveAiRecommendationByIdAsync(Guid aiRecommendationId);
     ValueTask<AiRecommendation> ModifyAiRecommendationAsync(AiRecommendation aiRecommendation);
     ValueTask<AiRecommendation> RemoveAiRecommendationByIdAsync(Guid aiRecommendationId);
+    ValueTask<IEnumerable<HybridRecommendationResponse>> RetrieveHybridRecommendationsAsync(HybridRecommendationRequest request);
 }

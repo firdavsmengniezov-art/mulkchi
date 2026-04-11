@@ -32,8 +32,47 @@ export interface RecommendationProperty {
   rating: number;
   reviewsCount: number;
   viewsCount: number;
+  distanceKm?: number;
   isFeatured: boolean;
   isVerified: boolean;
+}
+
+export interface HybridRecommendationPropertyResponse {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  address: string;
+  city: string;
+  region: string;
+  propertyType: string;
+  listingType: string;
+  area: number;
+  roomsCount: number;
+  bathroomsCount: number;
+  imageUrl: string;
+  images: string[];
+  hostId: string;
+  hostName: string;
+  rating: number;
+  reviewsCount: number;
+  viewsCount: number;
+  distanceKm?: number;
+  isFeatured: boolean;
+  isVerified: boolean;
+}
+
+export interface HybridRecommendationResponse {
+  id: string;
+  userId?: string;
+  propertyId: string;
+  recommendationType: string;
+  score: number;
+  reason: string;
+  property: HybridRecommendationPropertyResponse;
+  createdAt: string;
+  isViewed: boolean;
+  isClicked: boolean;
 }
 
 export interface CreateRecommendationRequest {
@@ -51,6 +90,9 @@ export interface RecommendationRequest {
   location?: string;
   city?: string;
   region?: string;
+  latitude?: number;
+  longitude?: number;
+  radiusKm?: number;
   limit?: number;
   recommendationType?: RecommendationType;
   includeViewed?: boolean;
