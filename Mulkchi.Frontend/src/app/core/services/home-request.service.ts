@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { LoggingService } from './logging.service';
 
@@ -15,10 +15,12 @@ import {
   providedIn: 'root',
 })
 export class HomeRequestService {
-  private readonly apiUrl = `${environment.apiUrl}/home-requests`;
+  private readonly apiUrl = `${environment.apiUrl}/HomeRequests`;
 
-  constructor(private http: HttpClient,
-    private logger: LoggingService) {}
+  constructor(
+    private http: HttpClient,
+    private logger: LoggingService,
+  ) {}
 
   getHomeRequests(
     page = 1,
@@ -30,7 +32,10 @@ export class HomeRequestService {
   }
 
   getMyHomeRequests(): Observable<HomeRequest[]> {
-    return this.http.get<HomeRequest[]>(`${this.apiUrl}/my`).pipe(catchError(this.handleError));
+    return this.getHomeRequests(1, 1000).pipe(
+      map((result) => result.items ?? []),
+      catchError(this.handleError),
+    );
   }
 
   getHomeRequestById(id: string): Observable<HomeRequest> {
@@ -58,11 +63,13 @@ export class HomeRequestService {
 
   // Admin methods
   getAllHomeRequests(status?: string): Observable<HomeRequest[]> {
-    let url = `${this.apiUrl}/admin`;
-    if (status) {
-      url += `?status=${status}`;
-    }
-    return this.http.get<HomeRequest[]>(url).pipe(catchError(this.handleError));
+    return this.getHomeRequests(1, 1000).pipe(
+      map((result) => {
+        const items = result.items ?? [];
+        return status ? items.filter((item: any) => item.status === status) : items;
+      }),
+      catchError(this.handleError),
+    );
   }
 
   private handleError(error: any): Observable<never> {

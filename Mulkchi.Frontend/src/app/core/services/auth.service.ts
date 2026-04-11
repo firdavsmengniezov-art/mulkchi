@@ -218,11 +218,12 @@ export class AuthService {
   }
 
   isHost(): boolean {
-    const r = this.getUserRole();
-    return r === UserRole.Host || r === UserRole.Admin;
+    const r = this.getUserRole() as unknown;
+    return r === UserRole.Host || r === UserRole.Admin || r === 'Host' || r === 'Admin';
   }
 
   isAdmin(): boolean {
-    return this.getUserRole() === UserRole.Admin;
+    const r = this.getUserRole() as unknown;
+    return r === UserRole.Admin || r === 'Admin';
   }
 }

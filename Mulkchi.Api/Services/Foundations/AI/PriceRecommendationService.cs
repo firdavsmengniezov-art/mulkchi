@@ -143,7 +143,7 @@ public class PriceRecommendationService : IPriceRecommendationService
             IsRenovated = p.IsRenovated ? 1f : 0f,
             HasElevator = p.HasElevator ? 1f : 0f,
             DistanceToCityCenter = (float)p.DistanceToCityCenter,
-            Label = (float)p.SalePrice.Value
+            Label = (float)p.SalePrice.GetValueOrDefault()
         });
 
         return mlContext.Data.LoadFromEnumerable(trainingData);

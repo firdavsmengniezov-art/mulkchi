@@ -1,13 +1,8 @@
-import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import {
-  CreateReviewRequest,
-  Review,
-  ReviewSummary,
-  PagedResult
-} from '../models/review.model';
+import { CreateReviewRequest, PagedResult, Review, ReviewSummary } from '../models/review.model';
 
 @Injectable({ providedIn: 'root' })
 export class ReviewService {
@@ -17,17 +12,13 @@ export class ReviewService {
 
   getMyReviews(page = 1, pageSize = 10): Observable<PagedResult<Review>> {
     return this.http.get<PagedResult<Review>>(`${this.apiUrl}`, {
-      params: { page, pageSize }
+      params: { page, pageSize },
     });
   }
 
-  getPropertyReviews(
-    propertyId: string,
-    page = 1,
-    pageSize = 5
-  ): Observable<PagedResult<Review>> {
+  getPropertyReviews(propertyId: string, page = 1, pageSize = 5): Observable<PagedResult<Review>> {
     return this.http.get<PagedResult<Review>>(`${this.apiUrl}/property/${propertyId}`, {
-      params: { page, pageSize }
+      params: { page, pageSize },
     });
   }
 
@@ -40,7 +31,7 @@ export class ReviewService {
   }
 
   updateReview(id: string, request: CreateReviewRequest): Observable<Review> {
-    return this.http.put<Review>(`${this.apiUrl}/${id}`, request);
+    return this.http.put<Review>(`${this.apiUrl}`, { id, ...request });
   }
 
   deleteReview(id: string): Observable<void> {
@@ -51,7 +42,7 @@ export class ReviewService {
     return new Date(date).toLocaleDateString('uz-UZ', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     });
   }
 }
