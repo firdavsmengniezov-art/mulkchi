@@ -32,7 +32,7 @@ Mulkchi — O‘zbekiston ko‘chmas mulk platformasi uchun full-stack loyiha (A
 ### 1) Talablar
 
 - .NET SDK 9
-- Node.js 20+
+- Node.js 20+ (Angular frontend uchun)
 - SQL Server (lokal yoki konteyner)
 
 ### 2) Backend sozlash va ishga tushirish
