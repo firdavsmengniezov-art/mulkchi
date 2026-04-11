@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Mulkchi.Api.Models.Foundations.AIs;
 using Mulkchi.Api.Models.Foundations.Announcements;
 using Mulkchi.Api.Models.Foundations.Auth;
+using Mulkchi.Api.Models.Foundations.Bookings;
 using Mulkchi.Api.Models.Foundations.Discounts;
 using Mulkchi.Api.Models.Foundations.Favorites;
 using Mulkchi.Api.Models.Foundations.HomeRequests;
@@ -18,7 +19,6 @@ using Mulkchi.Api.Models.Foundations.RentalContracts;
 using Mulkchi.Api.Models.Foundations.Reviews;
 using Mulkchi.Api.Models.Foundations.SavedSearches;
 using Mulkchi.Api.Models.Foundations.Users;
-using Mulkchi.Api.Models.Foundations.Bookings;
 
 namespace Mulkchi.Api.Brokers.Storages;
 
@@ -105,6 +105,14 @@ public partial class StorageBroker : DbContext, IStorageBroker
             entity.HasIndex(p => p.Status);
             entity.HasIndex(p => p.CheckInDate);
             entity.HasIndex(p => p.CheckOutDate);
+        });
+
+        // BookingHold — no soft delete, purged via DeleteExpiredBookingHoldsAsync
+        modelBuilder.Entity<BookingHold>(entity =>
+        {
+            entity.HasIndex(p => p.PropertyId);
+            entity.HasIndex(p => p.ExpiresAt);
+            entity.HasIndex(p => new { p.PropertyId, p.ExpiresAt });
         });
 
         modelBuilder.Entity<RentalContract>(entity =>

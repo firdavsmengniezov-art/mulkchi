@@ -60,6 +60,11 @@ public class Startup
         services.AddEndpointsApiExplorer();
         services.AddHttpContextAccessor(); // Add HttpContextAccessor
         services.AddHttpClient(); // Add IHttpClientFactory
+        
+        // In-process response cache for public analytics / search endpoints
+        services.AddResponseCaching();
+        services.AddMemoryCache();
+        
         AddSwagger(services);
         AddJwtAuthentication(services);
         AddDbContext(services);
@@ -111,6 +116,7 @@ public class Startup
         });
 
         app.UseRouting();
+        app.UseResponseCaching();
         app.UseAuthentication();
         app.UseAuthorization();
         

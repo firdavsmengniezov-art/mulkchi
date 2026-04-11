@@ -59,30 +59,34 @@ export class GlobalSearchComponent implements OnInit {
 
   private performSearch(query: string): Promise<SearchResult[]> {
     const results: SearchResult[] = [];
-    const lowerQuery = query.toLowerCase();
 
-    // Search properties
+    // Search properties using the real backend search endpoint with query param
     if (this.selectedCategory === 'all' || this.selectedCategory === 'properties') {
       return new Promise(resolve => {
-        this.propertyService.searchProperties({ page: 1, pageSize: 5 }).subscribe({
-          next: (response: any) => {
-            response.items.forEach((property: any) => {
-              const price = property.monthlyRent || property.salePrice || property.pricePerNight || 0;
-              const imageUrl = property.images?.[0]?.url || '/assets/images/placeholder-property.jpg';
-              results.push({
-                type: 'property',
-                id: property.id,
-                title: property.title,
-                description: property.description,
-                subtitle: `${property.city}, ${property.region} • ${price.toLocaleString('uz-UZ')} UZS`,
-                imageUrl: imageUrl,
-                url: `/properties/${property.id}`
+        this.propertyService
+          .searchProperties({ page: 1, pageSize: 5, title: query, city: query } as any)
+          .subscribe({
+            next: (response: any) => {
+              const items: any[] = response.items || [];
+              items.forEach((property: any) => {
+                const price = property.monthlyRent || property.salePrice || property.pricePerNight || 0;
+                const imageUrl = property.images?.[0]?.thumbnailUrl ||
+                                 property.images?.[0]?.url ||
+                                 '/assets/images/placeholder-property.jpg';
+                results.push({
+                  type: 'property',
+                  id: property.id,
+                  title: property.title,
+                  description: property.description,
+                  subtitle: `${property.city}, ${property.region} • ${price.toLocaleString('uz-UZ')} UZS`,
+                  imageUrl,
+                  url: `/properties/${property.id}`,
+                });
               });
-            });
-            resolve(results);
-          },
-          error: () => resolve(results)
-        });
+              resolve(results);
+            },
+            error: () => resolve(results),
+          });
       });
     }
 
@@ -99,12 +103,12 @@ export class GlobalSearchComponent implements OnInit {
                 description: user.email,
                 subtitle: `${user.role} • ${user.status}`,
                 imageUrl: user.avatar || '/assets/images/placeholder-user.jpg',
-                url: `/admin/users/${user.id}`
+                url: `/admin/users/${user.id}`,
               });
             });
             resolve(results);
           },
-          error: () => resolve(results)
+          error: () => resolve(results),
         });
       });
     }
@@ -114,20 +118,28 @@ export class GlobalSearchComponent implements OnInit {
       return new Promise(resolve => {
         this.announcementService.getAnnouncements(1, 5).subscribe({
           next: (response: any) => {
-            response.items.forEach((announcement: any) => {
-              results.push({
-                type: 'announcement',
-                id: announcement.id,
-                title: announcement.title,
-                description: announcement.content,
-                subtitle: `${announcement.type} • ${announcement.priority}`,
-                imageUrl: '/assets/images/placeholder-announcement.jpg',
-                url: `/announcements/${announcement.id}`
+            const items: any[] = response.items || [];
+            const lowerQuery = query.toLowerCase();
+            items
+              .filter(
+                (a: any) =>
+                  a.title?.toLowerCase().includes(lowerQuery) ||
+                  a.content?.toLowerCase().includes(lowerQuery),
+              )
+              .forEach((announcement: any) => {
+                results.push({
+                  type: 'announcement',
+                  id: announcement.id,
+                  title: announcement.title,
+                  description: announcement.content,
+                  subtitle: `${announcement.type} • ${announcement.priority}`,
+                  imageUrl: '/assets/images/placeholder-announcement.jpg',
+                  url: `/announcements/${announcement.id}`,
+                });
               });
-            });
             resolve(results);
           },
-          error: () => resolve(results)
+          error: () => resolve(results),
         });
       });
     }

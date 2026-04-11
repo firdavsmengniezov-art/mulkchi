@@ -42,6 +42,13 @@ public class SecurityHeadersMiddleware
         headers["Permissions-Policy"] =
             "camera=(), microphone=(), geolocation=(), payment=()";
 
+        // HTTP Strict Transport Security (HSTS) — browsers must use HTTPS for 1 year.
+        // Only set over HTTPS; do NOT set on plain HTTP responses.
+        if (context.Request.IsHttps)
+        {
+            headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains";
+        }
+
         await _next(context);
     }
 }

@@ -8,6 +8,7 @@ using Mulkchi.Api.Models.Foundations.PropertyImages.Exceptions;
 using Mulkchi.Api.Services.Foundations.Properties;
 using Mulkchi.Api.Services.Foundations.PropertyImages;
 using System;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -17,6 +18,8 @@ namespace Mulkchi.Api.Controllers;
 [Route("api/[controller]")]
 public class PropertyImagesUploadController : ControllerBase
 {
+    private const int MaxImagesPerProperty = 20;
+
     private readonly IPropertyImageService propertyImageService;
     private readonly IFileStorageBroker fileStorageBroker;
     private readonly IPropertyService propertyService;
@@ -45,17 +48,27 @@ public class PropertyImagesUploadController : ControllerBase
             if (ownershipResult is not OkResult)
                 return ownershipResult;
 
-            // Upload file only after ownership is verified
-            string imageUrl = await fileStorageBroker.UploadImageAsync(file, "property-images");
+            // Enforce 20-image limit per property
+            var existingImages = this.propertyImageService.RetrieveAllPropertyImages()
+                .Where(img => img.PropertyId == propertyId);
+            int currentCount = existingImages.Count();
+            if (currentCount >= MaxImagesPerProperty)
+                return BadRequest(new { message = $"Har bir mulk uchun maksimal {MaxImagesPerProperty} ta rasm yuklab olish mumkin." });
 
-            // Create PropertyImage record
+            // Upload file and create WebP variants after ownership is verified
+            ImageVariants variants = await fileStorageBroker.UploadImageVariantsAsync(file, "property-images");
+
+            bool isFirst = currentCount == 0;
+
             var propertyImage = new PropertyImage
             {
                 Id = Guid.NewGuid(),
                 PropertyId = propertyId,
-                Url = imageUrl,
-                IsPrimary = false, // Can be updated later
-                SortOrder = 0, // Can be updated later
+                Url = variants.Full,
+                MediumUrl = variants.Medium,
+                ThumbnailUrl = variants.Thumbnail,
+                IsPrimary = isFirst, // first image becomes primary automatically
+                SortOrder = currentCount,
                 CreatedDate = DateTimeOffset.UtcNow,
                 UpdatedDate = DateTimeOffset.UtcNow
             };
@@ -103,7 +116,7 @@ public class PropertyImagesUploadController : ControllerBase
             if (ownershipResult is not OkResult)
                 return ownershipResult;
 
-            // Delete file from storage
+            // Delete all size variants from storage
             await fileStorageBroker.DeleteImageAsync(propertyImage.Url);
 
             // Delete record from database

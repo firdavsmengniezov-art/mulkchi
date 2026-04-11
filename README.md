@@ -158,3 +158,39 @@ Variant deterministik ravishda `propertyId` va `userId` kombinatsiyasidan hosil 
 ## Litsenziya
 
 MIT — batafsil: [LICENSE](LICENSE)
+
+---
+
+## Amalga oshirilgan vs Rejalashtirilgan funksiyalar
+
+Quyidagi jadval muammo bayonotidagi talablar bilan joriy holat o'rtasidagi moslikni ko'rsatadi.
+
+| # | Funksiya | Holat | Izoh |
+|---|----------|-------|------|
+| 1 | **5 bosqichli mulk e'loni formasi** (Basic → Parametrlar → Narx → Manzil → Rasmlar) | ✅ Amalga oshirildi | `property-form` component qayta yozildi |
+| 2 | **Rasm WebP konvertatsiya** (thumbnail 300×200, medium 800×600, full) | ✅ Amalga oshirildi | `SixLabors.ImageSharp 3.1.12` orqali; `LocalFileStorageBroker` yangilandi |
+| 3 | **Maksimal 20 ta rasm** per property | ✅ Amalga oshirildi | `PropertyImagesUploadController` + frontend default |
+| 4 | **Backend qidiruv (search/autocomplete)** | ✅ Mavjud | `/api/Properties/search`, `/api/Properties/autocomplete` |
+| 5 | **Live search (debounce 300ms)** | ✅ Yaxshilandi | `GlobalSearchComponent` haqiqiy query bilan backend-ga yuboriladi |
+| 6 | **ElasticSearch integratsiyasi** | ⏳ Rejalashtirilgan | Hozir SQL Server full-text search; ES standalone qatlam sifatida qo'shilishi mumkin |
+| 7 | **Phantom booking himoyasi** (10-daqiqalik pessimistik lock) | ✅ Amalga oshirildi | `BookingHold` entity + `POST /api/Bookings/hold`, `DELETE /api/Bookings/hold/{id}` |
+| 8 | **Availability calendar** (band sanalar) | ✅ Mavjud | `GET /api/Bookings/availability/{propertyId}?year=&month=` |
+| 9 | **Payme / Click to'lov integratsiyasi** | ✅ Mavjud | `PaymentsController` mavjud |
+| 10 | **To'lovdan keyin email+SMS notification** | ✅ Mavjud | `MailKit` + SMS stub; Payme/Click webhook uchun kengaytirish mumkin |
+| 11 | **Ijara shartnomasi PDF + e-imzo** | ⏳ Qisman | `RentalContracts` moduli bor; PDF generation va e-imzo integratsiyasi rejalashtirilgan |
+| 12 | **KYC (ijarachilar tekshiruvi)** | ⏳ Rejalashtirilgan | — |
+| 13 | **Onlayn muzokara (bid/offer)** | ⏳ Rejalashtirilgan | — |
+| 14 | **Geolokatsiyaga asoslangan tavsiya tizimi** | ✅ Amalga oshirildi | `ML.NET` + `AiRecommendations` moduli, `/api/Recommendations` |
+| 15 | **Analytics: public (barcha uchun)** | ✅ Mavjud + yaxshilandi | `GET /api/Analytics/market-overview`, `/by-region`, `/price-trends` — 1 soat response cache |
+| 16 | **Analytics: admin dashboard** | ✅ Mavjud | `AnalyticsDashboardComponent` (Admin rol talab qilinadi) |
+| 17 | **Materialized view / cron refresh** | ⏳ Qisman | `ResponseCaching` (1 soat) qo'shildi; DB materialized view va background cron keyinchalik |
+| 18 | **Redis kesh** | ⏳ Rejalashtirilgan | Hozir `IMemoryCache` (in-process); `IDistributedCache` + Redis kengaytirish uchun tayyor |
+| 19 | **HSTS (HTTP Strict Transport Security)** | ✅ Amalga oshirildi | `SecurityHeadersMiddleware` yangilandi |
+| 20 | **CSP, XSS, CSRF himoyasi** | ✅ Amalga oshirildi | `SecurityHeadersMiddleware`, `SameSite` cookie, `DomSanitizer` |
+| 21 | **Rate Limiting** | ✅ Amalga oshirildi | Sliding window per-IP; `Auth:20`, `Upload:30`, `General:300` req/min |
+| 22 | **SQL Injection himoyasi (Prisma/Parameterized)** | ✅ Amalga oshirildi | EF Core parametrli so'rovlar |
+| 23 | **Parol bcrypt (salt=12)** | ✅ Amalga oshirildi | `BCrypt.Net-Next` |
+| 24 | **JWT autentifikatsiya** | ✅ Amalga oshirildi | httpOnly cookie + BehaviorSubject refresh loop himoyasi |
+| 25 | **SignalR real-time chat + notification** | ✅ Amalga oshirildi | `ChatHub`, `NotificationHub` |
+| 26 | **Ko'p tillik qo'llab-quvvatlash** | ✅ Amalga oshirildi | `uz`, `ru`, `en` (Accept-Language header) |
+

@@ -10,6 +10,7 @@ import { PropertyImageService } from '../../../core/services/property-image.serv
 import { PropertyService } from '../../../core/services/property.service';
 import { ImageUploaderComponent } from '../../../shared/components/image-uploader/image-uploader.component';
 
+/** 5-bosqichli mulk e'loni yaratish formasi */
 @Component({
   selector: 'app-property-form',
   standalone: true,
@@ -22,6 +23,17 @@ export class PropertyFormComponent implements OnInit {
   propertyId: string | null = null;
   loading = false;
   saving = false;
+
+  /** Joriy bosqich (0–4) */
+  currentStep = 0;
+
+  readonly steps = [
+    { label: 'Asosiy ma\'lumotlar', icon: '📋' },
+    { label: 'Parametrlar', icon: '📐' },
+    { label: 'Narx va shartlar', icon: '💰' },
+    { label: 'Manzil', icon: '📍' },
+    { label: 'Rasmlar', icon: '🖼️' },
+  ];
 
   // Property form data
   property: any = {
@@ -40,14 +52,32 @@ export class PropertyFormComponent implements OnInit {
     hasFurniture: false,
     hasAirConditioning: false,
     hasHeating: false,
+    hasWifi: false,
+    hasPool: false,
+    hasSecurity: false,
+    hasElevator: false,
+    hasGenerator: false,
+    hasGas: false,
+    hasWasher: false,
+    hasKitchen: false,
+    hasTV: false,
+    hasWorkspace: false,
+    petsAllowed: false,
+    isChildFriendly: false,
+    isAccessible: false,
     yearBuilt: new Date().getFullYear(),
+    securityDeposit: 0,
+    latitude: 0,
+    longitude: 0,
+    district: '',
+    currency: 'UZS',
   };
 
   // Image management
   propertyImages: PropertyImage[] = [];
 
   constructor(
-    private router: Router,
+    public router: Router,
     private activatedRoute: ActivatedRoute,
     private propertyService: PropertyService,
     private propertyImageService: PropertyImageService,
@@ -97,8 +127,69 @@ export class PropertyFormComponent implements OnInit {
     });
   }
 
+  // ─── Step navigation ─────────────────────────────────────────────────────
+
+  get isFirstStep(): boolean {
+    return this.currentStep === 0;
+  }
+
+  get isLastStep(): boolean {
+    return this.currentStep === this.steps.length - 1;
+  }
+
+  get isMediaStep(): boolean {
+    return this.currentStep === 4;
+  }
+
+  nextStep(): void {
+    if (!this.isStepValid(this.currentStep)) return;
+    if (this.currentStep < this.steps.length - 1) {
+      this.currentStep++;
+    }
+  }
+
+  prevStep(): void {
+    if (this.currentStep > 0) {
+      this.currentStep--;
+    }
+  }
+
+  goToStep(index: number): void {
+    // Allow going back to any already-visited step or forward only if current is valid
+    if (index < this.currentStep || this.isStepValid(this.currentStep)) {
+      this.currentStep = index;
+    }
+  }
+
+  isStepValid(step: number): boolean {
+    switch (step) {
+      case 0: // Basic Info
+        return !!(this.property.title && this.property.description);
+      case 1: // Parameters
+        return this.property.area > 0 && this.property.roomsCount >= 1;
+      case 2: // Price & Terms
+        return this.property.price > 0;
+      case 3: // Location
+        return !!(this.property.address && this.property.city && this.property.region);
+      case 4: // Media – always valid (images optional)
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  isStepCompleted(step: number): boolean {
+    return step < this.currentStep;
+  }
+
+  // ─── Submit ───────────────────────────────────────────────────────────────
+
   onSubmit(): void {
     if (this.saving) return;
+    if (!this.isFormValid) {
+      alert('Iltimos, barcha majburiy maydonlarni to\'ldiring.');
+      return;
+    }
 
     this.saving = true;
 
@@ -114,27 +205,24 @@ export class PropertyFormComponent implements OnInit {
         const newPropertyId = this.isEditMode ? this.propertyId : response.id;
 
         if (!this.isEditMode) {
-          // For new properties, set the propertyId for image upload
           this.propertyId = newPropertyId;
+          // Advance to media step so user can upload images immediately
+          this.currentStep = 4;
         }
 
-        alert(
-          this.isEditMode ? 'Property updated successfully!' : 'Property created successfully!',
-        );
         this.saving = false;
 
-        // Navigate to property detail or stay on form for image upload
         if (this.isEditMode) {
+          alert('Mulk muvaffaqiyatli yangilandi!');
           this.router.navigate(['/properties', this.propertyId]);
         } else {
-          // Stay on form for image upload
-          alert('Property created! Now you can upload images.');
+          alert('Mulk yaratildi! Endi rasm yuklashingiz mumkin.');
         }
       },
       error: (error: any) => {
         this.logger.error('Error saving property:', error);
         const message = error?.error?.message || error?.message || 'Unknown error';
-        alert(`Failed to save property: ${message}`);
+        alert(`Xatolik: ${message}`);
         this.saving = false;
       },
     });
@@ -152,26 +240,25 @@ export class PropertyFormComponent implements OnInit {
       category: 'Residential',
       status: 'Active',
       listingType,
-      // Backend validation currently requires monthlyRent > 0 for creation.
       monthlyRent: normalizedPrice,
       salePrice: listingType === 'Sale' ? normalizedPrice : null,
       pricePerNight: listingType === 'ShortTermRent' ? normalizedPrice : null,
-      securityDeposit: 0,
+      securityDeposit: Number(this.property.securityDeposit) || 0,
       area: Number(this.property.area) || 0,
       numberOfBedrooms: Number(this.property.roomsCount) || 1,
       numberOfBathrooms: Number(this.property.bathroomsCount) || 1,
       maxGuests: Math.max(Number(this.property.roomsCount) || 1, 1) * 2,
       region,
       city: this.property.city,
-      district: this.property.city,
+      district: this.property.district || this.property.city,
       address: this.property.address,
       mahalla: '',
-      latitude: 0,
-      longitude: 0,
-      hasWifi: false,
+      latitude: Number(this.property.latitude) || 0,
+      longitude: Number(this.property.longitude) || 0,
+      hasWifi: !!this.property.hasWifi,
       hasParking: !!this.property.hasParking,
-      hasPool: false,
-      petsAllowed: false,
+      hasPool: !!this.property.hasPool,
+      petsAllowed: !!this.property.petsAllowed,
       isInstantBook: false,
       isVacant: true,
       hasMetroNearby: false,
@@ -180,22 +267,22 @@ export class PropertyFormComponent implements OnInit {
       hasSchoolNearby: false,
       hasHospitalNearby: false,
       distanceToCityCenter: 0,
-      hasElevator: false,
-      hasSecurity: false,
-      hasGenerator: false,
-      hasGas: false,
+      hasElevator: !!this.property.hasElevator,
+      hasSecurity: !!this.property.hasSecurity,
+      hasGenerator: !!this.property.hasGenerator,
+      hasGas: !!this.property.hasGas,
       hasFurniture: !!this.property.hasFurniture,
       isRenovated: false,
       hasAirConditioning: !!this.property.hasAirConditioning,
       hasHeating: !!this.property.hasHeating,
-      hasWasher: false,
-      hasKitchen: false,
-      hasTV: false,
-      hasWorkspace: false,
+      hasWasher: !!this.property.hasWasher,
+      hasKitchen: !!this.property.hasKitchen,
+      hasTV: !!this.property.hasTV,
+      hasWorkspace: !!this.property.hasWorkspace,
       isSelfCheckIn: false,
-      isChildFriendly: false,
-      isAccessible: false,
-      currency: 'UZS',
+      isChildFriendly: !!this.property.isChildFriendly,
+      isAccessible: !!this.property.isAccessible,
+      currency: this.property.currency || 'UZS',
       exchangeRate: 1,
     };
   }
@@ -230,21 +317,17 @@ export class PropertyFormComponent implements OnInit {
 
   onImagesUploaded(images: PropertyImage[]): void {
     this.propertyImages = [...this.propertyImages, ...images];
-    alert('Images uploaded successfully!');
   }
 
   onImageDeleted(imageId: string): void {
     this.propertyImages = this.propertyImages.filter((img) => img.id !== imageId);
-    alert('Image deleted successfully!');
   }
 
   onPrimaryImageSet(imageId: string): void {
-    // Update all images to set only one as primary
     this.propertyImages = this.propertyImages.map((img) => ({
       ...img,
       isPrimary: img.id === imageId,
     }));
-    alert('Primary image updated!');
   }
 
   onCancel(): void {
@@ -255,16 +338,13 @@ export class PropertyFormComponent implements OnInit {
     }
   }
 
-  // Form validation
+  // Form validation – all steps must be valid
   get isFormValid(): boolean {
-    return !!(
-      this.property.title &&
-      this.property.description &&
-      this.property.address &&
-      this.property.city &&
-      this.property.region &&
-      this.property.price > 0 &&
-      this.property.area > 0
+    return (
+      this.isStepValid(0) &&
+      this.isStepValid(1) &&
+      this.isStepValid(2) &&
+      this.isStepValid(3)
     );
   }
 
@@ -287,7 +367,16 @@ export class PropertyFormComponent implements OnInit {
       'Namangan',
       'Khorezm',
       'Karakalpakstan',
+      'Navoiy',
+      'Jizzakh',
+      'Sirdaryo',
+      'Surxondaryo',
+      'Qashqadaryo',
     ];
+  }
+
+  get currencies(): string[] {
+    return ['UZS', 'USD', 'EUR'];
   }
 
   // Current year for form validation
