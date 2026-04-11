@@ -1,1 +1,303 @@
-/* Tailwind CSS is used entirely in the HTML template. */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  width: 100%;
+  background: #fff;
+  border-bottom: 1px solid var(--mulk-border);
+  transition:
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+}
+
+.navbar--scrolled {
+  box-shadow: 0 8px 18px rgba(44, 62, 80, 0.08);
+}
+
+.navbar__container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.navbar__row {
+  min-height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.navbar__logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  text-decoration: none;
+}
+
+.navbar__logo-mark {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.55rem;
+  background: var(--mulk-primary);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+}
+
+.navbar__logo-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--mulk-text);
+}
+
+.navbar__search {
+  position: relative;
+  flex: 1;
+  max-width: 30rem;
+}
+
+.navbar__search-icon {
+  position: absolute;
+  width: 1rem;
+  height: 1rem;
+  left: 0.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--mulk-text-2);
+}
+
+.navbar__search-input {
+  width: 100%;
+  height: 2.5rem;
+  border: 1px solid var(--mulk-border);
+  border-radius: 0.75rem;
+  background: var(--mulk-bg);
+  color: var(--mulk-text);
+  padding: 0 0.75rem 0 2.3rem;
+  outline: none;
+}
+
+.navbar__search-input:focus {
+  border-color: var(--mulk-primary);
+  box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.12);
+}
+
+.navbar__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.navbar__dropdown {
+  position: relative;
+}
+
+.navbar__action-btn,
+.navbar__profile-btn,
+.navbar__mobile-toggle,
+.navbar__icon-link,
+.navbar__cta,
+.navbar__menu-item,
+.navbar__mobile-cta {
+  border: 0;
+  cursor: pointer;
+}
+
+.navbar__action-btn,
+.navbar__mobile-toggle,
+.navbar__icon-link {
+  height: 2.25rem;
+  min-width: 2.25rem;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--mulk-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.navbar__action-btn:hover,
+.navbar__mobile-toggle:hover,
+.navbar__icon-link:hover {
+  background: var(--mulk-bg-2);
+}
+
+.navbar__lang-short {
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.navbar__chevron {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.navbar__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0 0.45rem;
+  color: var(--mulk-text-2);
+  font-size: 0.78rem;
+}
+
+.navbar__status-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: #c4c8cc;
+}
+
+.navbar__status-dot--online {
+  background: var(--mulk-green);
+}
+
+.navbar__cta,
+.navbar__mobile-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  background: var(--mulk-primary);
+  color: #fff;
+  border-radius: 0.7rem;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.navbar__cta {
+  height: 2.25rem;
+  padding: 0 0.9rem;
+}
+
+.navbar__cta:hover,
+.navbar__mobile-cta:hover {
+  background: var(--mulk-primary-dark);
+}
+
+.navbar__profile-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navbar__profile-avatar {
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 999px;
+  background: var(--mulk-blue);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.navbar__menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  min-width: 11rem;
+  background: #fff;
+  border: 1px solid var(--mulk-border);
+  border-radius: 0.8rem;
+  box-shadow: 0 14px 28px rgba(44, 62, 80, 0.15);
+  z-index: 80;
+  overflow: hidden;
+}
+
+.navbar__menu--user {
+  min-width: 14rem;
+}
+
+.navbar__menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  text-align: left;
+  background: transparent;
+  color: var(--mulk-text);
+  padding: 0.62rem 0.85rem;
+  font-size: 0.87rem;
+}
+
+.navbar__menu-item:hover,
+.navbar__menu-item--active {
+  background: var(--mulk-bg-2);
+}
+
+.navbar__menu-user {
+  border-bottom: 1px solid var(--mulk-border);
+  padding: 0.75rem 0.85rem;
+}
+
+.navbar__menu-user-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--mulk-text);
+}
+
+.navbar__menu-user-email {
+  margin-top: 0.2rem;
+  font-size: 0.75rem;
+  color: var(--mulk-text-2);
+}
+
+.navbar__mobile-menu {
+  border-top: 1px solid var(--mulk-border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.75rem 0 0.9rem;
+}
+
+.navbar__mobile-link {
+  text-decoration: none;
+  color: var(--mulk-text);
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.55rem;
+  font-weight: 500;
+}
+
+.navbar__mobile-link:hover {
+  background: var(--mulk-bg-2);
+}
+
+.navbar__mobile-cta {
+  margin-top: 0.25rem;
+  height: 2.4rem;
+}
+
+.mobile-only {
+  display: none;
+}
+
+.navbar__mobile-toggle svg {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+@media (max-width: 900px) {
+  .desktop-only {
+    display: none;
+  }
+
+  .mobile-only {
+    display: block;
+  }
+
+  .navbar__logo-text {
+    font-size: 1.1rem;
+  }
+}

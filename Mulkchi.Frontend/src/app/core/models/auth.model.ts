@@ -1,4 +1,8 @@
-export enum UserRole { Guest = 0, Host = 1, Admin = 2 }
+export enum UserRole {
+  Guest = 0,
+  Host = 1,
+  Admin = 2,
+}
 
 export interface LoginRequest {
   email: string;
@@ -14,6 +18,23 @@ export interface RegisterRequest {
   preferredLanguage?: string;
 }
 
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ForgotPasswordResponse {
+  message: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+}
+
+export interface ResetPasswordResponse {
+  message: string;
+}
+
 export interface AuthUser {
   id: string;
   email: string;
@@ -25,8 +46,7 @@ export interface AuthUser {
 
 /**
  * Shape returned by login / register / refresh endpoints.
- * Tokens are delivered via httpOnly cookies — NOT in this payload.
- * `accessToken` is provided solely for SignalR's in-memory use.
+ * `accessToken` is persisted in localStorage for HTTP auth and SignalR.
  */
 export interface AuthUserInfo {
   userId: string;
@@ -36,7 +56,7 @@ export interface AuthUserInfo {
   avatarUrl?: string;
   role: UserRole;
   expiresAt: string;
-  /** For SignalR only. Store in memory, never in localStorage/sessionStorage. */
+  /** Short-lived JWT used by HTTP requests and SignalR. */
   accessToken: string;
 }
 
@@ -46,4 +66,3 @@ export interface AuthResponse {
   refreshToken: string;
   user: AuthUser;
 }
-

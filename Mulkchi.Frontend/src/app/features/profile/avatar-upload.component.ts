@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-avatar-upload',
@@ -12,7 +13,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
       >
         <img
           *ngIf="avatarUrl"
-          [src]="apiUrl + avatarUrl"
+          [src]="backendOrigin + avatarUrl"
           alt="Avatar"
           class="w-full h-full object-cover"
         />
@@ -53,8 +54,7 @@ export class AvatarUploadComponent {
   @Input() isUploading = false;
   @Output() fileSelected = new EventEmitter<File>();
 
-  // Add environment based url resolution for images
-  apiUrl = 'http://localhost:5000'; // Replace with environment
+  backendOrigin = environment.hubUrl;
 
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;

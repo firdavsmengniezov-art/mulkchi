@@ -1,104 +1,112 @@
-<div class="favorites-page">
-  <div class="page-header">
-    <h1>❤️ {{ 'FAVORITES.TITLE' | translate }}</h1>
-    @if (pagedResult) {
-      <span class="count">({{ pagedResult.totalCount }})</span>
-    }
-  </div>
+<app-navbar></app-navbar>
 
-  <div class="filters-section">
-    <div class="sort-control">
-      <mat-form-field appearance="outline">
-        <mat-label>{{ 'FAVORITES.SORT' | translate }}</mat-label>
-        <mat-select [(value)]="sortBy" (selectionChange)="onSortChange($event.value)">
-          @for (option of getSortOptions(); track option.value) {
+<div class="favorites-shell">
+  <div class="favorites-page">
+    <section class="favorites-hero">
+      <div>
+        <h1>{{ 'FAVORITES.TITLE' | translate }}</h1>
+        <p>Saqlangan e'lonlarni tez ko'ring, taqqoslang va keraklisini oching.</p>
+      </div>
+
+      <div class="hero-controls">
+        @if (pagedResult) {
+        <div class="count-badge">{{ pagedResult.totalCount }} ta saqlangan</div>
+        }
+
+        <mat-form-field appearance="outline" class="sort-control">
+          <mat-label>{{ 'FAVORITES.SORT' | translate }}</mat-label>
+          <mat-select [(value)]="sortBy" (selectionChange)="onSortChange($event.value)">
+            @for (option of getSortOptions(); track option.value) {
             <mat-option [value]="option.value">{{ option.label }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-    </div>
-  </div>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </section>
 
-  <div class="favorites-grid" *ngIf="!loading; else loadingTemplate">
-    @for (favorite of favorites; track favorite.id) {
+    <div class="favorites-grid" *ngIf="!loading; else loadingTemplate">
+      @for (favorite of favorites; track favorite.id) {
       <mat-card class="favorite-card" (click)="goToProperty(favorite.propertyId)">
-        <div class="card-header">
-          <div class="property-image">
-            <img [src]="favorite.property?.imageUrl || 'https://picsum.photos/seed/' + favorite.id + '/300/200.jpg'" 
-                 [alt]="favorite.property?.title || 'Property'">
-          </div>
-          <button mat-icon-button 
-                  class="remove-btn" 
-                  (click)="removeFavorite(favorite, $event)"
-                  [matTooltip]="'FAVORITES.REMOVE' | translate">
+        <div class="property-image">
+          <img [src]="favorite.property?.imageUrl || 'https://picsum.photos/seed/' + favorite.id + '/300/200.jpg'"
+            [alt]="favorite.property?.title || 'Property'">
+          <button mat-icon-button class="remove-btn" (click)="removeFavorite(favorite, $event)"
+            [matTooltip]="'FAVORITES.REMOVE' | translate">
             <mat-icon>close</mat-icon>
           </button>
         </div>
-        
+
         <div class="card-content">
-          <div class="property-info">
-            <h3 class="property-title">{{ favorite.property?.title || ('FAVORITES.NO_NAME' | translate) }}</h3>
-            <p class="property-location">
-              <mat-icon>location_on</mat-icon>
-              {{ favorite.property?.city || '' }}, {{ favorite.property?.district || '' }}
-            </p>
-            <div class="property-details">
-              <span class="detail-item">
-                <mat-icon>king_bed</mat-icon>
-                {{ favorite.property?.numberOfBedrooms || 0 }} {{ 'PROPERTY.BEDROOMS' | translate }}
-              </span>
-              <span class="detail-item">
-                <mat-icon>bathtub</mat-icon>
-                {{ favorite.property?.numberOfBathrooms || 0 }} {{ 'PROPERTY.BATHROOMS' | translate }}
-              </span>
-              <span class="detail-item">
-                <mat-icon>straighten</mat-icon>
-                {{ favorite.property?.area || 0 }} m²
-              </span>
-            </div>
+          <h3 class="property-title">{{ favorite.property?.title || ('FAVORITES.NO_NAME' | translate) }}</h3>
+
+          <p class="property-location">
+            <mat-icon>location_on</mat-icon>
+            {{ favorite.property?.city || '' }}, {{ favorite.property?.district || '' }}
+          </p>
+
+          <div class="property-details">
+            <span class="detail-item">
+              <mat-icon>king_bed</mat-icon>
+              {{ favorite.property?.numberOfBedrooms || 0 }} {{ 'PROPERTY.BEDROOMS' | translate }}
+            </span>
+            <span class="detail-item">
+              <mat-icon>bathtub</mat-icon>
+              {{ favorite.property?.numberOfBathrooms || 0 }} {{ 'PROPERTY.BATHROOMS' | translate }}
+            </span>
+            <span class="detail-item">
+              <mat-icon>straighten</mat-icon>
+              {{ favorite.property?.area || 0 }} m²
+            </span>
+          </div>
+
+          <div class="card-footer">
             <div class="property-price">
               @if (favorite.property?.monthlyRent) {
-                <span class="price">{{ favorite.property?.monthlyRent | number:'uz' }} {{ 'PROPERTY.PRICE_PER_MONTH' | translate }}</span>
+              <span class="price">{{ favorite.property?.monthlyRent | number:'uz' }} {{ 'PROPERTY.PRICE_PER_MONTH' |
+                translate }}</span>
               } @else if (favorite.property?.salePrice) {
-                <span class="price">{{ favorite.property?.salePrice | number:'uz' }} $</span>
+              <span class="price">{{ favorite.property?.salePrice | number:'uz' }} $</span>
               } @else if (favorite.property?.pricePerNight) {
-                <span class="price">{{ favorite.property?.pricePerNight | number:'uz' }} {{ 'PROPERTY.PRICE_PER_NIGHT' | translate }}</span>
+              <span class="price">{{ favorite.property?.pricePerNight | number:'uz' }} {{ 'PROPERTY.PRICE_PER_NIGHT' |
+                translate }}</span>
               } @else {
-                <span class="price">{{ 'FAVORITES.NO_PRICE' | translate }}</span>
+              <span class="price">{{ 'FAVORITES.NO_PRICE' | translate }}</span>
               }
             </div>
+
+            <button mat-stroked-button class="view-btn"
+              (click)="goToProperty(favorite.propertyId); $event.stopPropagation()">
+              Ko'rish
+            </button>
           </div>
         </div>
       </mat-card>
-    }
+      }
 
-    <div class="empty-state" *ngIf="favorites.length === 0">
-      <mat-icon>favorite_border</mat-icon>
-      <h3>{{ 'FAVORITES.NO_FAVORITES' | translate }}</h3>
-      <p>{{ 'FAVORITES.ADD_FAVORITES' | translate }}</p>
-      <button mat-raised-button (click)="goToProperties()">
-        <mat-icon>search</mat-icon>
-        {{ 'FAVORITES.VIEW_PROPERTIES' | translate }}
-      </button>
+      <div class="empty-state" *ngIf="favorites.length === 0">
+        <mat-icon>favorite_border</mat-icon>
+        <h3>{{ 'FAVORITES.NO_FAVORITES' | translate }}</h3>
+        <p>{{ 'FAVORITES.ADD_FAVORITES' | translate }}</p>
+        <button mat-flat-button class="browse-btn" (click)="goToProperties()">
+          <mat-icon>search</mat-icon>
+          {{ 'FAVORITES.VIEW_PROPERTIES' | translate }}
+        </button>
+      </div>
     </div>
-  </div>
 
-  <ng-template #loadingTemplate>
-    <div class="loading-state">
-      <mat-spinner diameter="50"></mat-spinner>
-      <p>{{ 'FAVORITES.LOADING' | translate }}</p>
-    </div>
-  </ng-template>
+    <ng-template #loadingTemplate>
+      <div class="loading-state">
+        <mat-spinner diameter="44"></mat-spinner>
+        <p>{{ 'FAVORITES.LOADING' | translate }}</p>
+      </div>
+    </ng-template>
 
-  @if (pagedResult && pagedResult.totalCount > pageSize) {
+    @if (pagedResult && pagedResult.totalCount > pageSize) {
     <div class="pagination-section">
-      <mat-paginator 
-        [length]="pagedResult.totalCount"
-        [pageSize]="pageSize"
-        [pageSizeOptions]="[6, 12, 24, 48]"
-        [pageIndex]="currentPage - 1"
-        (page)="onPageChange($event)">
+      <mat-paginator [length]="pagedResult.totalCount" [pageSize]="pageSize" [pageSizeOptions]="[6, 12, 24, 48]"
+        [pageIndex]="currentPage - 1" (page)="onPageChange($event)">
       </mat-paginator>
     </div>
-  }
+    }
+  </div>
 </div>

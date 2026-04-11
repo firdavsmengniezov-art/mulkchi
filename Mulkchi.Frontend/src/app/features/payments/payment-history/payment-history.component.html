@@ -1,136 +1,115 @@
-<div class="payment-history">
-  <div class="page-header">
-    <h1>💳 {{ 'PAYMENTS.TITLE' | translate }}</h1>
-  </div>
+<app-navbar></app-navbar>
 
-  <div class="filters-section">
-    <div class="filter-group">
-      <mat-form-field appearance="outline">
+<div class="payments-shell">
+  <div class="payment-history">
+    <section class="hero-card">
+      <div>
+        <h1>{{ 'PAYMENTS.TITLE' | translate }}</h1>
+        <p>To'lovlaringiz holatini kuzating, summalarni solishtiring va kerak bo'lsa amal bajaring.</p>
+      </div>
+    </section>
+
+    <section class="summary-cards" *ngIf="!loading && filteredPayments.length > 0">
+      <mat-card class="summary-card">
+        <span class="label">{{ 'PAYMENTS.TOTAL_PAID' | translate }}</span>
+        <strong class="value success">{{ getTotalPaid() | number:'uz' }} UZS</strong>
+      </mat-card>
+
+      <mat-card class="summary-card">
+        <span class="label">{{ 'PAYMENTS.TOTAL_RECEIVED' | translate }}</span>
+        <strong class="value primary">{{ getTotalReceived() | number:'uz' }} UZS</strong>
+      </mat-card>
+
+      <mat-card class="summary-card">
+        <span class="label">{{ 'PAYMENTS.PENDING_AMOUNT' | translate }}</span>
+        <strong class="value warning">{{ getPendingAmount() | number:'uz' }} UZS</strong>
+      </mat-card>
+    </section>
+
+    <section class="filters-section">
+      <mat-form-field appearance="outline" class="filter-group">
         <mat-label>{{ 'PAYMENTS.STATUS' | translate }}</mat-label>
         <mat-select [(value)]="selectedStatus" (selectionChange)="onStatusChange($event.value)">
           @for (option of getStatusOptions(); track option.value) {
-            <mat-option [value]="option.value">{{ option.label }}</mat-option>
+          <mat-option [value]="option.value">{{ option.label }}</mat-option>
           }
         </mat-select>
       </mat-form-field>
-    </div>
 
-    <div class="filter-group">
-      <mat-form-field appearance="outline">
+      <mat-form-field appearance="outline" class="filter-group">
         <mat-label>{{ 'PAYMENTS.METHOD' | translate }}</mat-label>
         <mat-select [(value)]="selectedMethod" (selectionChange)="onMethodChange($event.value)">
           @for (method of getMethodOptions(); track method.value) {
-            <mat-option [value]="method.value">{{ method.label }}</mat-option>
+          <mat-option [value]="method.value">{{ method.label }}</mat-option>
           }
         </mat-select>
       </mat-form-field>
-    </div>
-  </div>
+    </section>
 
-  <div class="content-section" *ngIf="!loading; else loadingTemplate">
-    @if (pagedResult && pagedResult.items.length > 0) {
-      <div class="summary-cards">
-        <mat-card class="summary-card">
-          <div class="summary-content">
-            <div class="summary-item">
-              <span class="label">{{ 'PAYMENTS.TOTAL_PAID' | translate }}:</span>
-              <span class="value success">{{ getTotalPaid() | number:'uz' }} UZS</span>
+    <div class="content-section" *ngIf="!loading; else loadingTemplate">
+      <div class="payments-list" *ngIf="filteredPayments.length > 0; else emptyStateTemplate">
+        @for (payment of filteredPayments; track payment.id) {
+        <mat-card class="payment-card" (click)="viewPaymentDetails(payment)">
+          <div class="top-row">
+            <div class="booking-meta">
+              <span class="booking-id">#{{ payment.bookingId }}</span>
+              <span class="created-date">{{ payment.createdDate | date:'medium' }}</span>
             </div>
-            <div class="summary-item">
-              <span class="label">{{ 'PAYMENTS.TOTAL_RECEIVED' | translate }}:</span>
-              <span class="value primary">{{ getTotalReceived() | number:'uz' }} UZS</span>
+
+            <span class="status-badge {{ getStatusColor(payment.status) }}">
+              <mat-icon>{{ getStatusIcon(payment.status) }}</mat-icon>
+              {{ getStatusText(payment.status) }}
+            </span>
+          </div>
+
+          <div class="middle-row">
+            <div class="amount">{{ payment.amount | number:'uz' }} UZS</div>
+            <div class="method-cell">
+              <mat-icon>{{ getMethodIcon(payment.method) }}</mat-icon>
+              <span>{{ getMethodText(payment.method) }}</span>
             </div>
-            <div class="summary-item">
-              <span class="label">{{ 'PAYMENTS.PENDING_AMOUNT' | translate }}:</span>
-              <span class="value warning">{{ getPendingAmount() | number:'uz' }} UZS</span>
-            </div>
+          </div>
+
+          <div class="actions-row">
+            <button mat-stroked-button color="primary" (click)="viewPaymentDetails(payment); $event.stopPropagation()">
+              Batafsil
+            </button>
+
+            <button mat-button color="warn" (click)="cancelPayment(payment, $event)"
+              [disabled]="payment.status !== 'Pending'" [matTooltip]="'PAYMENTS.CANCEL' | translate">
+              Bekor qilish
+            </button>
           </div>
         </mat-card>
+        }
       </div>
 
-      <mat-tab-group [(selectedIndex)]="selectedTab" dynamicHeight="false">
-        <mat-tab [label]="'PAYMENTS.VIEW_TABLE' | translate">
-          <div class="table-container">
-            <table class="payments-table">
-              <thead>
-                <tr>
-                  <th>{{ 'PAYMENTS.DATE' | translate }}</th>
-                  <th>{{ 'PAYMENTS.BOOKING_NUMBER' | translate }}</th>
-                  <th>{{ 'PAYMENTS.AMOUNT' | translate }}</th>
-                  <th>{{ 'PAYMENTS.METHOD' | translate }}</th>
-                  <th>{{ 'PAYMENTS.STATUS' | translate }}</th>
-                  <th>{{ 'PAYMENTS.ACTIONS' | translate }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (payment of payments; track payment.id) {
-                  <tr>
-                    <td>{{ payment.createdDate | date:'short' }}</td>
-                    <td>
-                      <button mat-button color="primary" (click)="viewPaymentDetails(payment)">
-                        #{{ payment.bookingId }}
-                      </button>
-                    </td>
-                    <td>
-                      <span class="amount">{{ payment.amount | number:'uz' }} UZS</span>
-                    </td>
-                    <td>
-                      <div class="method-cell">
-                        <mat-icon>{{ getMethodIcon(payment.method) }}</mat-icon>
-                        <span>{{ getMethodText(payment.method) }}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <span class="status-badge {{ getStatusColor(payment.status) }}">
-                        <mat-icon>{{ getStatusIcon(payment.status) }}</mat-icon>
-                        {{ getStatusText(payment.status) }}
-                      </span>
-                    </td>
-                    <td>
-                      <button 
-                        mat-icon-button 
-                        (click)="cancelPayment(payment, $event)"
-                        [disabled]="payment.status !== 'Pending'"
-                        [matTooltip]="'PAYMENTS.CANCEL' | translate">
-                        <mat-icon>cancel</mat-icon>
-                      </button>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        </mat-tab>
-      </mat-tab-group>
-    }
-
-    <div class="empty-state" *ngIf="payments.length === 0">
-      <mat-icon>receipt_long</mat-icon>
-      <h3>{{ 'PAYMENTS.NO_PAYMENTS' | translate }}</h3>
-      <p>{{ 'PAYMENTS.NO_PAYMENTS_DESC' | translate }}</p>
-      <button mat-raised-button color="primary" routerLink="/properties">
-        <mat-icon>search</mat-icon>
-        {{ 'FAVORITES.VIEW_PROPERTIES' | translate }}
-      </button>
+      <ng-template #emptyStateTemplate>
+        <div class="empty-state">
+          <mat-icon>receipt_long</mat-icon>
+          <h3>{{ 'PAYMENTS.NO_PAYMENTS' | translate }}</h3>
+          <p>{{ 'PAYMENTS.NO_PAYMENTS_DESC' | translate }}</p>
+          <button mat-flat-button class="browse-btn" routerLink="/properties">
+            <mat-icon>search</mat-icon>
+            {{ 'FAVORITES.VIEW_PROPERTIES' | translate }}
+          </button>
+        </div>
+      </ng-template>
     </div>
-  </div>
 
-  <ng-template #loadingTemplate>
-    <div class="loading-state">
-      <mat-spinner diameter="50"></mat-spinner>
-      <p>{{ 'PAYMENTS.LOADING' | translate }}</p>
-    </div>
-  </ng-template>
+    <ng-template #loadingTemplate>
+      <div class="loading-state">
+        <mat-spinner diameter="44"></mat-spinner>
+        <p>{{ 'PAYMENTS.LOADING' | translate }}</p>
+      </div>
+    </ng-template>
 
-  @if (pagedResult && pagedResult.totalCount > pageSize) {
+    @if (pagedResult && pagedResult.totalCount > pageSize) {
     <div class="pagination-section">
-      <mat-paginator 
-        [length]="pagedResult.totalCount"
-        [pageSize]="pageSize"
-        [pageSizeOptions]="[5, 10, 25, 50]"
-        [pageIndex]="currentPage - 1"
-        (page)="onPageChange($event)">
+      <mat-paginator [length]="pagedResult.totalCount" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 25, 50]"
+        [pageIndex]="currentPage - 1" (page)="onPageChange($event)">
       </mat-paginator>
     </div>
-  }
+    }
+  </div>
 </div>

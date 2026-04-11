@@ -1,51 +1,65 @@
-import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { Observable, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { Property } from '../models/property.model';
 import { LoggingService } from './logging.service';
+import { PropertyService } from './property.service';
 
-import { 
-  AiRecommendation, 
-  RecommendationRequest,
+import {
+  AiRecommendation,
   RecommendationAnalytics,
-  RecommendationType 
+  RecommendationRequest,
+  RecommendationType,
 } from '../models/ai-recommendation.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AiRecommendationService {
   private readonly apiUrl = `${environment.apiUrl}/ai-recommendations`;
 
-  constructor(private http: HttpClient,
-    private logger: LoggingService) {}
+  constructor(
+    private http: HttpClient,
+    private propertyService: PropertyService,
+    private logger: LoggingService,
+  ) {}
 
-  // Get recommendations for users
+  // Get recommendations for users (derived from available properties)
   getRecommendations(request: RecommendationRequest = {}): Observable<AiRecommendation[]> {
-    const params = new URLSearchParams();
-    
-    if (request.userId) params.append('userId', request.userId);
-    if (request.propertyId) params.append('propertyId', request.propertyId);
-    if (request.limit) params.append('limit', request.limit.toString());
-    if (request.recommendationType) params.append('recommendationType', request.recommendationType);
-    if (request.includeViewed !== undefined) params.append('includeViewed', request.includeViewed.toString());
-    if (request.includeClicked !== undefined) params.append('includeClicked', request.includeClicked.toString());
+    const limit = request.limit ?? 10;
 
-    const url = params.toString() ? `${this.apiUrl}?${params}` : this.apiUrl;
-    
-    return this.http.get<AiRecommendation[]>(url).pipe(
-      catchError(this.handleError)
+    if (request.propertyId) {
+      return this.propertyService.getSimilarProperties(request.propertyId, limit).pipe(
+        map((properties) =>
+          this.mapToRecommendations(properties, RecommendationType.SimilarProperty),
+        ),
+        catchError(this.handleError),
+      );
+    }
+
+    if (request.city || request.region || request.location) {
+      return this.getLocationRecommendations(
+        request.location || request.city || request.region || '',
+        limit,
+      );
+    }
+
+    return this.propertyService.getFeaturedProperties(limit).pipe(
+      map((properties) =>
+        this.mapToRecommendations(
+          properties,
+          request.recommendationType ?? RecommendationType.Featured,
+        ),
+      ),
+      catchError(this.handleError),
     );
   }
 
   // Get personalized recommendations for current user
   getPersonalizedRecommendations(limit = 10): Observable<AiRecommendation[]> {
-    return this.getRecommendations({
-      limit,
-      includeViewed: false,
-      includeClicked: false
-    });
+    return this.getRecommendations({ limit, includeViewed: false, includeClicked: false });
   }
 
   // Get similar properties for a specific property
@@ -55,31 +69,37 @@ export class AiRecommendationService {
       recommendationType: RecommendationType.SimilarProperty,
       limit,
       includeViewed: true,
-      includeClicked: true
+      includeClicked: true,
     });
   }
 
   // Get popular properties in area
   getPopularInArea(city: string, limit = 8): Observable<AiRecommendation[]> {
-    return this.http.get<AiRecommendation[]>(`${this.apiUrl}/popular/${city}?limit=${limit}`).pipe(
-      catchError(this.handleError)
-    );
+    return this.getLocationRecommendations(city, limit);
   }
 
   // Get trending properties
   getTrendingProperties(limit = 10): Observable<AiRecommendation[]> {
-    return this.getRecommendations({
-      recommendationType: RecommendationType.Trending,
-      limit
-    });
+    return this.propertyService.getFeaturedProperties(limit).pipe(
+      map((properties) => this.mapToRecommendations(properties, RecommendationType.Trending)),
+      catchError(this.handleError),
+    );
   }
 
   // Get new listings
   getNewListings(limit = 8): Observable<AiRecommendation[]> {
-    return this.getRecommendations({
-      recommendationType: RecommendationType.NewListing,
-      limit
-    });
+    return this.propertyService.getProperties(1, limit).pipe(
+      map((result) => {
+        const items = Array.isArray((result as any).items)
+          ? (result as any).items
+          : Array.isArray(result)
+            ? (result as any)
+            : [];
+
+        return this.mapToRecommendations(items, RecommendationType.NewListing);
+      }),
+      catchError(this.handleError),
+    );
   }
 
   // Get recently viewed properties
@@ -87,60 +107,88 @@ export class AiRecommendationService {
     return this.getRecommendations({
       userId,
       recommendationType: RecommendationType.RecentlyViewed,
-      limit
+      limit,
     });
   }
 
   // Track recommendation interactions
   trackRecommendationView(recommendationId: string): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/${recommendationId}/view`, {}).pipe(
-      catchError(this.handleError)
-    );
+    return of(void 0);
   }
 
   trackRecommendationClick(recommendationId: string): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/${recommendationId}/click`, {}).pipe(
-      catchError(this.handleError)
-    );
+    return of(void 0);
   }
 
   // Admin operations
   createRecommendation(request: any): Observable<AiRecommendation> {
-    return this.http.post<AiRecommendation>(this.apiUrl, request).pipe(
-      catchError(this.handleError)
-    );
+    return this.http
+      .post<AiRecommendation>(this.apiUrl, request)
+      .pipe(catchError(this.handleError));
   }
 
   updateRecommendation(id: string, request: any): Observable<AiRecommendation> {
-    return this.http.put<AiRecommendation>(`${this.apiUrl}/${id}`, request).pipe(
-      catchError(this.handleError)
-    );
+    return this.http
+      .put<AiRecommendation>(`${this.apiUrl}/${id}`, request)
+      .pipe(catchError(this.handleError));
   }
 
   deleteRecommendation(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
-      catchError(this.handleError)
-    );
+    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(catchError(this.handleError));
   }
 
   // Analytics
   getRecommendationAnalytics(): Observable<RecommendationAnalytics> {
-    return this.http.get<RecommendationAnalytics>(`${this.apiUrl}/analytics`).pipe(
-      catchError(this.handleError)
+    return this.http
+      .get<RecommendationAnalytics>(`${this.apiUrl}/analytics`)
+      .pipe(catchError(this.handleError));
+  }
+
+  getLocationRecommendations(location: string, limit = 8): Observable<AiRecommendation[]> {
+    const query = (location || '').trim();
+
+    return this.propertyService.getProperties(1, 50).pipe(
+      map((result) => {
+        const items = Array.isArray((result as any).items)
+          ? (result as any).items
+          : Array.isArray(result)
+            ? (result as any)
+            : [];
+
+        const normalized = query.toLowerCase();
+        const filtered = normalized
+          ? items.filter((p: Property) => {
+              const city = (p.city || '').toLowerCase();
+              const region = (p.region || '').toLowerCase();
+              return city.includes(normalized) || region.includes(normalized);
+            })
+          : items;
+
+        const ranked = [...filtered].sort(
+          (a: any, b: any) => (b.averageRating || 0) - (a.averageRating || 0),
+        );
+
+        return this.mapToRecommendations(
+          ranked.slice(0, limit),
+          RecommendationType.PopularInArea,
+          query ? `"${query}" hududiga mos tavsiya` : 'Siz uchun tavsiya',
+        );
+      }),
+      catchError(this.handleError),
     );
   }
 
   // Utility methods
   getRecommendationTypeLabel(type: RecommendationType): string {
     const labels = {
-      [RecommendationType.SimilarProperty]: 'O\'xshash uylar',
+      [RecommendationType.SimilarProperty]: "O'xshash uylar",
       [RecommendationType.PopularInArea]: 'Mashhur hududda',
-      [RecommendationType.RecentlyViewed]: 'Yaqinda ko\'rilgan',
+      [RecommendationType.RecentlyViewed]: "Yaqinda ko'rilgan",
       [RecommendationType.PriceBased]: 'Narx asosida',
       [RecommendationType.PreferenceBased]: 'Afzallik asosida',
       [RecommendationType.Trending]: 'Trenddagi',
-      [RecommendationType.NewListing]: 'Yangi qo\'shilgan',
-      [RecommendationType.Featured]: 'Tanlangan'
+      [RecommendationType.NewListing]: "Yangi qo'shilgan",
+      [RecommendationType.Featured]: 'Tanlangan',
     };
     return labels[type] || type;
   }
@@ -154,7 +202,7 @@ export class AiRecommendationService {
       [RecommendationType.PreferenceBased]: 'bg-pink-100 text-pink-800',
       [RecommendationType.Trending]: 'bg-red-100 text-red-800',
       [RecommendationType.NewListing]: 'bg-indigo-100 text-indigo-800',
-      [RecommendationType.Featured]: 'bg-orange-100 text-orange-800'
+      [RecommendationType.Featured]: 'bg-orange-100 text-orange-800',
     };
     return colors[type] || 'bg-gray-100 text-gray-800';
   }
@@ -179,7 +227,7 @@ export class AiRecommendationService {
 
   // Filter recommendations by type
   filterByType(recommendations: AiRecommendation[], type: RecommendationType): AiRecommendation[] {
-    return recommendations.filter(r => r.recommendationType === type);
+    return recommendations.filter((r) => r.recommendationType === type);
   }
 
   // Sort recommendations by score
@@ -192,10 +240,57 @@ export class AiRecommendationService {
     return this.sortByScore(recommendations).slice(0, limit);
   }
 
+  private mapToRecommendations(
+    properties: Property[],
+    type: RecommendationType,
+    reasonOverride?: string,
+  ): AiRecommendation[] {
+    return (properties || []).map((property, index) => {
+      const imageUrl =
+        Array.isArray(property.images) && property.images.length ? property.images[0].url : '';
+
+      const price = property.salePrice ?? property.monthlyRent ?? property.pricePerNight ?? 0;
+
+      return {
+        id: `local-${property.id}-${index}`,
+        propertyId: property.id,
+        recommendationType: type,
+        score: Math.max(0.5, 1 - index * 0.05),
+        reason: reasonOverride || this.getRecommendationTypeLabel(type),
+        createdAt: new Date().toISOString(),
+        isViewed: false,
+        isClicked: false,
+        property: {
+          id: property.id,
+          title: property.title,
+          description: property.description,
+          price,
+          address: property.address,
+          city: property.city,
+          region: property.region,
+          propertyType: property.type,
+          listingType: property.listingType,
+          area: property.area,
+          roomsCount: property.numberOfBedrooms,
+          bathroomsCount: property.numberOfBathrooms,
+          imageUrl,
+          images: Array.isArray(property.images) ? property.images.map((i: any) => i.url) : [],
+          hostId: property.ownerId,
+          hostName: '',
+          rating: Number(property.averageRating || 0),
+          reviewsCount: Number(property.reviewsCount || 0),
+          viewsCount: Number(property.viewsCount || 0),
+          isFeatured: !!property.isFeatured,
+          isVerified: !!property.isVerified,
+        },
+      };
+    });
+  }
+
   private handleError(error: any): Observable<never> {
     this.logger.error('AiRecommendationService error:', error);
     let errorMessage = 'An error occurred with AI recommendations';
-    
+
     if (error.error?.message) {
       errorMessage = error.error.message;
     } else if (error.status === 403) {
@@ -203,7 +298,7 @@ export class AiRecommendationService {
     } else if (error.status === 404) {
       errorMessage = 'No recommendations found';
     }
-    
+
     return throwError(() => errorMessage);
   }
 }

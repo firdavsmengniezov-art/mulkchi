@@ -1,6 +1,11 @@
-import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { HubConnection, HubConnectionBuilder, LogLevel, HttpTransportType } from '@microsoft/signalr';
+import { Injectable, OnDestroy } from '@angular/core';
+import {
+  HttpTransportType,
+  HubConnection,
+  HubConnectionBuilder,
+  LogLevel,
+} from '@microsoft/signalr';
 import { BehaviorSubject, Observable, Subject, takeUntil } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
@@ -35,6 +40,13 @@ export interface TypingIndicator {
   isTyping: boolean;
 }
 
+export interface ChatAttachmentUploadResponse {
+  fileUrl: string;
+  fileName: string;
+  fileSize: number;
+  contentType: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ChatService implements OnDestroy {
   private hubConnection: HubConnection;
@@ -49,13 +61,14 @@ export class ChatService implements OnDestroy {
   constructor(
     private http: HttpClient,
     private authService: AuthService,
-    private logger: LoggingService) {
+    private logger: LoggingService,
+  ) {
     this.hubConnection = new HubConnectionBuilder()
       .withUrl(`${environment.hubUrl}/hubs/chat`, {
         accessTokenFactory: () => this.authService.getToken() || '',
         // Do NOT set skipNegotiation when using LongPolling —
         // skipNegotiation is only valid for pure WebSocket transport.
-        transport: HttpTransportType.LongPolling
+        transport: HttpTransportType.LongPolling,
       })
       .withAutomaticReconnect([0, 2000, 5000, 10000])
       .configureLogging(LogLevel.Warning)
@@ -68,15 +81,17 @@ export class ChatService implements OnDestroy {
     this.hubConnection.on('ReceiveMessage', (message: Message) => {
       const current = this.messages$.value;
       this.messages$.next([...current, message]);
+      this.upsertConversationFromMessage(message);
     });
 
     this.hubConnection.on('MessageSent', (message: Message) => {
       const current = this.messages$.value;
       this.messages$.next([...current, message]);
+      this.upsertConversationFromMessage(message);
     });
 
     this.hubConnection.on('UserTyping', (userId: string, isTyping: boolean) => {
-      const current = this.typingIndicators$.value.filter(t => t.userId !== userId);
+      const current = this.typingIndicators$.value.filter((t) => t.userId !== userId);
       if (isTyping) {
         this.typingIndicators$.next([...current, { userId, isTyping: true }]);
       } else {
@@ -84,12 +99,18 @@ export class ChatService implements OnDestroy {
       }
     });
 
-    this.hubConnection.on('MessageRead', (messageId: string) => {
-      const updated = this.messages$.value.map(m =>
-        m.id === messageId ? { ...m, isRead: true } : m
-      );
-      this.messages$.next(updated);
-    });
+    this.hubConnection.on(
+      'MessageRead',
+      (payload: string | { messageId: string; readAt?: string }) => {
+        const messageId = typeof payload === 'string' ? payload : payload.messageId;
+        const readAt = typeof payload === 'string' ? new Date().toISOString() : payload.readAt;
+
+        const updated = this.messages$.value.map((m) =>
+          m.id === messageId ? { ...m, isRead: true, readAt } : m,
+        );
+        this.messages$.next(updated);
+      },
+    );
 
     this.hubConnection.onreconnecting(() => {
       this.connectionStatus$.next(false);
@@ -126,7 +147,10 @@ export class ChatService implements OnDestroy {
     } catch (err) {
       this.logger.error('Chat hub connection failed:', err);
       this.connectionStatus$.next(false);
-      if (err instanceof Error && (err.message.includes('401') || err.message.includes('not in the \'Disconnected\' state'))) {
+      if (
+        err instanceof Error &&
+        (err.message.includes('401') || err.message.includes("not in the 'Disconnected' state"))
+      ) {
         return;
       }
       setTimeout(() => this.startConnection(), 5000);
@@ -140,6 +164,25 @@ export class ChatService implements OnDestroy {
       this.logger.error('Failed to send message:', err);
       throw err;
     }
+  }
+
+  async sendFileMessage(receiverId: string, fileUrl: string, fileName: string): Promise<void> {
+    try {
+      await this.hubConnection.invoke('SendFileMessage', receiverId, fileUrl, fileName);
+    } catch (err) {
+      this.logger.error('Failed to send file message:', err);
+      throw err;
+    }
+  }
+
+  uploadAttachment(file: File): Observable<ChatAttachmentUploadResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.http.post<ChatAttachmentUploadResponse>(
+      `${environment.apiUrl}/messages/upload-attachment`,
+      formData,
+    );
   }
 
   async sendTypingIndicator(receiverId: string, isTyping: boolean): Promise<void> {
@@ -175,7 +218,8 @@ export class ChatService implements OnDestroy {
   }
 
   loadConversations(): void {
-    this.http.get<Conversation[]>(`${environment.apiUrl}/messages/conversations`)
+    this.http
+      .get<Conversation[]>(`${environment.apiUrl}/messages/conversations`)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (conversations) => {
@@ -183,12 +227,13 @@ export class ChatService implements OnDestroy {
         },
         error: (err) => {
           this.logger.error('Failed to load conversations:', err);
-        }
+        },
       });
   }
 
   loadConversationMessages(otherUserId: string): void {
-    this.http.get<Message[]>(`${environment.apiUrl}/messages/conversation/${otherUserId}`)
+    this.http
+      .get<Message[]>(`${environment.apiUrl}/messages/conversation/${otherUserId}`)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (messages) => {
@@ -196,7 +241,7 @@ export class ChatService implements OnDestroy {
         },
         error: (err) => {
           this.logger.error('Failed to load conversation messages:', err);
-        }
+        },
       });
   }
 
@@ -225,6 +270,57 @@ export class ChatService implements OnDestroy {
     this.currentConversation$.next(userId);
     // Clear typing indicators when switching conversations
     this.typingIndicators$.next([]);
+  }
+
+  private upsertConversationFromMessage(message: Message): void {
+    const currentUserId = this.authService.getCurrentUser()?.id;
+    if (!currentUserId) {
+      return;
+    }
+
+    const otherUserId = message.senderId === currentUserId ? message.receiverId : message.senderId;
+    const existingConversations = [...this.conversations$.value];
+    const existingIndex = existingConversations.findIndex((c) => c.otherUserId === otherUserId);
+    const unreadCount = message.receiverId === currentUserId ? 1 : 0;
+
+    const mapPreview = (incomingMessage: Message): string => {
+      const normalizedType = `${incomingMessage.type ?? ''}`.toLowerCase();
+      if (normalizedType === 'file' || normalizedType === '2') {
+        return 'Ilova yuborildi';
+      }
+
+      return incomingMessage.content;
+    };
+
+    if (existingIndex >= 0) {
+      const existing = existingConversations[existingIndex];
+      const updatedConversation: Conversation = {
+        ...existing,
+        lastMessage: mapPreview(message),
+        lastMessageDate: message.createdDate,
+        unreadCount:
+          message.receiverId === currentUserId
+            ? this.currentConversation$.value === otherUserId
+              ? 0
+              : existing.unreadCount + 1
+            : existing.unreadCount,
+      };
+
+      existingConversations.splice(existingIndex, 1);
+      this.conversations$.next([updatedConversation, ...existingConversations]);
+      return;
+    }
+
+    const newConversation: Conversation = {
+      otherUserId,
+      otherUserName: message.senderName ?? 'Suhbatdosh',
+      otherUserAvatar: message.senderAvatar,
+      lastMessage: mapPreview(message),
+      lastMessageDate: message.createdDate,
+      unreadCount: this.currentConversation$.value === otherUserId ? 0 : unreadCount,
+    };
+
+    this.conversations$.next([newConversation, ...existingConversations]);
   }
 
   ngOnDestroy(): void {

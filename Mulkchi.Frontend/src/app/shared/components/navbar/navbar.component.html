@@ -1,158 +1,123 @@
-<nav class="sticky top-0 z-50 w-full bg-white border-b border-gray-200 shadow-sm">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex justify-between items-center h-20">
-      
-      <!-- Left: Logo -->
-      <a routerLink="/" class="flex flex-shrink-0 items-center gap-1 text-brand hover:opacity-90 transition">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8">
-          <path d="M11.47 3.84a.75.75 0 011.06 0l8.99 8.99a.75.75 0 11-1.06 1.06l-1.46-1.46V20.25a1.5 1.5 0 01-1.5 1.5H6.5a1.5 1.5 0 01-1.5-1.5V12.43L3.53 13.9a.75.75 0 11-1.06-1.06l8.99-8.99zM8 11.25V19.5h8v-8.25l-4-4-4 4zM10.5 14.5a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75z" />
-        </svg>
-        <span class="font-bold tracking-tight text-xl hidden sm:block">mulkchi</span>
+<nav class="navbar" [class.navbar--scrolled]="isScrolled">
+  <div class="navbar__container">
+    <div class="navbar__row">
+      <a routerLink="/" class="navbar__logo" (click)="closeMobileMenu()">
+        <div class="navbar__logo-mark">M</div>
+        <span class="navbar__logo-text">Mulkchi</span>
       </a>
 
-      <!-- Center: Floating Search Bar -->
-      <div class="hidden md:flex items-center justify-between mx-auto border border-gray-300 rounded-full shadow-sm hover:shadow-md transition duration-200 bg-white">
-        
-        <a routerLink="/properties" [queryParams]="{listingType:'Sale'}" class="px-5 py-3 text-sm font-medium text-dark hover:bg-gray-100 rounded-l-full flex-shrink-0">
-          {{ 'NAV.BUY' | translate }}
-        </a>
-        <span class="h-6 w-[1px] bg-gray-300"></span>
-        <a routerLink="/properties" [queryParams]="{listingType:'Rent'}" class="px-5 py-3 text-sm font-medium text-dark hover:bg-gray-100 flex-shrink-0">
-          {{ 'NAV.RENT' | translate }}
-        </a>
-        <span class="h-6 w-[1px] bg-gray-300"></span>
-        <a routerLink="/properties" [queryParams]="{listingType:'DailyRent'}" class="px-5 py-3 text-sm font-medium text-dark hover:bg-gray-100 flex-shrink-0">
-          {{ 'NAV.DAILY_RENT' | translate }}
-        </a>
-        
-        <div class="pl-3 pr-2 py-2">
-          <a routerLink="/ai-price" class="bg-brand hover:bg-brand/90 p-2.5 rounded-full flex items-center justify-center text-white transition cursor-pointer" title="{{ 'NAV.AI_PRICE' | translate }}">
-             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
-               <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-             </svg>
-          </a>
-        </div>
+      <div class="navbar__search desktop-only" role="search">
+        <svg class="navbar__search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+          stroke-width="2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" />
+        </svg>
+        <input type="text" class="navbar__search-input" placeholder="Qidirish: kvartira, uy, ofis..." />
       </div>
 
-      <!-- Right: User & Actions -->
-      <div class="flex items-center gap-1 sm:gap-2">
-        
-        <!-- Language Switcher -->
-        <div class="relative lang-switcher">
-          <button (click)="toggleLangMenu()" class="flex items-center gap-1.5 p-2.5 hover:bg-gray-100 rounded-full transition font-medium text-sm text-dark cursor-pointer">
-            <span>{{ currentLang.flag }}</span>
-            <span class="hidden lg:block">{{ currentLang.label }}</span>
+      <div class="navbar__actions">
+        <div class="navbar__dropdown lang-switcher">
+          <button type="button" class="navbar__action-btn" (click)="toggleLangMenu()">
+            <span class="navbar__lang-short">{{ currentLang.code.toUpperCase() }}</span>
+            <svg class="navbar__chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 15.5a.74.74 0 0 1-.53-.22l-5-5a.75.75 0 1 1 1.06-1.06L12 13.69l4.47-4.47a.75.75 0 0 1 1.06 1.06l-5 5a.74.74 0 0 1-.53.22Z" />
+            </svg>
           </button>
-          
+
           @if (showLangMenu) {
-            <div class="absolute right-0 mt-2 w-32 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50 text-sm overflow-hidden animate-fade-in">
-              @for (lang of languages; track lang.code) {
-                <button 
-                  (click)="changeLang(lang.code)"
-                  class="w-full text-left px-4 py-2 hover:bg-gray-100 transition flex items-center gap-2"
-                  [class.bg-gray-50]="lang.code === currentLang.code">
-                  <span>{{ lang.flag }}</span>
-                  <span class="text-dark">{{ lang.label }}</span>
-                </button>
-              }
-            </div>
+          <div class="navbar__menu navbar__menu--lang">
+            @for (lang of languages; track lang.code) {
+            <button type="button" class="navbar__menu-item"
+              [class.navbar__menu-item--active]="lang.code === currentLang.code" (click)="changeLang(lang.code)">
+              <span>{{ lang.flag }}</span>
+              <span>{{ lang.label }}</span>
+            </button>
+            }
+          </div>
           }
         </div>
 
-        <!-- SignalR Connection Status Indicator -->
         @if (isLoggedIn) {
-          <div class="hidden sm:flex items-center gap-1.5 px-3">
-            <div class="w-2 h-2 rounded-full" [ngClass]="isSignalRConnected ? 'bg-green-500' : 'bg-gray-300'"></div>
-            <span class="text-xs font-medium text-gray-500 whitespace-nowrap">
-              {{ isSignalRConnected ? ('NAV.ONLINE' | translate) : ('NAV.OFFLINE' | translate) }}
-            </span>
-          </div>
+        <div class="navbar__status desktop-only">
+          <span class="navbar__status-dot" [class.navbar__status-dot--online]="isSignalRConnected"></span>
+          <span>{{ isSignalRConnected ? ('NAV.ONLINE' | translate) : ('NAV.OFFLINE' | translate) }}</span>
+        </div>
+
+        <a routerLink="/notifications" class="navbar__icon-link" aria-label="Notifications">
+          <app-notification-bell></app-notification-bell>
+        </a>
         }
 
-        <!-- User Menu Profile Dropdown -->
-        <div class="relative user-menu ml-1">
-          @if (isLoggedIn) {
-            <!-- Connected User Menu -->
-            <button (click)="showUserMenu = !showUserMenu" class="flex items-center gap-3 p-1.5 pl-3 border border-gray-300 rounded-full hover:shadow-md transition bg-white cursor-pointer">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-700">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-              </svg>
-              <div class="bg-gray-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm relative">
-                👤
-                <app-notification-bell class="absolute -top-1 -right-1 scale-75"></app-notification-bell>
-              </div>
-            </button>
-            
-            @if (showUserMenu) {
-              <div class="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50 text-sm overflow-hidden animate-slide-up">
-                <div class="px-4 py-3 border-b border-gray-100">
-                  <div class="font-medium text-dark truncate">{{ currentUser?.firstName || '' }} {{ currentUser?.lastName || '' }}</div>
-                  <div class="text-xs text-gray-500 truncate">{{ currentUser?.email }}</div>
-                </div>
-                
-                <div class="py-1">
-                  @if (currentUser?.role === 'Host' || currentUser?.role === 'Admin') {
-                    <a routerLink="/dashboard" (click)="showUserMenu=false" class="block px-4 py-2 hover:bg-gray-100 font-medium text-dark">
-                      {{ 'NAV.DASHBOARD' | translate }}
-                    </a>
-                  }
-                  @if (currentUser?.role === 'Admin') {
-                    <a routerLink="/admin" (click)="showUserMenu=false" class="block px-4 py-2 hover:bg-gray-100 text-dark">
-                      {{ 'NAV.ADMIN_PANEL' | translate }}
-                    </a>
-                  }
-                </div>
+        <a routerLink="/properties/create" class="navbar__cta desktop-only" (click)="closeMobileMenu()">
+          + E'lon qo'shish
+        </a>
 
-                <div class="py-1 border-t border-gray-100">
-                  <a routerLink="/chat" (click)="showUserMenu=false" class="block px-4 py-2 hover:bg-gray-100 text-dark">
-                    {{ 'NAV.CHAT' | translate }}
-                  </a>
-                  <a routerLink="/my-bookings" (click)="showUserMenu=false" class="block px-4 py-2 hover:bg-gray-100 text-dark">
-                    {{ 'NAV.MY_BOOKINGS' | translate }}
-                  </a>
-                  <a routerLink="/favorites" (click)="showUserMenu=false" class="block px-4 py-2 hover:bg-gray-100 text-dark">
-                    {{ 'NAV.FAVORITES' | translate }}
-                  </a>
-                  <a routerLink="/saved-searches" (click)="showUserMenu=false" class="block px-4 py-2 hover:bg-gray-100 text-dark">
-                    {{ 'NAV.SAVED_SEARCHES' | translate }}
-                  </a>
-                </div>
+        <div class="navbar__dropdown user-menu">
+          <button type="button" class="navbar__profile-btn" (click)="toggleUserMenu()" aria-label="User menu">
+            <span class="navbar__profile-avatar">{{ userInitial }}</span>
+          </button>
 
-                <div class="py-1 border-t border-gray-100">
-                  <a routerLink="/profile" (click)="showUserMenu=false" class="block px-4 py-2 hover:bg-gray-100 text-dark">
-                    {{ 'NAV.PROFILE' | translate }}
-                  </a>
-                  <button (click)="logout()" class="w-full text-left block px-4 py-2 hover:bg-gray-100 text-dark font-medium pb-2">
-                    {{ 'NAV.LOGOUT' | translate }}
-                  </button>
-                </div>
-              </div>
+          @if (showUserMenu) {
+          <div class="navbar__menu navbar__menu--user">
+            @if (isLoggedIn) {
+            <div class="navbar__menu-user">
+              <div class="navbar__menu-user-name">{{ currentUser?.firstName }} {{ currentUser?.lastName }}</div>
+              <div class="navbar__menu-user-email">{{ currentUser?.email }}</div>
+            </div>
+
+            <a routerLink="/profile" class="navbar__menu-item" (click)="showUserMenu = false">{{ 'NAV.PROFILE' |
+              translate }}</a>
+            <a routerLink="/chat" class="navbar__menu-item" (click)="showUserMenu = false">{{ 'NAV.CHAT' | translate
+              }}</a>
+            <a routerLink="/favorites" class="navbar__menu-item" (click)="showUserMenu = false">{{ 'NAV.FAVORITES' |
+              translate }}</a>
+            <a routerLink="/saved-searches" class="navbar__menu-item" (click)="showUserMenu = false">{{
+              'NAV.SAVED_SEARCHES' | translate }}</a>
+            <button type="button" class="navbar__menu-item" (click)="logout()">{{ 'NAV.LOGOUT' | translate }}</button>
+            } @else {
+            <a routerLink="/login" class="navbar__menu-item" (click)="showUserMenu = false">{{ 'NAV.LOGIN' | translate
+              }}</a>
+            <a routerLink="/register" class="navbar__menu-item" (click)="showUserMenu = false">Ro'yxatdan o'tish</a>
             }
-          } @else {
-            <!-- Disconnected state Dropdown alternative -->
-            <button (click)="showUserMenu = !showUserMenu" class="flex items-center gap-3 p-1.5 pl-3 border border-gray-300 rounded-full hover:shadow-md transition bg-white cursor-pointer">
-               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-700">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-               </svg>
-               <div class="bg-gray-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">
-                 👤
-               </div>
-            </button>
-            
-            @if (showUserMenu) {
-              <div class="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50 text-sm overflow-hidden animate-slide-up">
-                 <a routerLink="/login" (click)="showUserMenu=false" class="block px-4 py-3 hover:bg-gray-100 font-medium text-dark">
-                   {{ 'NAV.LOGIN' | translate }}
-                 </a>
-                 <a routerLink="/register" (click)="showUserMenu=false" class="block px-4 py-3 hover:bg-gray-100 text-dark">
-                   Ro'yxatdan o'tish
-                 </a>
-              </div>
-            }
+          </div>
           }
         </div>
+
+        <button type="button" class="navbar__mobile-toggle" (click)="toggleMobileMenu()"
+          aria-label="Toggle mobile menu">
+          @if (isMobileMenuOpen) {
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          } @else {
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5m-16.5 5.25h16.5m-16.5 5.25h16.5" />
+          </svg>
+          }
+        </button>
       </div>
-    
     </div>
+
+    <div class="navbar__search mobile-only" role="search">
+      <svg class="navbar__search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+        stroke-width="2" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" />
+      </svg>
+      <input type="text" class="navbar__search-input" placeholder="Qidirish..." />
+    </div>
+
+    @if (isMobileMenuOpen) {
+    <div class="navbar__mobile-menu">
+      <a routerLink="/" class="navbar__mobile-link" (click)="closeMobileMenu()">Bosh sahifa</a>
+      <a routerLink="/properties" class="navbar__mobile-link" (click)="closeMobileMenu()">E'lonlar</a>
+      <a routerLink="/chat" class="navbar__mobile-link" (click)="closeMobileMenu()">Xabarlar</a>
+      <a routerLink="/profile" class="navbar__mobile-link" (click)="closeMobileMenu()">Profil</a>
+      <a routerLink="/properties/create" class="navbar__mobile-cta" (click)="closeMobileMenu()">+ E'lon qo'shish</a>
+    </div>
+    }
   </div>
 </nav>

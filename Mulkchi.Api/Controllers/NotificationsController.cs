@@ -167,6 +167,81 @@ public class NotificationsController : ControllerBase
         }
     }
 
+    [HttpPut("{id}/read")]
+    [Authorize]
+    public async ValueTask<ActionResult> MarkNotificationAsReadAsync(Guid id)
+    {
+        try
+        {
+            Notification notification = await this.notificationService.RetrieveNotificationByIdAsync(id);
+            notification.IsRead = true;
+            notification.ReadAt = DateTimeOffset.UtcNow;
+
+            await this.notificationService.ModifyNotificationAsync(notification);
+
+            return NoContent();
+        }
+        catch (NotificationValidationException notificationValidationException)
+        {
+            return BadRequest(new { message = notificationValidationException.InnerException?.Message ?? "An error occurred." });
+        }
+        catch (NotificationDependencyValidationException notificationDependencyValidationException)
+            when (notificationDependencyValidationException.InnerException is NotFoundNotificationException)
+        {
+            return NotFound(new { message = notificationDependencyValidationException.InnerException?.Message ?? "An error occurred." });
+        }
+        catch (NotificationDependencyValidationException notificationDependencyValidationException)
+        {
+            return BadRequest(new { message = notificationDependencyValidationException.InnerException?.Message ?? "An error occurred." });
+        }
+        catch (NotificationDependencyException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+        catch (NotificationServiceException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+    }
+
+    [HttpPut("read-all")]
+    [Authorize]
+    public async ValueTask<ActionResult> MarkAllNotificationsAsReadAsync()
+    {
+        try
+        {
+            var unreadNotifications = this.notificationService
+                .RetrieveAllNotifications()
+                .Where(notification => !notification.IsRead)
+                .ToList();
+
+            foreach (Notification notification in unreadNotifications)
+            {
+                notification.IsRead = true;
+                notification.ReadAt = DateTimeOffset.UtcNow;
+                await this.notificationService.ModifyNotificationAsync(notification);
+            }
+
+            return NoContent();
+        }
+        catch (NotificationValidationException notificationValidationException)
+        {
+            return BadRequest(new { message = notificationValidationException.InnerException?.Message ?? "An error occurred." });
+        }
+        catch (NotificationDependencyValidationException notificationDependencyValidationException)
+        {
+            return BadRequest(new { message = notificationDependencyValidationException.InnerException?.Message ?? "An error occurred." });
+        }
+        catch (NotificationDependencyException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+        catch (NotificationServiceException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+    }
+
     [HttpDelete("{id}")]
     [Authorize]
     public async ValueTask<ActionResult<Notification>> DeleteNotificationByIdAsync(Guid id)

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # 🗄️ SQL Server Database
   db:
@@ -10,13 +8,26 @@ services:
       - SA_PASSWORD=${DB_PASSWORD:-Mulkchi@2024}
       - MSSQL_PID=Express
     ports:
-      - "1433:1433"
+      - '1433:1433'
     volumes:
       - sqldata:/var/opt/mssql
     networks:
       - mulkchi-network
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "${DB_PASSWORD:-Mulkchi@2024}", "-Q", "SELECT 1"]
+      test:
+        [
+          'CMD',
+          '/opt/mssql-tools18/bin/sqlcmd',
+          '-S',
+          'localhost',
+          '-U',
+          'sa',
+          '-C',
+          '-P',
+          '${DB_PASSWORD:-Mulkchi@2024}',
+          '-Q',
+          'SELECT 1',
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -27,13 +38,13 @@ services:
     image: redis:7-alpine
     container_name: mulkchi-redis
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - redis_data:/data
     networks:
       - mulkchi-network
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -43,10 +54,10 @@ services:
   backend:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Mulkchi.Api/Dockerfile
     container_name: mulkchi-api
     ports:
-      - "5000:80"
+      - '5000:80'
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
       - ConnectionStrings__DefaultConnection=Server=db,1433;Database=MulkchiDb;User Id=sa;Password=${DB_PASSWORD:-Mulkchi@2024};TrustServerCertificate=true;
@@ -62,7 +73,7 @@ services:
     networks:
       - mulkchi-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost/health']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -75,9 +86,10 @@ services:
       dockerfile: Dockerfile.dev
     container_name: mulkchi-frontend
     ports:
-      - "4200:4200"
+      - '4200:4200'
     environment:
       - NODE_ENV=development
+      - API_PROXY_TARGET=http://backend:80
     volumes:
       - ./Mulkchi.Frontend:/app
       - /app/node_modules
@@ -85,8 +97,6 @@ services:
       - backend
     networks:
       - mulkchi-network
-    profiles:
-      - development
     restart: unless-stopped
 
   # 📊 Monitoring Stack
@@ -94,7 +104,7 @@ services:
     image: prom/prometheus:latest
     container_name: mulkchi-prometheus
     ports:
-      - "9090:9090"
+      - '9090:9090'
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
     networks:
@@ -107,7 +117,7 @@ services:
     image: grafana/grafana:latest
     container_name: mulkchi-grafana
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
     volumes:

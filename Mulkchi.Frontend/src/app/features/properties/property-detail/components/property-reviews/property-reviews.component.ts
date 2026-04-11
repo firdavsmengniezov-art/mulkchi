@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
+import { environment } from '../../../../../../environments/environment';
 import { ReviewResponse, ReviewSummary } from '../../../../../core/models/review.model';
 import { ReviewService } from '../../../../../core/services/review.service';
 
@@ -16,6 +17,7 @@ export class PropertyReviewsComponent implements OnInit {
 
   reviews: ReviewResponse[] = [];
   isLoading = true;
+  readonly backendOrigin = environment.hubUrl;
 
   constructor(private reviewService: ReviewService) {}
 
@@ -34,5 +36,8 @@ export class PropertyReviewsComponent implements OnInit {
   ratingPercentage(score?: number): number {
     return ((score || 0) / 5) * 100;
   }
-}
 
+  getAvatarSrc(avatarUrl?: string | null): string {
+    return avatarUrl ? `${this.backendOrigin}${avatarUrl}` : '/assets/images/user-placeholder.png';
+  }
+}

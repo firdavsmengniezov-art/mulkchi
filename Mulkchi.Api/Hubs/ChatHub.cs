@@ -24,13 +24,42 @@ public class ChatHub : Hub
         this.dateTimeBroker = dateTimeBroker;
     }
 
-    // Send message to specific user and save to DB
+    // Send text message to specific user and save to DB
     public async Task SendMessage(Guid receiverId, string content)
     {
         var userIdClaim = Context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
         if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out Guid senderId))
             throw new HubException("Unauthorized: invalid or missing token.");
 
+        if (string.IsNullOrWhiteSpace(content))
+            throw new HubException("Message content cannot be empty.");
+
+        await CreateAndDispatchMessageAsync(senderId, receiverId, content.Trim(), MessageType.Text);
+    }
+
+    // Send file message to specific user and save to DB
+    public async Task SendFileMessage(Guid receiverId, string fileUrl, string fileName)
+    {
+        var userIdClaim = Context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+        if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out Guid senderId))
+            throw new HubException("Unauthorized: invalid or missing token.");
+
+        if (string.IsNullOrWhiteSpace(fileUrl))
+            throw new HubException("File URL cannot be empty.");
+
+        string content = string.IsNullOrWhiteSpace(fileName)
+            ? fileUrl.Trim()
+            : $"{fileName.Trim()}|{fileUrl.Trim()}";
+
+        await CreateAndDispatchMessageAsync(senderId, receiverId, content, MessageType.File);
+    }
+
+    private async Task CreateAndDispatchMessageAsync(
+        Guid senderId,
+        Guid receiverId,
+        string content,
+        MessageType type)
+    {
         try
         {
             var message = new Message
@@ -39,7 +68,7 @@ public class ChatHub : Hub
                 SenderId = senderId,
                 ReceiverId = receiverId,
                 Content = content,
-                Type = MessageType.Text,
+                Type = type,
                 IsRead = false,
                 CreatedDate = this.dateTimeBroker.GetCurrentDateTimeOffset(),
                 UpdatedDate = this.dateTimeBroker.GetCurrentDateTimeOffset()
@@ -112,7 +141,21 @@ public class ChatHub : Hub
     {
         try
         {
+            var userIdClaim = Context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out Guid currentUserId))
+                throw new HubException("Unauthorized: invalid or missing token.");
+
             Message message = await this.messageService.RetrieveMessageByIdAsync(messageId);
+
+            if (message.ReceiverId != currentUserId)
+                throw new HubException("Forbidden: you are not the receiver of this message.");
+
+            if (message.IsRead)
+            {
+                await Clients.Caller.SendAsync("MessageRead", new { messageId, message.ReadAt });
+                return;
+            }
+
             message.IsRead = true;
             message.ReadAt = this.dateTimeBroker.GetCurrentDateTimeOffset();
             message.UpdatedDate = this.dateTimeBroker.GetCurrentDateTimeOffset();
@@ -120,7 +163,10 @@ public class ChatHub : Hub
             Message updatedMessage = await this.messageService.ModifyMessageAsync(message);
 
             await Clients.User(message.SenderId.ToString())
-                .SendAsync("MessageRead", messageId);
+                .SendAsync("MessageRead", new { messageId, updatedMessage.ReadAt });
+
+            await Clients.Caller
+                .SendAsync("MessageRead", new { messageId, updatedMessage.ReadAt });
         }
         catch (Exception exception)
         {
