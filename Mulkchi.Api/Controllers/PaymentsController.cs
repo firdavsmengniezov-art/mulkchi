@@ -208,6 +208,45 @@ public class PaymentsController : ControllerBase
         }
     }
 
+    [HttpGet("summary")]
+    [Authorize]
+    public ActionResult<object> GetPaymentSummary()
+    {
+        try
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdClaim is null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
+                return Unauthorized();
+
+            var payments = this.paymentService
+                .RetrieveAllPayments()
+                .Where(payment => payment.PayerId == currentUserId || payment.ReceiverId == currentUserId)
+                .ToList();
+
+            var successful = payments.Where(payment => payment.Status == PaymentStatus.Completed).ToList();
+            var pending = payments.Where(payment => payment.Status == PaymentStatus.Pending || payment.Status == PaymentStatus.Processing).ToList();
+
+            return Ok(new
+            {
+                totalPayments = payments.Count,
+                totalAmount = successful.Sum(payment => payment.Amount),
+                totalFees = successful.Sum(payment => payment.PlatformFee),
+                pendingAmount = pending.Sum(payment => payment.Amount),
+                completedPayments = successful.Count,
+                cancelledPayments = payments.Count(payment => payment.Status == PaymentStatus.Cancelled),
+                failedPayments = payments.Count(payment => payment.Status == PaymentStatus.Failed)
+            });
+        }
+        catch (PaymentDependencyException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+        catch (PaymentServiceException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+    }
+
     [HttpPut]
     [Authorize]
     public async ValueTask<ActionResult<Payment>> PutPaymentAsync(Payment payment)

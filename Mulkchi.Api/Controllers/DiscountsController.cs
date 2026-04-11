@@ -124,6 +124,34 @@ public class DiscountsController : ControllerBase
         }
     }
 
+    [HttpGet("active")]
+    [AllowAnonymous]
+    public ActionResult<IEnumerable<Discount>> GetActiveDiscounts()
+    {
+        try
+        {
+            var now = DateTimeOffset.UtcNow;
+            var activeDiscounts = this.discountService
+                .RetrieveAllDiscounts()
+                .Where(discount =>
+                    discount.IsActive &&
+                    (!discount.StartsAt.HasValue || discount.StartsAt.Value <= now) &&
+                    (!discount.ExpiresAt.HasValue || discount.ExpiresAt.Value >= now) &&
+                    (!discount.MaxUsageCount.HasValue || discount.UsageCount < discount.MaxUsageCount.Value))
+                .ToList();
+
+            return Ok(activeDiscounts);
+        }
+        catch (DiscountDependencyException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+        catch (DiscountServiceException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+    }
+
     [HttpPost("validate")]
     [AllowAnonymous]
     public ActionResult<DiscountValidateResponse> ValidateDiscountCode([FromBody] DiscountValidateRequest request)

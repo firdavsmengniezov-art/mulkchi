@@ -183,6 +183,36 @@ namespace Mulkchi.Api.Controllers
             }
         }
 
+        [HttpPut]
+        [Authorize]
+        public async ValueTask<ActionResult<Booking>> PutBookingAsync([FromBody] Booking booking)
+        {
+            try
+            {
+                Booking modifiedBooking = await this.bookingService.ModifyBookingAsync(booking);
+                return Ok(modifiedBooking);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Internal server error." });
+            }
+        }
+
+        [HttpDelete("{id}")]
+        [Authorize]
+        public async ValueTask<ActionResult<Booking>> DeleteBookingAsync(Guid id)
+        {
+            try
+            {
+                Booking deletedBooking = await this.bookingService.RemoveBookingAsync(id);
+                return Ok(deletedBooking);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Internal server error." });
+            }
+        }
+
         [HttpGet("availability/{propertyId}")]
         [AllowAnonymous]
         public async Task<ActionResult> GetPropertyAvailability(Guid propertyId, [FromQuery] int year, [FromQuery] int month)
