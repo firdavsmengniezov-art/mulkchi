@@ -63,9 +63,9 @@ namespace Mulkchi.Api.Tests.Unit.Controllers
             var result = await controller.PostSavedSearchAsync(savedSearch);
 
             // Assert
-            var createdAtActionResult = result.Result.Should().BeOfType<CreatedAtActionResult>().Subject;
-            createdAtActionResult.StatusCode.Should().Be(201);
-            createdAtActionResult.Value.Should().BeEquivalentTo(savedSearch, options => options.Excluding(x => x.CreatedAt).Excluding(x => x.UpdatedAt));
+            var createdResult = result.Result.Should().BeOfType<CreatedResult>().Subject;
+            createdResult.StatusCode.Should().Be(201);
+            createdResult.Value.Should().BeEquivalentTo(savedSearch, options => options.Excluding(x => x.CreatedAt).Excluding(x => x.UpdatedAt));
         }
 
         [Fact]

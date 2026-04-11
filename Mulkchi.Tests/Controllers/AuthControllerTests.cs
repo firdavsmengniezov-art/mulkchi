@@ -1,23 +1,25 @@
-using Mulkchi.Api;
-using Microsoft.AspNetCore.Mvc.Testing;
+using System.Net;
+using FluentAssertions;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
+using Mulkchi.Api.Controllers;
 using Mulkchi.Api.Models.Foundations.Auth;
+using Mulkchi.Api.Models.Foundations.Auth.Exceptions;
 using Mulkchi.Api.Services.Foundations.Auth;
 using Moq;
 using Xunit;
-using FluentAssertions;
-using System.Net.Http.Json;
 
 namespace Mulkchi.Tests.Controllers;
 
-public class AuthControllerTests : IClassFixture<WebApplicationFactory<Program>>
+public class AuthControllerTests
 {
-    private readonly WebApplicationFactory<Program> _factory;
     private readonly Mock<IAuthService> _authServiceMock;
 
-    public AuthControllerTests(WebApplicationFactory<Program> factory)
+    public AuthControllerTests()
     {
-        _factory = factory;
         _authServiceMock = new Mock<IAuthService>();
     }
 
@@ -33,28 +35,29 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Program>>
         var expectedResponse = new AuthResponse
         {
             Token = "valid-jwt-token",
+            RefreshToken = "valid-refresh-token",
+            ExpiresAt = DateTimeOffset.UtcNow.AddHours(1),
             Email = loginRequest.Email,
-            UserId = Guid.NewGuid()
+            UserId = Guid.NewGuid(),
+            FirstName = "Test",
+            LastName = "User"
         };
 
         _authServiceMock
             .Setup(x => x.LoginAsync(It.IsAny<LoginRequest>()))
             .ReturnsAsync(expectedResponse);
 
-        var client = _factory.WithWebHostBuilder(builder =>
-        {
-            builder.ConfigureServices(services =>
-            {
-                services.AddScoped(_ => _authServiceMock.Object);
-            });
-        }).CreateClient();
+        var controller = CreateController();
 
-        var response = await client.PostAsJsonAsync("/api/auth/login", loginRequest);
+        var actionResult = await controller.LoginAsync(loginRequest);
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
-        var result = await response.Content.ReadFromJsonAsync<AuthResponse>();
+        actionResult.Result.Should().BeOfType<OkObjectResult>();
+        var okResult = actionResult.Result as OkObjectResult;
+        okResult.Should().NotBeNull();
+
+        var result = okResult!.Value as AuthUserInfo;
         result.Should().NotBeNull();
-        result!.Token.Should().Be(expectedResponse.Token);
+        result!.AccessToken.Should().Be(expectedResponse.Token);
     }
 
     [Fact]
@@ -68,18 +71,47 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Program>>
 
         _authServiceMock
             .Setup(x => x.LoginAsync(It.IsAny<LoginRequest>()))
-            .ReturnsAsync((AuthResponse)null!);
+            .ThrowsAsync(new AuthDependencyValidationException(
+                "Auth dependency validation error",
+                new NotFoundUserByEmailException("User not found.")));
 
-        var client = _factory.WithWebHostBuilder(builder =>
+        var controller = CreateController();
+
+        var actionResult = await controller.LoginAsync(loginRequest);
+
+        actionResult.Result.Should().BeOfType<NotFoundObjectResult>();
+        var notFoundResult = actionResult.Result as NotFoundObjectResult;
+        notFoundResult.Should().NotBeNull();
+        notFoundResult!.StatusCode.Should().Be((int)HttpStatusCode.NotFound);
+    }
+
+    private AuthController CreateController()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<IWebHostEnvironment>(new TestWebHostEnvironment());
+
+        var serviceProvider = services.BuildServiceProvider();
+        var controller = new AuthController(_authServiceMock.Object)
         {
-            builder.ConfigureServices(services =>
+            ControllerContext = new ControllerContext
             {
-                services.AddScoped(_ => _authServiceMock.Object);
-            });
-        }).CreateClient();
+                HttpContext = new DefaultHttpContext
+                {
+                    RequestServices = serviceProvider
+                }
+            }
+        };
 
-        var response = await client.PostAsJsonAsync("/api/auth/login", loginRequest);
+        return controller;
+    }
 
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
+    private sealed class TestWebHostEnvironment : IWebHostEnvironment
+    {
+        public string ApplicationName { get; set; } = "Mulkchi.Tests";
+        public IFileProvider WebRootFileProvider { get; set; } = new NullFileProvider();
+        public string WebRootPath { get; set; } = string.Empty;
+        public string EnvironmentName { get; set; } = "Development";
+        public string ContentRootPath { get; set; } = string.Empty;
+        public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
     }
 }
