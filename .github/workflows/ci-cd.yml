@@ -66,7 +66,7 @@ jobs:
     - name: 📦 Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0.x'
+        dotnet-version: '9.0.x'
         
     - name: 📦 Restore dependencies
       run: |
@@ -96,7 +96,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: backend-build
-        path: Mulkchi.Api/bin/Release/net8.0/
+        path: Mulkchi.Api/bin/Release/net9.0/
         retention-days: 7
 
   # 🐳 Docker Build & Push
@@ -120,7 +120,7 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: backend-build
-        path: Mulkchi.Api/bin/Release/net8.0/
+        path: Mulkchi.Api/bin/Release/net9.0/
         
     - name: 🐳 Log in to Container Registry
       uses: docker/login-action@v3

@@ -236,7 +236,7 @@ public class Startup
                 {
                     var path = context.HttpContext.Request.Path;
 
-                    if (path.StartsWithSegments("/hub"))
+                    if (path.StartsWithSegments("/hubs"))
                     {
                         // SignalR WebSocket: prefer query-string token (accessTokenFactory),
                         // fall back to httpOnly cookie for SSE/long-polling transports.
