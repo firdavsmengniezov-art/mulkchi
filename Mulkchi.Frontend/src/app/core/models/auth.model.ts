@@ -2,6 +2,9 @@ export enum UserRole {
   Guest = 0,
   Host = 1,
   Admin = 2,
+  Agent = 3,
+  Seller = 4,
+  Buyer = 5,
 }
 
 export interface LoginRequest {

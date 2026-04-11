@@ -30,6 +30,14 @@ public partial class AuthServiceTests
             broker.InsertRefreshTokenAsync(It.IsAny<UserRefreshToken>()))
                 .ReturnsAsync(CreateRandomUserRefreshToken());
 
+        this.storageBrokerMock.Setup(broker =>
+            broker.InsertEmailVerificationTokenAsync(It.IsAny<EmailVerificationToken>()))
+                .ReturnsAsync((EmailVerificationToken t) => t);
+
+        this.emailBrokerMock.Setup(broker =>
+            broker.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
+
         this.tokenBrokerMock.Setup(broker =>
             broker.GenerateToken(It.IsAny<User>()))
                 .Returns("test-jwt-token");
@@ -58,6 +66,14 @@ public partial class AuthServiceTests
 
         this.storageBrokerMock.Verify(broker =>
             broker.InsertRefreshTokenAsync(It.IsAny<UserRefreshToken>()),
+            Times.Once);
+
+        this.storageBrokerMock.Verify(broker =>
+            broker.InsertEmailVerificationTokenAsync(It.IsAny<EmailVerificationToken>()),
+            Times.Once);
+
+        this.emailBrokerMock.Verify(broker =>
+            broker.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
             Times.Once);
 
         this.storageBrokerMock.VerifyNoOtherCalls();

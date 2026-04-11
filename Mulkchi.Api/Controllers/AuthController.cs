@@ -258,6 +258,154 @@ public class AuthController : ControllerBase
         return Ok(new { message = "Hisob muvaffaqiyatli o'chirildi." });
     }
 
+    [HttpGet("verify-email")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async ValueTask<ActionResult> VerifyEmailAsync([FromQuery] string token)
+    {
+        try
+        {
+            await this.authService.VerifyEmailAsync(token);
+            return Ok(new { message = "Email muvaffaqiyatli tasdiqlandi." });
+        }
+        catch (AuthValidationException authValidationException)
+        {
+            return BadRequest(new { message = authValidationException.InnerException?.Message ?? "An error occurred." });
+        }
+        catch (AuthDependencyValidationException authDependencyValidationException)
+        {
+            return BadRequest(new { message = authDependencyValidationException.InnerException?.Message ?? "An error occurred." });
+        }
+        catch (AuthDependencyException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+        catch (AuthServiceException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+    }
+
+    [HttpPost("send-otp")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async ValueTask<ActionResult> SendOtpAsync([FromBody] SendOtpRequest request)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim is null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
+            return Unauthorized();
+
+        try
+        {
+            await this.authService.SendPhoneOtpAsync(currentUserId, request.Phone);
+            return Ok(new { message = "OTP kodi yuborildi." });
+        }
+        catch (AuthValidationException authValidationException)
+        {
+            return BadRequest(new { message = authValidationException.InnerException?.Message ?? "An error occurred." });
+        }
+        catch (AuthDependencyException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+        catch (AuthServiceException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+    }
+
+    [HttpPost("verify-otp")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async ValueTask<ActionResult> VerifyOtpAsync([FromBody] VerifyOtpRequest request)
+    {
+        try
+        {
+            await this.authService.VerifyPhoneOtpAsync(request.Phone, request.Code);
+            return Ok(new { message = "Telefon raqam tasdiqlandi." });
+        }
+        catch (AuthValidationException authValidationException)
+        {
+            return BadRequest(new { message = authValidationException.InnerException?.Message ?? "An error occurred." });
+        }
+        catch (AuthDependencyValidationException authDependencyValidationException)
+        {
+            return BadRequest(new { message = authDependencyValidationException.InnerException?.Message ?? "An error occurred." });
+        }
+        catch (AuthDependencyException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+        catch (AuthServiceException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+    }
+
+    [HttpPost("google")]
+    [ProducesResponseType(typeof(AuthUserInfo), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async ValueTask<ActionResult<AuthUserInfo>> LoginWithGoogleAsync([FromBody] GoogleLoginRequest request)
+    {
+        try
+        {
+            AuthResponse response = await this.authService.LoginWithGoogleAsync(request.IdToken);
+            SetAuthCookies(response);
+            return Ok(new AuthUserInfo(response));
+        }
+        catch (AuthValidationException authValidationException)
+        {
+            return BadRequest(new { message = authValidationException.InnerException?.Message ?? "An error occurred." });
+        }
+        catch (AuthDependencyValidationException authDependencyValidationException)
+        {
+            return BadRequest(new { message = authDependencyValidationException.InnerException?.Message ?? "An error occurred." });
+        }
+        catch (AuthDependencyException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+        catch (AuthServiceException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+    }
+
+    [HttpPost("telegram")]
+    [ProducesResponseType(typeof(AuthUserInfo), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async ValueTask<ActionResult<AuthUserInfo>> LoginWithTelegramAsync([FromBody] TelegramAuthRequest request)
+    {
+        try
+        {
+            AuthResponse response = await this.authService.LoginWithTelegramAsync(request);
+            SetAuthCookies(response);
+            return Ok(new AuthUserInfo(response));
+        }
+        catch (AuthValidationException authValidationException)
+        {
+            return BadRequest(new { message = authValidationException.InnerException?.Message ?? "An error occurred." });
+        }
+        catch (AuthDependencyValidationException authDependencyValidationException)
+        {
+            return BadRequest(new { message = authDependencyValidationException.InnerException?.Message ?? "An error occurred." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
+        }
+        catch (AuthDependencyException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+        catch (AuthServiceException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+    }
+
     // ─── Cookie helpers ──────────────────────────────────────────────────────
 
     private void SetAuthCookies(AuthResponse response)

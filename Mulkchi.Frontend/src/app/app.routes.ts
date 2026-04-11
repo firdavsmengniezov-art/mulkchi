@@ -54,6 +54,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'verify-email',
+    loadComponent: () =>
+      import('./features/auth/verify-email/verify-email.component').then(
+        (m) => m.VerifyEmailComponent,
+      ),
+  },
+  {
     path: 'properties',
     loadComponent: () =>
       import('./features/properties/property-list/property-list.component').then(

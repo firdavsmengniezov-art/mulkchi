@@ -59,6 +59,7 @@ public class Startup
             });
         services.AddEndpointsApiExplorer();
         services.AddHttpContextAccessor(); // Add HttpContextAccessor
+        services.AddHttpClient(); // Add IHttpClientFactory
         AddSwagger(services);
         AddJwtAuthentication(services);
         AddDbContext(services);
@@ -308,6 +309,9 @@ public class Startup
         
         // Register email broker
         services.AddTransient<IEmailBroker, SmtpEmailBroker>();
+        
+        // Register SMS broker (stub — replace with real provider in production)
+        services.AddTransient<ISmsBroker, StubSmsBroker>();
     }
 
     private void AddDbContext(IServiceCollection services)

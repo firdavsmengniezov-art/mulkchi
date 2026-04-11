@@ -25,8 +25,8 @@ namespace Mulkchi.Api.Brokers.Tokens
             var issuer = jwtSettings["Issuer"];
             var audience = jwtSettings["Audience"];
             
-            if (!int.TryParse(jwtSettings["ExpiryDays"], out int expiryDays))
-                expiryDays = 7;
+            if (!int.TryParse(jwtSettings["ExpiryMinutes"], out int expiryMinutes))
+                expiryMinutes = 15;
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -43,7 +43,7 @@ namespace Mulkchi.Api.Brokers.Tokens
                 issuer: issuer,
                 audience: audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddDays(expiryDays),
+                expires: DateTime.UtcNow.AddMinutes(expiryMinutes),
                 signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

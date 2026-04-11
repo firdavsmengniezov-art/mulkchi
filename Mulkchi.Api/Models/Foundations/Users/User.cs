@@ -19,6 +19,7 @@ public class User
     public DateTimeOffset? DateOfBirth { get; set; }
     public Gender Gender { get; set; }
     public bool IsVerified { get; set; }
+    public bool EmailConfirmed { get; set; }
     public UserRole Role { get; set; }
     public HostBadge Badge { get; set; }
     public decimal Rating { get; set; }

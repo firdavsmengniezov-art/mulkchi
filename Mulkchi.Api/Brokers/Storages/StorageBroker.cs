@@ -177,6 +177,8 @@ public partial class StorageBroker : DbContext, IStorageBroker
         modelBuilder.Entity<UserRefreshToken>().HasQueryFilter(e => e.ExpiresAt > DateTimeOffset.UtcNow);
         modelBuilder.Entity<Booking>().HasQueryFilter(e => e.DeletedDate == null);
         modelBuilder.Entity<PasswordResetToken>().HasQueryFilter(e => e.DeletedDate == null);
+        modelBuilder.Entity<EmailVerificationToken>().HasQueryFilter(e => e.DeletedDate == null);
+        modelBuilder.Entity<PhoneOtp>().HasQueryFilter(e => e.DeletedDate == null);
     }
 
     // DbSet<Booking> Bookings property is defined in StorageBroker.Bookings.cs partial class.
