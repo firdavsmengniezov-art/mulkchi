@@ -1,8 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import { catchError, forkJoin, map, of } from 'rxjs';
+import { AnalyticsService } from '../../core/services/analytics.service';
+import { BookingService } from '../../core/services/booking.service';
+import { PropertyService } from '../../core/services/property.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -21,7 +25,9 @@ export class DashboardComponent implements OnInit {
   totalBookings = 0;
 
   constructor(
-    private router: Router
+    private analyticsService: AnalyticsService,
+    private propertyService: PropertyService,
+    private bookingService: BookingService,
   ) {}
 
   ngOnInit() {
@@ -30,29 +36,45 @@ export class DashboardComponent implements OnInit {
 
   loadData() {
     this.loading = true;
-    
-    // Simulate data loading - replace with actual service calls
-    setTimeout(() => {
-      this.properties = [
-        { id: '1', title: 'Toshkent shahrida 3 xonali kvartira', listingType: 'Rent', monthlyRent: 500, viewsCount: 45 },
-        { id: '2', title: 'Samarqand viloyatida 2 xonali uy', listingType: 'Sale', salePrice: 120000, viewsCount: 23 }
-      ];
-      
-      this.bookings = [
-        { id: '1', property: { title: 'Toshkent shahrida 3 xonali kvartira' }, checkInDate: '2024-01-15', checkOutDate: '2024-01-20', guestsCount: 2, totalPrice: 500, status: 'Confirmed' },
-        { id: '2', property: { title: 'Samarqand viloyatida 2 xonali uy' }, checkInDate: '2024-02-10', checkOutDate: '2024-02-15', guestsCount: 3, totalPrice: 800, status: 'Pending' }
-      ];
-      
-      this.totalProperties = this.properties.length;
-      this.totalBookings = this.bookings.length;
+
+    forkJoin({
+      marketOverview: this.analyticsService
+        .getMarketOverview()
+        .pipe(catchError(() => of(null))),
+      byRegion: this.analyticsService
+        .getByRegion()
+        .pipe(catchError(() => of([]))),
+      properties: this.propertyService
+        .getProperties(1, 50)
+        .pipe(map((result) => result.items ?? []), catchError(() => of([]))),
+      bookings: this.bookingService
+        .getMyBookings(1, 50)
+        .pipe(map((result) => result.items ?? []), catchError(() => of([]))),
+    }).subscribe(({ marketOverview, byRegion, properties, bookings }) => {
+      const overview = (marketOverview ?? {}) as any;
+      const regionData = Array.isArray(byRegion) ? byRegion : [];
+
+      this.properties = properties;
+      this.bookings = bookings;
+      this.totalProperties = Number(
+        overview.totalListings ??
+          overview.totalProperties ??
+          regionData.reduce((sum: number, item: any) => sum + (item.listingsCount ?? 0), 0) ??
+          properties.length,
+      );
+      this.totalBookings = bookings.length;
       this.loading = false;
-    }, 1000);
+    });
   }
 
   deleteProperty(id: string) {
     if (!confirm('Mulkni o\'chirishni tasdiqlaysizmi?')) return;
-    this.properties = this.properties.filter(p => p.id !== id);
-    this.totalProperties--;
+    this.propertyService.deleteProperty(id).subscribe({
+      next: () => {
+        this.properties = this.properties.filter((p) => p.id !== id);
+        this.totalProperties = Math.max(0, this.totalProperties - 1);
+      },
+    });
   }
 
   getListingTypeText(type: string): string {

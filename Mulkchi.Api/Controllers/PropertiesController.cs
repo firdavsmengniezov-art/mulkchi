@@ -172,4 +172,67 @@ public class PropertiesController : ControllerBase
             return StatusCode(500, new { message = ex.Message });
         }
     }
+
+    [HttpPut("{id:guid}")]
+    [Authorize(Roles = "Host,Admin")]
+    public async ValueTask<ActionResult<Property>> PutPropertyAsync(Guid id, [FromBody] Property property)
+    {
+        try
+        {
+            property.Id = id;
+            Property modifiedProperty = await this.propertyService.ModifyPropertyAsync(property);
+            return Ok(modifiedProperty);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (PropertyValidationException propertyValidationException)
+        {
+            return BadRequest(new { message = propertyValidationException.InnerException?.Message ?? "An error occurred." });
+        }
+        catch (PropertyDependencyValidationException propertyDependencyValidationException)
+        {
+            return BadRequest(new { message = propertyDependencyValidationException.InnerException?.Message ?? "An error occurred." });
+        }
+        catch (PropertyDependencyException)
+        {
+            return StatusCode(500, new { message = "Internal server error." });
+        }
+        catch (PropertyServiceException)
+        {
+            return StatusCode(500, new { message = "Internal server error." });
+        }
+    }
+
+    [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Host,Admin")]
+    public async ValueTask<ActionResult<Property>> DeletePropertyAsync(Guid id)
+    {
+        try
+        {
+            Property deletedProperty = await this.propertyService.RemovePropertyByIdAsync(id);
+            return Ok(deletedProperty);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (PropertyValidationException propertyValidationException)
+        {
+            return BadRequest(new { message = propertyValidationException.InnerException?.Message ?? "An error occurred." });
+        }
+        catch (PropertyDependencyValidationException propertyDependencyValidationException)
+        {
+            return BadRequest(new { message = propertyDependencyValidationException.InnerException?.Message ?? "An error occurred." });
+        }
+        catch (PropertyDependencyException)
+        {
+            return StatusCode(500, new { message = "Internal server error." });
+        }
+        catch (PropertyServiceException)
+        {
+            return StatusCode(500, new { message = "Internal server error." });
+        }
+    }
 }
