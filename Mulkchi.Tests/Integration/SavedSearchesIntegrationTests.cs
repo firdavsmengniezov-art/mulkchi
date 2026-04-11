@@ -5,13 +5,9 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
 using Mulkchi.Api.Models.Foundations.SavedSearches;
-using Mulkchi.Api.Models.Foundations.Users;
-using Mulkchi.Api.Brokers.Storages;
 
 namespace Mulkchi.Tests.Integration
 {
@@ -20,47 +16,20 @@ namespace Mulkchi.Tests.Integration
         private readonly WebApplicationFactory<Program> _factory;
         private readonly HttpClient _client;
 
+        static SavedSearchesIntegrationTests()
+        {
+            Environment.SetEnvironmentVariable(
+                "MULKCHI_JWT_SECRET",
+                "test-secret-key-with-minimum-length-for-jwt-32chars");
+        }
+
         public SavedSearchesIntegrationTests(WebApplicationFactory<Program> factory)
         {
             _factory = factory.WithWebHostBuilder(builder =>
             {
                 builder.UseSetting("environment", "Testing");
-                builder.ConfigureServices(services =>
-                {
-                    var descriptor = services.SingleOrDefault(
-                        d => d.ServiceType == typeof(DbContextOptions<StorageBroker>));
-                    if (descriptor != null)
-                        services.Remove(descriptor);
-                    services.AddDbContext<StorageBroker>(options =>
-                        options.UseInMemoryDatabase("TestDb"));
-                    var sp = services.BuildServiceProvider();
-                    using var scope = sp.CreateScope();
-                    var db = scope.ServiceProvider.GetRequiredService<StorageBroker>();
-                    db.Database.EnsureCreated();
-                    SeedTestData(db);
-                });
             });
             _client = _factory.CreateClient();
-        }
-
-        private void SeedTestData(StorageBroker context)
-        {
-            if (!context.Users.Any())
-            {
-                context.Users.Add(new User
-                {
-                    Id = Guid.NewGuid(),
-                    FirstName = "Test",
-                    LastName = "User",
-                    Email = "test@example.com",
-                    Phone = "+998901234567",
-                    Role = UserRole.Guest,
-                    IsVerified = true,
-                    CreatedDate = DateTimeOffset.UtcNow,
-                    UpdatedDate = DateTimeOffset.UtcNow
-                });
-                context.SaveChanges();
-            }
         }
 
         [Fact]
