@@ -48,6 +48,9 @@ export interface CreateRecommendationRequest {
 export interface RecommendationRequest {
   userId?: string;
   propertyId?: string;
+  location?: string;
+  city?: string;
+  region?: string;
   limit?: number;
   recommendationType?: RecommendationType;
   includeViewed?: boolean;
@@ -76,7 +79,7 @@ export enum RecommendationType {
   PreferenceBased = 'PreferenceBased',
   Trending = 'Trending',
   NewListing = 'NewListing',
-  Featured = 'Featured'
+  Featured = 'Featured',
 }
 
 export enum RecommendationSource {
@@ -84,5 +87,5 @@ export enum RecommendationSource {
   ContentBased = 'ContentBased',
   Hybrid = 'Hybrid',
   Popular = 'Popular',
-  Recent = 'Recent'
+  Recent = 'Recent',
 }

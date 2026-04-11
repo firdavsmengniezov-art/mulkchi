@@ -1,18 +1,18 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { NotificationService } from './core/services/notification.service';
 import { AuthService } from './core/services/auth.service';
 import { FavoriteService } from './core/services/favorite.service';
 import { LanguageService } from './core/services/language.service';
 import { LoggingService } from './core/services/logging.service';
+import { NotificationService } from './core/services/notification.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [CommonModule, RouterOutlet],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
   title = 'Mulkchi';
@@ -22,23 +22,29 @@ export class AppComponent implements OnInit {
     private authService: AuthService,
     private favoriteService: FavoriteService,
     private languageService: LanguageService,
-    private logger: LoggingService) {}
+    private logger: LoggingService,
+  ) {}
 
   ngOnInit(): void {
     // Initialize language
     this.languageService.init();
 
     // Recover session on page reload
-    const savedUser = localStorage.getItem('auth_user');
-    if (savedUser && savedUser !== 'undefined' && savedUser !== 'null' && !this.authService.getToken()) {
+    const savedUser = localStorage.getItem('user') ?? localStorage.getItem('auth_user');
+    if (
+      savedUser &&
+      savedUser !== 'undefined' &&
+      savedUser !== 'null' &&
+      !this.authService.getToken()
+    ) {
       this.authService.refreshToken().subscribe({
         next: () => this.subscribeToUser(), // Token restored, start services
         error: () => {
           // Token expired. We cleanly wipe state so nothing tries to load auth data
           this.logger.warn('Session expired. Cleaning up local state.');
           this.authService.clearAuth();
-          this.subscribeToUser(); 
-        }
+          this.subscribeToUser();
+        },
       });
     } else {
       // Already clean guest state or already valid session
@@ -48,7 +54,7 @@ export class AppComponent implements OnInit {
 
   private subscribeToUser(): void {
     // Start notification service and load favorites when user is confirmed fully logged in
-    this.authService.currentUser$.subscribe(user => {
+    this.authService.currentUser$.subscribe((user) => {
       // Must have both user and active token to perform authenticated calls
       if (user && this.authService.getToken()) {
         this.notificationService.startConnection();

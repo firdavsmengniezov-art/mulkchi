@@ -8,14 +8,14 @@ import { BookingService } from '../../../core/services/booking.service';
 import { PropertyService } from '../../../core/services/property.service';
 import { ReviewService } from '../../../core/services/review.service';
 
+import { LoggingService } from '../../../core/services/logging.service';
+import { PropertyMapComponent } from '../../../shared/components/property-map/property-map.component';
 import { PropertyCardComponent } from '../components/property-card/property-card.component';
 import { AmenitiesGridComponent } from './components/amenities-grid/amenities-grid.component';
 import { BookingWidgetComponent } from './components/booking-widget/booking-widget.component';
 import { HostCardComponent } from './components/host-card/host-card.component';
 import { PropertyImageGalleryComponent } from './components/property-image-gallery/property-image-gallery.component';
 import { PropertyReviewsComponent } from './components/property-reviews/property-reviews.component';
-import { LoggingService } from '../../../core/services/logging.service';
-import { PropertyMapComponent } from '../../../shared/components/property-map/property-map.component';
 
 @Component({
   selector: 'app-property-detail-page',
@@ -49,7 +49,8 @@ export class PropertyDetailPageComponent implements OnInit {
     private bookingService: BookingService,
     private sanitizer: DomSanitizer,
     private http: HttpClient,
-    private logger: LoggingService) {}
+    private logger: LoggingService,
+  ) {}
 
   ngOnInit() {
     this.route.paramMap.subscribe((params) => {
@@ -75,7 +76,7 @@ export class PropertyDetailPageComponent implements OnInit {
     });
 
     // 2. Track view asynchronously
-    this.http.post(`${environment.apiUrl}/api/properties/${id}/views`, {}).subscribe({
+    this.http.post(`${environment.apiUrl}/properties/${id}/views`, {}).subscribe({
       error: (e) => this.logger.log('View track ignored', e),
     });
 

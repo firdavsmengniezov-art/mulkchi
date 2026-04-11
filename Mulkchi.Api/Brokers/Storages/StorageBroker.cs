@@ -127,6 +127,12 @@ public partial class StorageBroker : DbContext, IStorageBroker
             entity.HasIndex(p => p.ReviewerId);
         });
 
+        modelBuilder.Entity<SavedSearch>(entity =>
+        {
+            entity.Property(e => e.MaxPrice).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.MinPrice).HasColumnType("decimal(18,2)");
+        });
+
         modelBuilder.Entity<User>(entity =>
         {
             entity.Property(p => p.Rating).HasPrecision(18, 2);

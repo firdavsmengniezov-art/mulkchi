@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using System.Security.Claims;
+using Mulkchi.Api.Brokers.Storages;
 using Mulkchi.Api.Hubs;
 using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Models.Foundations.Messages;
@@ -15,13 +17,45 @@ public class MessagesController : ControllerBase
 {
     private readonly IMessageService messageService;
     private readonly IHubContext<ChatHub> chatHub;
+    private readonly IFileStorageBroker fileStorageBroker;
+    private readonly IStorageBroker storageBroker;
 
     public MessagesController(
         IMessageService messageService,
-        IHubContext<ChatHub> chatHub)
+        IHubContext<ChatHub> chatHub,
+        IFileStorageBroker fileStorageBroker,
+        IStorageBroker storageBroker)
     {
         this.messageService = messageService;
         this.chatHub = chatHub;
+        this.fileStorageBroker = fileStorageBroker;
+        this.storageBroker = storageBroker;
+    }
+
+    [HttpPost("upload-attachment")]
+    [Authorize]
+    [Consumes("multipart/form-data")]
+    public async ValueTask<ActionResult> UploadAttachmentAsync(IFormFile file)
+    {
+        try
+        {
+            if (file is null || file.Length == 0)
+                return BadRequest(new { message = "File is required." });
+
+            string fileUrl = await this.fileStorageBroker.UploadFileAsync(file, "chat-attachments");
+
+            return Ok(new
+            {
+                fileUrl,
+                fileName = file.FileName,
+                fileSize = file.Length,
+                contentType = file.ContentType
+            });
+        }
+        catch (ArgumentException argumentException)
+        {
+            return BadRequest(new { message = argumentException.Message });
+        }
     }
 
     [HttpPost]
@@ -89,6 +123,109 @@ public class MessagesController : ControllerBase
             };
 
             return Ok(result);
+        }
+        catch (MessageDependencyException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+        catch (MessageServiceException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+    }
+
+    [HttpGet("conversations")]
+    [Authorize]
+    public ActionResult<IEnumerable<object>> GetConversations()
+    {
+        try
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdClaim is null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
+                return Unauthorized();
+
+            var users = this.storageBroker.SelectAllUsers().ToList();
+
+            var conversations = this.messageService
+                .RetrieveAllMessages()
+                .Where(message => message.SenderId == currentUserId || message.ReceiverId == currentUserId)
+                .ToList()
+                .GroupBy(message => message.SenderId == currentUserId ? message.ReceiverId : message.SenderId)
+                .Select(group =>
+                {
+                    Message latestMessage = group.OrderByDescending(message => message.CreatedDate).First();
+                    var otherUser = users.FirstOrDefault(user => user.Id == group.Key);
+
+                    return new
+                    {
+                        otherUserId = group.Key,
+                        otherUserName = otherUser is null
+                            ? "Suhbatdosh"
+                            : $"{otherUser.FirstName} {otherUser.LastName}".Trim(),
+                        otherUserAvatar = otherUser?.AvatarUrl,
+                        lastMessage = latestMessage.Content,
+                        lastMessageDate = latestMessage.CreatedDate,
+                        unreadCount = group.Count(message => message.ReceiverId == currentUserId && !message.IsRead)
+                    };
+                })
+                .OrderByDescending(conversation => conversation.lastMessageDate)
+                .ToList();
+
+            return Ok(conversations);
+        }
+        catch (MessageDependencyException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+        catch (MessageServiceException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+    }
+
+    [HttpGet("conversation/{otherUserId}")]
+    [Authorize]
+    public ActionResult<IEnumerable<object>> GetConversationMessages(Guid otherUserId)
+    {
+        try
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdClaim is null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
+                return Unauthorized();
+
+            var users = this.storageBroker.SelectAllUsers().ToList();
+
+            var messages = this.messageService
+                .RetrieveAllMessages()
+                .Where(message =>
+                    (message.SenderId == currentUserId && message.ReceiverId == otherUserId) ||
+                    (message.SenderId == otherUserId && message.ReceiverId == currentUserId))
+                .OrderBy(message => message.CreatedDate)
+                .ToList()
+                .Select(message =>
+                {
+                    var sender = users.FirstOrDefault(user => user.Id == message.SenderId);
+
+                    return new
+                    {
+                        id = message.Id,
+                        senderId = message.SenderId,
+                        receiverId = message.ReceiverId,
+                        content = message.Content,
+                        type = message.Type,
+                        isRead = message.IsRead,
+                        readAt = message.ReadAt,
+                        createdDate = message.CreatedDate,
+                        updatedDate = message.UpdatedDate,
+                        senderName = sender is null
+                            ? "Foydalanuvchi"
+                            : $"{sender.FirstName} {sender.LastName}".Trim(),
+                        senderAvatar = sender?.AvatarUrl
+                    };
+                })
+                .ToList();
+
+            return Ok(messages);
         }
         catch (MessageDependencyException)
         {

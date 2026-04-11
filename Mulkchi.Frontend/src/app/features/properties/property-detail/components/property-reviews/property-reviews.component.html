@@ -40,7 +40,7 @@
 	<div class="reviews-grid" *ngIf="reviews.length > 0">
 		<div class="review-card" *ngFor="let review of reviews">
 			<div class="review-card-header">
-				<img [src]="review.authorAvatarUrl || '/assets/images/user-placeholder.png'" class="avatar" />
+				<img [src]="getAvatarSrc(review.authorAvatarUrl)" class="avatar" />
 				<div>
 					<div class="author">{{ review.authorName }}</div>
 					<div class="date">{{ review.createdDate | date:'MMMM yyyy' }}</div>

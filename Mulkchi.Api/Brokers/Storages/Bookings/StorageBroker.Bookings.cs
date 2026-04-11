@@ -34,7 +34,7 @@ namespace Mulkchi.Api.Brokers.Storages
 
         public async ValueTask<Booking> DeleteBookingAsync(Guid bookingId)
         {
-            Booking? booking = await this.Bookings.FindAsync(bookingId);
+            Booking booking = await this.Bookings.FindAsync(bookingId);
             if (booking is null)
                 return null!;
 

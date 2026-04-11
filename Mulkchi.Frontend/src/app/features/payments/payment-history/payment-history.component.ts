@@ -1,25 +1,26 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
-import { MatTabsModule } from '@angular/material/tabs';
-import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSelectModule } from '@angular/material/select';
+import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Router } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { PaymentService } from '../../../core/services/payment.service';
-import { LoggingService } from '../../../core/services/logging.service';
-import { 
-  Payment, 
-  PaymentStatus, 
+import { Subject, takeUntil } from 'rxjs';
+import {
+  PagedResult,
+  Payment,
   PaymentMethod,
-  PagedResult 
+  PaymentStatus,
 } from '../../../core/models/payment.models';
+import { LoggingService } from '../../../core/services/logging.service';
+import { PaymentService } from '../../../core/services/payment.service';
+import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
 
 @Component({
   selector: 'app-payment-history',
@@ -35,10 +36,12 @@ import {
     MatFormFieldModule,
     MatProgressSpinnerModule,
     MatPaginatorModule,
-    MatTooltipModule
+    MatTooltipModule,
+    RouterModule,
+    NavbarComponent,
   ],
   templateUrl: './payment-history.component.html',
-  styleUrls: ['./payment-history.component.scss']
+  styleUrls: ['./payment-history.component.scss'],
 })
 export class PaymentHistoryComponent implements OnInit, OnDestroy {
   payments: Payment[] = [];
@@ -55,7 +58,8 @@ export class PaymentHistoryComponent implements OnInit, OnDestroy {
   constructor(
     private paymentService: PaymentService,
     private router: Router,
-    private logger: LoggingService) {}
+    private logger: LoggingService,
+  ) {}
 
   ngOnInit(): void {
     this.loadPayments();
@@ -63,11 +67,12 @@ export class PaymentHistoryComponent implements OnInit, OnDestroy {
 
   loadPayments(): void {
     this.loading = true;
-    
-    this.paymentService.getMyPayments({
-      page: this.currentPage,
-      pageSize: this.pageSize
-    })
+
+    this.paymentService
+      .getMyPayments({
+        page: this.currentPage,
+        pageSize: this.pageSize,
+      })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (result) => {
@@ -78,7 +83,7 @@ export class PaymentHistoryComponent implements OnInit, OnDestroy {
         error: (err) => {
           this.logger.error('Failed to load payments:', err);
           this.loading = false;
-        }
+        },
       });
   }
 
@@ -90,13 +95,11 @@ export class PaymentHistoryComponent implements OnInit, OnDestroy {
   onStatusChange(status: string): void {
     this.selectedStatus = status;
     this.currentPage = 1;
-    this.loadPayments();
   }
 
   onMethodChange(method: string): void {
     this.selectedMethod = method;
     this.currentPage = 1;
-    this.loadPayments();
   }
 
   viewPaymentDetails(payment: Payment): void {
@@ -105,8 +108,9 @@ export class PaymentHistoryComponent implements OnInit, OnDestroy {
 
   cancelPayment(payment: Payment, event: Event): void {
     event.stopPropagation();
-    
-    this.paymentService.cancelPayment(payment.id)
+
+    this.paymentService
+      .cancelPayment(payment.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
@@ -115,7 +119,7 @@ export class PaymentHistoryComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.logger.error('Failed to cancel payment:', err);
-        }
+        },
       });
   }
 
@@ -170,10 +174,10 @@ export class PaymentHistoryComponent implements OnInit, OnDestroy {
       { value: 'all', label: 'Barchasi' },
       { value: PaymentStatus.Pending, label: 'Kutilmoqda' },
       { value: PaymentStatus.Processing, label: 'Jarayonda' },
-      { value: PaymentStatus.Completed, label: 'To\'langan' },
+      { value: PaymentStatus.Completed, label: "To'langan" },
       { value: PaymentStatus.Failed, label: 'Muvaffaqiyatsiz' },
       { value: PaymentStatus.Refunded, label: 'Qaytarilgan' },
-      { value: PaymentStatus.Cancelled, label: 'Bekor qilingan' }
+      { value: PaymentStatus.Cancelled, label: 'Bekor qilingan' },
     ];
   }
 
@@ -182,10 +186,10 @@ export class PaymentHistoryComponent implements OnInit, OnDestroy {
       { value: 'all', label: 'Barchasi' },
       { value: PaymentMethod.Card, label: 'Plastik karta' },
       { value: PaymentMethod.Cash, label: 'Naqd pul' },
-      { value: PaymentMethod.BankTransfer, label: 'Bank o\'tkazmas' },
+      { value: PaymentMethod.BankTransfer, label: "Bank o'tkazmas" },
       { value: PaymentMethod.Payme, label: 'Payme' },
       { value: PaymentMethod.Click, label: 'Click' },
-      { value: PaymentMethod.Uzum, label: 'Uzum' }
+      { value: PaymentMethod.Uzum, label: 'Uzum' },
     ];
   }
 
@@ -196,22 +200,32 @@ export class PaymentHistoryComponent implements OnInit, OnDestroy {
 
   // Helper methods for template
   getTotalPaid(): number {
-    if (!this.pagedResult?.items) return 0;
-    return this.pagedResult.items
-      .filter(p => p.status === PaymentStatus.Completed)
+    return this.filteredPayments
+      .filter((p) => p.status === PaymentStatus.Completed)
       .reduce((sum, p) => sum + (p.hostReceives || p.amount || 0), 0);
   }
 
   getTotalReceived(): number {
-    if (!this.pagedResult?.items) return 0;
-    return this.pagedResult.items
-      .reduce((sum, p) => sum + (p.amount || 0), 0);
+    return this.filteredPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
   }
 
   getPendingAmount(): number {
-    if (!this.pagedResult?.items) return 0;
-    return this.pagedResult.items
-      .filter(p => p.status === PaymentStatus.Pending)
+    return this.filteredPayments
+      .filter((p) => p.status === PaymentStatus.Pending)
       .reduce((sum, p) => sum + (p.amount || 0), 0);
+  }
+
+  get filteredPayments(): Payment[] {
+    return this.payments.filter((payment) => {
+      if (this.selectedStatus !== 'all' && payment.status !== this.selectedStatus) {
+        return false;
+      }
+
+      if (this.selectedMethod !== 'all' && payment.method !== this.selectedMethod) {
+        return false;
+      }
+
+      return true;
+    });
   }
 }

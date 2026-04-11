@@ -87,19 +87,14 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("refresh-token")]
-    public async ValueTask<ActionResult<AuthUserInfo>> RefreshTokenAsync()
+    public async ValueTask<ActionResult<AuthUserInfo>> RefreshTokenAsync([FromBody] RefreshTokenRequest? request = null)
     {
         try
         {
-            // Read the refresh token from the httpOnly cookie; fall back to request body
-            // to stay backward-compatible during migration.
             string? refreshToken = Request.Cookies[RefreshTokenCookie];
+
             if (string.IsNullOrWhiteSpace(refreshToken))
-            {
-                // Legacy: accept token from body while clients migrate
-                var body = await Request.ReadFromJsonAsync<RefreshTokenRequest>();
-                refreshToken = body?.RefreshToken;
-            }
+                refreshToken = request?.RefreshToken;
 
             if (string.IsNullOrWhiteSpace(refreshToken))
                 return BadRequest(new { message = "Refresh token is required." });
@@ -133,17 +128,17 @@ public class AuthController : ControllerBase
 
     [HttpPost("logout")]
     [Authorize]
-    public async ValueTask<ActionResult> LogoutAsync()
+    public async ValueTask<ActionResult> LogoutAsync([FromBody] RefreshTokenRequest? request = null)
     {
         try
         {
             string? refreshToken = Request.Cookies[RefreshTokenCookie];
+
             if (string.IsNullOrWhiteSpace(refreshToken))
-            {
-                // Legacy: accept token from body while clients migrate
-                var body = await Request.ReadFromJsonAsync<RefreshTokenRequest>();
-                refreshToken = body?.RefreshToken ?? string.Empty;
-            }
+                refreshToken = request?.RefreshToken;
+
+            if (string.IsNullOrWhiteSpace(refreshToken))
+                return BadRequest(new { message = "Refresh token is required." });
 
             await this.authService.LogoutAsync(refreshToken);
             ClearAuthCookies();
@@ -263,11 +258,15 @@ public class AuthController : ControllerBase
             .GetRequiredService<IWebHostEnvironment>()
             .IsProduction();
 
+        SameSiteMode sameSiteMode = isProduction
+            ? SameSiteMode.None
+            : SameSiteMode.Lax;
+
         var accessOptions = new CookieOptions
         {
             HttpOnly = true,
             Secure = isProduction,
-            SameSite = SameSiteMode.Strict,
+            SameSite = sameSiteMode,
             Expires = response.ExpiresAt,
             Path = "/"
         };
@@ -276,10 +275,9 @@ public class AuthController : ControllerBase
         {
             HttpOnly = true,
             Secure = isProduction,
-            SameSite = SameSiteMode.Strict,
+            SameSite = sameSiteMode,
             Expires = DateTimeOffset.UtcNow.AddDays(AuthService.RefreshTokenExpiryDays),
-            // Restrict the refresh-token cookie to the refresh endpoint
-            Path = "/api/auth/refresh-token"
+            Path = "/"
         };
 
         Response.Cookies.Append(AccessTokenCookie, response.Token, accessOptions);
@@ -289,6 +287,6 @@ public class AuthController : ControllerBase
     private void ClearAuthCookies()
     {
         Response.Cookies.Delete(AccessTokenCookie, new CookieOptions { Path = "/" });
-        Response.Cookies.Delete(RefreshTokenCookie, new CookieOptions { Path = "/api/auth/refresh-token" });
+        Response.Cookies.Delete(RefreshTokenCookie, new CookieOptions { Path = "/" });
     }
 }

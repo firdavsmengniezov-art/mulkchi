@@ -1,30 +1,27 @@
 # 🐳 Multi-stage Dockerfile for Mulkchi Platform
-FROM node:20-alpine AS frontend-build
+FROM node:20-bookworm-slim AS frontend-build
 
 # 📦 Frontend Build Stage
 WORKDIR /app/frontend
 COPY Mulkchi.Frontend/package*.json ./
-RUN npm ci --only=production
+RUN npm ci --legacy-peer-deps
 
 COPY Mulkchi.Frontend/ ./
 RUN npm run build:prod
 
 # 🏗️ Backend Build Stage
-FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS backend-build
+FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS backend-build
 
 WORKDIR /app/backend
-COPY ["Mulkchi.sln", "./"]
 COPY ["Mulkchi.Api/Mulkchi.Api.csproj", "Mulkchi.Api/"]
-COPY ["Mulkchi.Core/Mulkchi.Core.csproj", "Mulkchi.Core/"]
-COPY ["Mulkchi.Infrastructure/Mulkchi.Infrastructure.csproj", "Mulkchi.Infrastructure/"]
 
-RUN dotnet restore "Mulkchi.sln"
+RUN dotnet restore "Mulkchi.Api/Mulkchi.Api.csproj"
 COPY . .
 WORKDIR "/app/backend/Mulkchi.Api"
 RUN dotnet publish "Mulkchi.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 # 🚀 Final Runtime Stage
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime
 
 # 📦 Install required packages
 RUN apk add --no-cache curl

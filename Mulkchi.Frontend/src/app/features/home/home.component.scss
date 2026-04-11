@@ -1,1 +1,13 @@
-/* All styles replaced by Tailwind CSS utilities in the template */
+.uzbek-ornament {
+  height: 10px;
+  border-radius: 999px;
+  background-image: repeating-conic-gradient(
+    from 45deg,
+    var(--mulk-primary) 0deg 25deg,
+    transparent 25deg 50deg,
+    var(--mulk-gold) 50deg 75deg,
+    transparent 75deg 100deg
+  );
+  background-size: 24px 24px;
+  opacity: 0.75;
+}

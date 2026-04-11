@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
+import { environment } from '../../../../../../environments/environment';
 
 @Component({
   selector: 'app-host-card',
@@ -8,11 +9,7 @@ import { Component, Input } from '@angular/core';
   template: `
     <section class="detail-section host-section">
       <div class="host-header">
-        <img
-          [src]="host?.avatarUrl || '/assets/images/user-placeholder.png'"
-          class="host-avatar"
-          alt="Host"
-        />
+        <img [src]="getAvatarSrc(host?.avatarUrl)" class="host-avatar" alt="Host" />
         <div class="host-info">
           <h3>Xost: {{ host?.fullName || 'Mulk egasi' }}</h3>
           <p>{{ host?.memberSince | date: 'MMMM yyyy' }} dan beri a'zo</p>
@@ -124,4 +121,9 @@ import { Component, Input } from '@angular/core';
 })
 export class HostCardComponent {
   @Input() host: any;
+  readonly backendOrigin = environment.hubUrl;
+
+  getAvatarSrc(avatarUrl?: string | null): string {
+    return avatarUrl ? `${this.backendOrigin}${avatarUrl}` : '/assets/images/user-placeholder.png';
+  }
 }
