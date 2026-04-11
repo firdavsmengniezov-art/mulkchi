@@ -59,6 +59,7 @@ public class Startup
             });
         services.AddEndpointsApiExplorer();
         services.AddHttpContextAccessor(); // Add HttpContextAccessor
+        services.AddHttpClient(); // Add IHttpClientFactory
         AddSwagger(services);
         AddJwtAuthentication(services);
         AddDbContext(services);

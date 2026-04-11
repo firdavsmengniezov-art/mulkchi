@@ -17,7 +17,9 @@ public class StubSmsBroker : ISmsBroker
 
     public Task SendSmsAsync(string phoneNumber, string message)
     {
-        this.logger.LogInformation("[SMS STUB] To: {Phone} | Message: {Message}", phoneNumber, message);
+        // Sanitize to prevent log forging
+        var sanitizedPhone = phoneNumber.Replace('\n', '_').Replace('\r', '_');
+        this.logger.LogInformation("[SMS STUB] To: {Phone} | Message sent", sanitizedPhone);
         return Task.CompletedTask;
     }
 }

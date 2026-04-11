@@ -26,6 +26,7 @@ public partial class AuthService : IAuthService
     private readonly IEmailBroker emailBroker;
     private readonly ISmsBroker smsBroker;
     private readonly IConfiguration configuration;
+    private readonly IHttpClientFactory httpClientFactory;
 
     public AuthService(
         IStorageBroker storageBroker,
@@ -34,7 +35,8 @@ public partial class AuthService : IAuthService
         ITokenBroker tokenBroker,
         IEmailBroker emailBroker,
         ISmsBroker smsBroker,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IHttpClientFactory httpClientFactory)
     {
         this.storageBroker = storageBroker;
         this.loggingBroker = loggingBroker;
@@ -43,6 +45,7 @@ public partial class AuthService : IAuthService
         this.emailBroker = emailBroker;
         this.smsBroker = smsBroker;
         this.configuration = configuration;
+        this.httpClientFactory = httpClientFactory;
     }
 
     public ValueTask<AuthResponse> LoginAsync(LoginRequest request) =>
@@ -278,7 +281,8 @@ public partial class AuthService : IAuthService
 
     private async Task SendPasswordResetEmailAsync(string email, string token)
     {
-        var resetUrl = $"https://mulkchi.uz/reset-password?token={token}";
+        var frontendUrl = this.configuration["AppSettings:FrontendUrl"] ?? "https://mulkchi.uz";
+        var resetUrl = $"{frontendUrl}/reset-password?token={token}";
 
         await this.emailBroker.SendEmailAsync(
             email,
@@ -437,7 +441,8 @@ public partial class AuthService : IAuthService
 
         await this.storageBroker.InsertEmailVerificationTokenAsync(verificationToken);
 
-        var verifyUrl = $"https://mulkchi.uz/verify-email?token={rawToken}";
+        var frontendUrl = this.configuration["AppSettings:FrontendUrl"] ?? "https://mulkchi.uz";
+        var verifyUrl = $"{frontendUrl}/verify-email?token={rawToken}";
 
         await this.emailBroker.SendEmailAsync(
             user.Email,
@@ -509,8 +514,11 @@ public partial class AuthService : IAuthService
 
     private static string GenerateOtpCode()
     {
-        var random = new Random();
-        return random.Next(100000, 999999).ToString();
+        // Use cryptographically secure random number generation
+        var bytes = new byte[4];
+        RandomNumberGenerator.Fill(bytes);
+        int value = Math.Abs(BitConverter.ToInt32(bytes, 0)) % 900000 + 100000;
+        return value.ToString();
     }
 
     // ─── Google OAuth ────────────────────────────────────────────────────────
@@ -522,7 +530,7 @@ public partial class AuthService : IAuthService
                 throw new InvalidAuthException("Google ID token is required.");
 
             // Validate the Google ID token via Google's tokeninfo endpoint
-            using var httpClient = new System.Net.Http.HttpClient();
+            using var httpClient = this.httpClientFactory.CreateClient("google");
             var response = await httpClient.GetAsync(
                 $"https://oauth2.googleapis.com/tokeninfo?id_token={Uri.EscapeDataString(idToken)}");
 
