@@ -14,12 +14,10 @@ public class RateLimitMiddleware
     private readonly bool _isEnabled;
     private readonly HashSet<string> _trustedProxies;
 
-    private const int AuthMaxRequests = 20;
-    private const int AuthWindowSeconds = 60;
-    private const int UploadMaxRequests = 30;
-    private const int UploadWindowSeconds = 60;
-    private const int GeneralMaxRequests = 300;
-    private const int GeneralWindowSeconds = 60;
+    private readonly int _authMaxRequests;
+    private readonly int _uploadMaxRequests;
+    private readonly int _generalMaxRequests;
+    private readonly int _windowSeconds;
 
     public RateLimitMiddleware(
         RequestDelegate next,
@@ -29,6 +27,12 @@ public class RateLimitMiddleware
         _next = next;
         _rateLimitService = rateLimitService;
         _isEnabled = configuration.GetValue<bool>("RateLimiting:Enabled", true);
+
+        // Read configurable limits from appsettings (fallback to safe defaults)
+        _authMaxRequests    = configuration.GetValue<int>("RateLimiting:Auth",    20);
+        _uploadMaxRequests  = configuration.GetValue<int>("RateLimiting:Upload",  30);
+        _generalMaxRequests = configuration.GetValue<int>("RateLimiting:General", 300);
+        _windowSeconds      = configuration.GetValue<int>("RateLimiting:WindowSeconds", 60);
 
         // Load the list of IP addresses that are allowed to set X-Forwarded-For /
         // X-Real-IP.  Only requests arriving from these addresses should have their
@@ -54,10 +58,10 @@ public class RateLimitMiddleware
         if (path.StartsWith("/api/auth/"))
         {
             if (await _rateLimitService.IsRateLimitedAsync(
-                    $"auth:{clientIp}", AuthWindowSeconds, AuthMaxRequests))
+                    $"auth:{clientIp}", _windowSeconds, _authMaxRequests))
             {
                 context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
-                context.Response.Headers["Retry-After"] = AuthWindowSeconds.ToString();
+                context.Response.Headers["Retry-After"] = _windowSeconds.ToString();
                 await context.Response.WriteAsync("Too many authentication attempts. Please try again later.");
                 return;
             }
@@ -65,10 +69,10 @@ public class RateLimitMiddleware
         else if (path.StartsWith("/api/propertyimagesupload/upload"))
         {
             if (await _rateLimitService.IsRateLimitedAsync(
-                    $"upload:{clientIp}", UploadWindowSeconds, UploadMaxRequests))
+                    $"upload:{clientIp}", _windowSeconds, _uploadMaxRequests))
             {
                 context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
-                context.Response.Headers["Retry-After"] = UploadWindowSeconds.ToString();
+                context.Response.Headers["Retry-After"] = _windowSeconds.ToString();
                 await context.Response.WriteAsync("Too many upload requests. Please try again later.");
                 return;
             }
@@ -76,10 +80,10 @@ public class RateLimitMiddleware
         else
         {
             if (await _rateLimitService.IsRateLimitedAsync(
-                    $"general:{clientIp}", GeneralWindowSeconds, GeneralMaxRequests))
+                    $"general:{clientIp}", _windowSeconds, _generalMaxRequests))
             {
                 context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
-                context.Response.Headers["Retry-After"] = GeneralWindowSeconds.ToString();
+                context.Response.Headers["Retry-After"] = _windowSeconds.ToString();
                 await context.Response.WriteAsync("Too many requests. Please slow down.");
                 return;
             }
