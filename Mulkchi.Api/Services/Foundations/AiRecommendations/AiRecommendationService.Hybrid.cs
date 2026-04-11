@@ -110,10 +110,6 @@ public partial class AiRecommendationService
                     (featureScore * 0.05);
 
                 bool collaborativeMatch = collaborativePropertyIds.Contains(property.Id);
-                if (collaborativeMatch)
-                {
-                    weightedScore = Math.Min(1.0, weightedScore + 0.05);
-                }
 
                 return new
                 {
