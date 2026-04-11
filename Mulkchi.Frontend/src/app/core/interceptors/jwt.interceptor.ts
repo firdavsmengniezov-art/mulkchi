@@ -1,30 +1,33 @@
-import { HttpInterceptorFn, HttpErrorResponse, HttpRequest, HttpHandlerFn } from '@angular/common/http';
+import {
+  HttpErrorResponse,
+  HttpHandlerFn,
+  HttpInterceptorFn,
+  HttpRequest,
+} from '@angular/common/http';
 import { inject } from '@angular/core';
-import { BehaviorSubject, throwError, Observable } from 'rxjs';
-import { catchError, switchMap, filter, take } from 'rxjs/operators';
-import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { catchError, filter, switchMap, take } from 'rxjs/operators';
+import { AuthService } from '../services/auth.service';
 
 // Module-level guard so only one refresh attempt runs at a time
 let isRefreshing = false;
 const refreshDone$ = new BehaviorSubject<boolean>(false);
 
 /**
- * Cookie-based auth interceptor.
+ * Auth interceptor.
  *
- * - Adds `withCredentials: true` to every request so the browser sends
- *   the httpOnly `access_token` cookie automatically.
- * - On 401 (expired cookie), attempts a silent token refresh once.
- * - Auth / refresh endpoints are excluded from the retry loop.
+ * - Adds a bearer token from localStorage to authenticated requests.
+ * - Keeps `withCredentials: true` so refresh/logout still work with cookies.
+ * - On 401, attempts a single refresh and retries with the new token.
  */
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
   const router = inject(Router);
 
-  // Ensure cookies are sent on every request
-  const credentialsReq = req.clone({ withCredentials: true });
+  const authorizedReq = addAuthorizationHeader(req, auth.getToken());
 
-  return next(credentialsReq).pipe(
+  return next(authorizedReq).pipe(
     catchError((err: HttpErrorResponse) => {
       if (
         err.status === 401 &&
@@ -33,24 +36,34 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
         !req.url.includes('/auth/register') &&
         !req.url.includes('/auth/logout')
       ) {
-        return handle401Error(credentialsReq, next, auth, router);
+        return handle401Error(req, next, auth, router);
       }
       return throwError(() => err);
-    })
+    }),
   );
 };
+
+function addAuthorizationHeader(
+  req: HttpRequest<unknown>,
+  token: string | null,
+): HttpRequest<unknown> {
+  return req.clone({
+    withCredentials: true,
+    setHeaders: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+}
 
 function handle401Error(
   req: HttpRequest<unknown>,
   next: HttpHandlerFn,
   auth: AuthService,
-  router: Router
+  router: Router,
 ): Observable<any> {
   if (isRefreshing) {
     return refreshDone$.pipe(
-      filter(done => done),
+      filter((done) => done),
       take(1),
-      switchMap(() => next(req))
+      switchMap(() => next(addAuthorizationHeader(req, auth.getToken()))),
     );
   }
 
@@ -61,15 +74,14 @@ function handle401Error(
     switchMap(() => {
       isRefreshing = false;
       refreshDone$.next(true);
-      return next(req);
+      return next(addAuthorizationHeader(req, auth.getToken()));
     }),
-    catchError(refreshErr => {
+    catchError((refreshErr) => {
       isRefreshing = false;
       refreshDone$.next(false);
       auth.logout().subscribe();
       router.navigate(['/login']);
       return throwError(() => refreshErr);
-    })
+    }),
   );
 }
-

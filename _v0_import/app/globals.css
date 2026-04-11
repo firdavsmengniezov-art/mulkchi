@@ -1,0 +1,168 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Mulkchi Brand Colors */
+  --background: #F5F5F0;
+  --background-secondary: #ECEBE4;
+  --foreground: #2C3E50;
+  --card: #FFFFFF;
+  --card-foreground: #2C3E50;
+  --popover: #FFFFFF;
+  --popover-foreground: #2C3E50;
+  --primary: #C0392B;
+  --primary-dark: #922B21;
+  --primary-foreground: #FFFFFF;
+  --secondary: #ECEBE4;
+  --secondary-foreground: #2C3E50;
+  --muted: #ECEBE4;
+  --muted-foreground: #7F8C8D;
+  --accent: #1A5276;
+  --accent-foreground: #FFFFFF;
+  --destructive: #C0392B;
+  --destructive-foreground: #FFFFFF;
+  --border: rgba(44, 62, 80, 0.12);
+  --input: rgba(44, 62, 80, 0.12);
+  --ring: #C0392B;
+  
+  /* Special Colors */
+  --gold: #F39C12;
+  --green: #1E8449;
+  --blue: #1A5276;
+  
+  /* Chart Colors */
+  --chart-1: #C0392B;
+  --chart-2: #1A5276;
+  --chart-3: #1E8449;
+  --chart-4: #F39C12;
+  --chart-5: #922B21;
+  
+  --radius: 10px;
+  --shadow: 0 2px 12px rgba(192, 57, 43, 0.08);
+  
+  /* Sidebar */
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #2C3E50;
+  --sidebar-primary: #C0392B;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #ECEBE4;
+  --sidebar-accent-foreground: #2C3E50;
+  --sidebar-border: rgba(44, 62, 80, 0.12);
+  --sidebar-ring: #C0392B;
+}
+
+.dark {
+  --background: #1a1a1a;
+  --background-secondary: #2a2a2a;
+  --foreground: #F5F5F0;
+  --card: #2a2a2a;
+  --card-foreground: #F5F5F0;
+  --popover: #2a2a2a;
+  --popover-foreground: #F5F5F0;
+  --primary: #C0392B;
+  --primary-dark: #922B21;
+  --primary-foreground: #FFFFFF;
+  --secondary: #3a3a3a;
+  --secondary-foreground: #F5F5F0;
+  --muted: #3a3a3a;
+  --muted-foreground: #9CA3AF;
+  --accent: #1A5276;
+  --accent-foreground: #FFFFFF;
+  --destructive: #C0392B;
+  --destructive-foreground: #FFFFFF;
+  --border: rgba(255, 255, 255, 0.12);
+  --input: rgba(255, 255, 255, 0.12);
+  --ring: #C0392B;
+  --sidebar: #2a2a2a;
+  --sidebar-foreground: #F5F5F0;
+  --sidebar-primary: #C0392B;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #3a3a3a;
+  --sidebar-accent-foreground: #F5F5F0;
+  --sidebar-border: rgba(255, 255, 255, 0.12);
+  --sidebar-ring: #C0392B;
+}
+
+@theme inline {
+  --font-sans: 'Inter', 'Inter Fallback', sans-serif;
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback', monospace;
+  --color-background: var(--background);
+  --color-background-secondary: var(--background-secondary);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-gold: var(--gold);
+  --color-green: var(--green);
+  --color-blue: var(--blue);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--foreground);
+}
+
+/* Uzbek ornament pattern for decorative elements */
+.uzbek-ornament {
+  background-image: url("data:image/svg+xml,%3Csvg width='40' height='12' viewBox='0 0 40 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 6C0 6 5 0 10 6C15 12 20 6 20 6C20 6 25 0 30 6C35 12 40 6 40 6' stroke='%23C0392B' stroke-width='1' stroke-opacity='0.3'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-position: center;
+  height: 12px;
+}

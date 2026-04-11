@@ -1,10 +1,10 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { AiRecommendationService } from '../../../core/services/ai-recommendation.service';
-import { AiRecommendation, RecommendationType } from '../../../core/models/ai-recommendation.model';
 import { Subscription } from 'rxjs';
+import { AiRecommendation, RecommendationType } from '../../../core/models/ai-recommendation.model';
+import { AiRecommendationService } from '../../../core/services/ai-recommendation.service';
 import { LoggingService } from '../../../core/services/logging.service';
 
 @Component({
@@ -12,10 +12,11 @@ import { LoggingService } from '../../../core/services/logging.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './ai-recommendations.component.html',
-  styleUrls: ['./ai-recommendations.component.scss']
+  styleUrls: ['./ai-recommendations.component.scss'],
 })
 export class AiRecommendationsComponent implements OnInit, OnDestroy {
   @Input() title: string = 'Siz uchun maxsus tavsiyalar';
+  @Input() location: string = '';
   @Input() type: RecommendationType | null = null;
   @Input() propertyId: string | null = null;
   @Input() limit: number = 10;
@@ -31,7 +32,8 @@ export class AiRecommendationsComponent implements OnInit, OnDestroy {
   constructor(
     private aiRecommendationService: AiRecommendationService,
     private router: Router,
-    private logger: LoggingService) {}
+    private logger: LoggingService,
+  ) {}
 
   ngOnInit(): void {
     if (this.autoLoad) {
@@ -44,17 +46,23 @@ export class AiRecommendationsComponent implements OnInit, OnDestroy {
     this.error = '';
 
     let observable;
-    
+
     if (this.propertyId) {
       // Get similar properties for a specific property
       observable = this.aiRecommendationService.getSimilarProperties(this.propertyId, this.limit);
+    } else if (this.location?.trim()) {
+      // Get location-based recommendations
+      observable = this.aiRecommendationService.getLocationRecommendations(
+        this.location,
+        this.limit,
+      );
     } else if (this.type) {
       // Get recommendations by type
       observable = this.aiRecommendationService.getRecommendations({
         recommendationType: this.type,
         limit: this.limit,
         includeViewed: false,
-        includeClicked: false
+        includeClicked: false,
       });
     } else {
       // Get personalized recommendations
@@ -70,7 +78,7 @@ export class AiRecommendationsComponent implements OnInit, OnDestroy {
         this.error = 'Tavsiyalarni yuklashda xatolik';
         this.logger.error('Error loading recommendations:', err);
         this.loading = false;
-      }
+      },
     });
 
     this.subscriptions.push(subscription);
@@ -79,7 +87,7 @@ export class AiRecommendationsComponent implements OnInit, OnDestroy {
   onViewRecommendation(recommendation: AiRecommendation): void {
     // Track view
     this.aiRecommendationService.trackRecommendationView(recommendation.id).subscribe({
-      error: (err) => this.logger.error('Error tracking view:', err)
+      error: (err) => this.logger.error('Error tracking view:', err),
     });
 
     // Mark as viewed locally
@@ -92,7 +100,7 @@ export class AiRecommendationsComponent implements OnInit, OnDestroy {
   onPropertyClick(propertyId: string, recommendation: AiRecommendation): void {
     // Track click
     this.aiRecommendationService.trackRecommendationClick(recommendation.id).subscribe({
-      error: (err) => this.logger.error('Error tracking click:', err)
+      error: (err) => this.logger.error('Error tracking click:', err),
     });
 
     // Mark as clicked locally
@@ -158,6 +166,6 @@ export class AiRecommendationsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
   }
 }

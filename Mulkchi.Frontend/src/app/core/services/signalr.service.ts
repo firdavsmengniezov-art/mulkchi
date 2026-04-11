@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 import { Subject } from 'rxjs';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { environment } from '../../../environments/environment';
 import { Message } from '../models';
 import { AuthService } from './auth.service';
@@ -30,11 +30,11 @@ export class SignalRService {
   constructor(
     private snackBar: MatSnackBar,
     private authService: AuthService,
-    private logger: LoggingService) {}
+    private logger: LoggingService,
+  ) {}
 
   async startConnections(): Promise<void> {
-    // The access token is kept in memory by AuthService (never in localStorage).
-    // It is refreshed transparently when the session is restored on app startup.
+    // AuthService keeps the access token synced with localStorage so SignalR can reuse it.
     const tokenFactory = () => this.authService.getToken() ?? '';
 
     this.chatHub = new HubConnectionBuilder()
@@ -49,13 +49,19 @@ export class SignalRService {
 
     this.chatHub.on('ReceiveMessage', (msg: Message) => this.messageSubject.next(msg));
     this.chatHub.on('UserTyping', (userId: string) => this.typingSubject.next(userId));
-    this.notifHub.on('ReceiveNotification', (n: NotificationPayload) => this.notificationSubject.next(n));
+    this.notifHub.on('ReceiveNotification', (n: NotificationPayload) =>
+      this.notificationSubject.next(n),
+    );
 
     await this.startHubWithRetry(this.chatHub, 'Chat Hub');
     await this.startHubWithRetry(this.notifHub, 'Notification Hub');
   }
 
-  private async startHubWithRetry(hub: HubConnection, hubName: string, maxRetries = 3): Promise<void> {
+  private async startHubWithRetry(
+    hub: HubConnection,
+    hubName: string,
+    maxRetries = 3,
+  ): Promise<void> {
     for (let i = 0; i < maxRetries; i++) {
       try {
         await hub.start();
@@ -69,10 +75,10 @@ export class SignalRService {
           this.snackBar.open(
             `${hubName} ulanmadi. Internet aloqangizni tekshiring va sahifani yangilang.`,
             'X',
-            { duration: 5000 }
+            { duration: 5000 },
           );
         } else {
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          await new Promise((resolve) => setTimeout(resolve, 2000));
         }
       }
     }
@@ -116,4 +122,3 @@ export class SignalRService {
     }
   }
 }
-

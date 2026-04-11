@@ -252,7 +252,10 @@ namespace Mulkchi.Api.Services.Foundations.Bookings
             };
         }
         
-        private async Task SendBookingConfirmationToGuestAsync(Booking booking, Models.Foundations.Properties.Property property) { }
-        private async Task SendNewBookingAlertToHostAsync(Booking booking, Models.Foundations.Properties.Property property) { }
+        private Task SendBookingConfirmationToGuestAsync(Booking booking, Models.Foundations.Properties.Property property) =>
+            Task.CompletedTask;
+
+        private Task SendNewBookingAlertToHostAsync(Booking booking, Models.Foundations.Properties.Property property) =>
+            Task.CompletedTask;
     }
 }

@@ -1,24 +1,25 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
-import { MatTabsModule } from '@angular/material/tabs';
-import { MatSelectModule } from '@angular/material/select';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSelectModule } from '@angular/material/select';
+import { MatTableModule } from '@angular/material/table';
+import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
-import { NotificationService } from '../../../core/services/notification.service';
+import { Subject, takeUntil } from 'rxjs';
 import { Notification, NotificationType } from '../../../core/models/notification.models';
 import { RelativeTimePipe } from '../../../core/pipes/relative-time.pipe';
 import { LoggingService } from '../../../core/services/logging.service';
+import { NotificationService } from '../../../core/services/notification.service';
+import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
 
 @Component({
   selector: 'app-notifications-page',
@@ -38,10 +39,11 @@ import { LoggingService } from '../../../core/services/logging.service';
     MatTableModule,
     MatPaginatorModule,
     MatTooltipModule,
-    RelativeTimePipe
+    RelativeTimePipe,
+    NavbarComponent,
   ],
   templateUrl: './notifications-page.component.html',
-  styleUrls: ['./notifications-page.component.scss']
+  styleUrls: ['./notifications-page.component.scss'],
 })
 export class NotificationsPageComponent implements OnInit, OnDestroy {
   notifications: Notification[] = [];
@@ -60,7 +62,8 @@ export class NotificationsPageComponent implements OnInit, OnDestroy {
   constructor(
     private notificationService: NotificationService,
     private router: Router,
-    private logger: LoggingService) {}
+    private logger: LoggingService,
+  ) {}
 
   ngOnInit(): void {
     this.setupSubscriptions();
@@ -69,17 +72,19 @@ export class NotificationsPageComponent implements OnInit, OnDestroy {
 
   private setupSubscriptions(): void {
     // Get notifications
-    this.notificationService.getNotifications()
+    this.notificationService
+      .getNotifications()
       .pipe(takeUntil(this.destroy$))
-      .subscribe(notifications => {
+      .subscribe((notifications) => {
         this.notifications = notifications;
         this.applyFilters();
       });
 
     // Get unread count
-    this.notificationService.getUnreadCount()
+    this.notificationService
+      .getUnreadCount()
       .pipe(takeUntil(this.destroy$))
-      .subscribe(count => {
+      .subscribe((count) => {
         this.unreadCount = count;
       });
   }
@@ -88,16 +93,15 @@ export class NotificationsPageComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.notificationService.loadNotifications({
       page: this.currentPage,
-      pageSize: this.pageSize
+      pageSize: this.pageSize,
     });
   }
 
   applyFilters(): void {
-    this.filteredNotifications = this.notifications.filter(notification => {
+    this.filteredNotifications = this.notifications.filter((notification) => {
       // Filter by tab
       if (this.currentTab === 1 && notification.isRead) return false;
-      if (this.currentTab === 1 && !notification.isRead) return true;
-      if (this.currentTab === 2) return false;
+      if (this.currentTab === 2 && !notification.isRead) return false;
 
       // Filter by type
       if (this.selectedType !== 'all' && notification.type !== this.selectedType) return false;
@@ -133,7 +137,8 @@ export class NotificationsPageComponent implements OnInit, OnDestroy {
 
   markAsRead(notification: Notification): void {
     if (!notification.isRead) {
-      this.notificationService.markAsRead(notification.id)
+      this.notificationService
+        .markAsRead(notification.id)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => {
@@ -143,32 +148,34 @@ export class NotificationsPageComponent implements OnInit, OnDestroy {
           },
           error: (err) => {
             this.logger.error('Failed to mark notification as read:', err);
-          }
+          },
         });
     }
   }
 
   markAllAsRead(): void {
-    this.notificationService.markAllAsRead()
+    this.notificationService
+      .markAllAsRead()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.notifications.forEach(n => n.isRead = true);
+          this.notifications.forEach((n) => (n.isRead = true));
           this.unreadCount = 0;
           this.applyFilters();
         },
         error: (err) => {
           this.logger.error('Failed to mark all notifications as read:', err);
-        }
+        },
       });
   }
 
   deleteNotification(notification: Notification): void {
-    this.notificationService.deleteNotification(notification.id)
+    this.notificationService
+      .deleteNotification(notification.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.notifications = this.notifications.filter(n => n.id !== notification.id);
+          this.notifications = this.notifications.filter((n) => n.id !== notification.id);
           if (!notification.isRead) {
             this.unreadCount = Math.max(0, this.unreadCount - 1);
           }
@@ -176,13 +183,13 @@ export class NotificationsPageComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.logger.error('Failed to delete notification:', err);
-        }
+        },
       });
   }
 
   onNotificationClick(notification: Notification): void {
     this.markAsRead(notification);
-    
+
     // Navigate to related entity if actionUrl exists
     if (notification.actionUrl) {
       this.router.navigate([notification.actionUrl]);
@@ -200,18 +207,24 @@ export class NotificationsPageComponent implements OnInit, OnDestroy {
   getLocalizedTitle(notification: Notification): string {
     const lang = localStorage.getItem('language') || 'uz';
     switch (lang) {
-      case 'ru': return notification.titleRu || notification.titleUz;
-      case 'en': return notification.titleEn || notification.titleUz;
-      default: return notification.titleUz;
+      case 'ru':
+        return notification.titleRu || notification.titleUz;
+      case 'en':
+        return notification.titleEn || notification.titleUz;
+      default:
+        return notification.titleUz;
     }
   }
 
   getLocalizedBody(notification: Notification): string {
     const lang = localStorage.getItem('language') || 'uz';
     switch (lang) {
-      case 'ru': return notification.bodyRu || notification.bodyUz;
-      case 'en': return notification.bodyEn || notification.bodyUz;
-      default: return notification.bodyUz;
+      case 'ru':
+        return notification.bodyRu || notification.bodyUz;
+      case 'en':
+        return notification.bodyEn || notification.bodyUz;
+      default:
+        return notification.bodyUz;
     }
   }
 
@@ -228,7 +241,7 @@ export class NotificationsPageComponent implements OnInit, OnDestroy {
       case NotificationType.ReviewReceived:
         return 'Sharh qoldirildi';
       case NotificationType.PaymentReceived:
-        return 'To\'lov qabul qilindi';
+        return "To'lov qabul qilindi";
       case NotificationType.PropertyApproved:
         return 'Mulk tasdiqlandi';
       case NotificationType.SystemAlert:
@@ -241,14 +254,38 @@ export class NotificationsPageComponent implements OnInit, OnDestroy {
   getNotificationTypes(): { value: string; label: string }[] {
     return [
       { value: 'all', label: 'Barchasi' },
-      { value: NotificationType.BookingCreated, label: this.getNotificationTypeLabel(NotificationType.BookingCreated) },
-      { value: NotificationType.BookingConfirmed, label: this.getNotificationTypeLabel(NotificationType.BookingConfirmed) },
-      { value: NotificationType.BookingCancelled, label: this.getNotificationTypeLabel(NotificationType.BookingCancelled) },
-      { value: NotificationType.NewMessage, label: this.getNotificationTypeLabel(NotificationType.NewMessage) },
-      { value: NotificationType.ReviewReceived, label: this.getNotificationTypeLabel(NotificationType.ReviewReceived) },
-      { value: NotificationType.PaymentReceived, label: this.getNotificationTypeLabel(NotificationType.PaymentReceived) },
-      { value: NotificationType.PropertyApproved, label: this.getNotificationTypeLabel(NotificationType.PropertyApproved) },
-      { value: NotificationType.SystemAlert, label: this.getNotificationTypeLabel(NotificationType.SystemAlert) }
+      {
+        value: NotificationType.BookingCreated,
+        label: this.getNotificationTypeLabel(NotificationType.BookingCreated),
+      },
+      {
+        value: NotificationType.BookingConfirmed,
+        label: this.getNotificationTypeLabel(NotificationType.BookingConfirmed),
+      },
+      {
+        value: NotificationType.BookingCancelled,
+        label: this.getNotificationTypeLabel(NotificationType.BookingCancelled),
+      },
+      {
+        value: NotificationType.NewMessage,
+        label: this.getNotificationTypeLabel(NotificationType.NewMessage),
+      },
+      {
+        value: NotificationType.ReviewReceived,
+        label: this.getNotificationTypeLabel(NotificationType.ReviewReceived),
+      },
+      {
+        value: NotificationType.PaymentReceived,
+        label: this.getNotificationTypeLabel(NotificationType.PaymentReceived),
+      },
+      {
+        value: NotificationType.PropertyApproved,
+        label: this.getNotificationTypeLabel(NotificationType.PropertyApproved),
+      },
+      {
+        value: NotificationType.SystemAlert,
+        label: this.getNotificationTypeLabel(NotificationType.SystemAlert),
+      },
     ];
   }
 

@@ -6,10 +6,11 @@ import { TranslateModule } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Property } from '../../core/models';
+import { LoggingService } from '../../core/services/logging.service';
 import { PropertyService } from '../../core/services/property.service';
+import { AiRecommendationsComponent } from '../../shared/components/ai-recommendations/ai-recommendations.component';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { PropertyCardComponent } from '../../shared/components/property-card/property-card.component';
-import { LoggingService } from '../../core/services/logging.service';
 
 interface PagedResult<T> {
   items: T[];
@@ -27,7 +28,8 @@ interface PagedResult<T> {
     RouterModule,
     NavbarComponent,
     PropertyCardComponent,
-    TranslateModule
+    AiRecommendationsComponent,
+    TranslateModule,
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
@@ -36,6 +38,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   properties: Property[] = [];
   loading = true;
   isSearching = false;
+  selectedQuickTag = '';
+  currentView: 'grid' | 'list' | 'map' = 'grid';
+  sortBy: 'newest' | 'priceAsc' | 'priceDesc' = 'newest';
 
   // Search form fields
   searchRegion = '';
@@ -61,6 +66,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     'Surxondaryo',
     'Qoraqalpog\u2019iston',
   ];
+
+  readonly quickTags = ['Yangi binolar', 'Premium', 'Markazda', 'Metro yaqinida', 'Park yaqinida'];
 
   private propertyService = inject(PropertyService);
   private router = inject(Router);
@@ -112,6 +119,24 @@ export class HomeComponent implements OnInit, OnDestroy {
       },
     });
     // Small delay just to show the spinner UX feedback
-    setTimeout(() => { this.isSearching = false; }, 300);
+    setTimeout(() => {
+      this.isSearching = false;
+    }, 300);
+  }
+
+  get vipProperties(): Property[] {
+    return this.properties.slice(0, 4);
+  }
+
+  get standardProperties(): Property[] {
+    return this.properties.slice(4);
+  }
+
+  selectQuickTag(tag: string): void {
+    this.selectedQuickTag = this.selectedQuickTag === tag ? '' : tag;
+  }
+
+  setView(view: 'grid' | 'list' | 'map'): void {
+    this.currentView = view;
   }
 }

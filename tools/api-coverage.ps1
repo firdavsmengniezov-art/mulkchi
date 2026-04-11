@@ -1,123 +1,307 @@
-﻿param(
+param(
     [string]$RepoRoot = ".",
-    [string]$SwaggerUrl = "",
-    [string]$SwaggerFile = "",
-    [string]$OutFile = "api-coverage-report.md"
+    [string]$OutFile = "docs/api-coverage-report.md"
 )
 
-function NormUrl([string]$u) {
-    if ([string]::IsNullOrWhiteSpace($u)) { return "" }
-    $x = $u.Trim().ToLowerInvariant()
-    $x = $x -replace "https?://[^/]+", ""
-    $x = $x -replace "\?.*$", ""
-    $x = $x -replace "/+$", ""
-    if (-not $x.StartsWith("/")) { $x = "/" + $x }
-    $x = $x -replace "\{[^}]+\}", "*"
-    return $x
+Set-StrictMode -Version Latest
+$ErrorActionPreference = "Stop"
+
+function Normalize-EndpointPath {
+    param([string]$Path)
+
+    if ([string]::IsNullOrWhiteSpace($Path)) {
+        return ""
+    }
+
+    $p = $Path.Trim()
+    $p = $p -replace "https?://[^/]+", ""
+    $p = $p -replace "\?.*$", ""
+    $p = $p -replace "\\", "/"
+
+    if ($p.StartsWith("__API__")) {
+        $p = "/api" + $p.Substring("__API__".Length)
+    }
+
+    if ($p.StartsWith("/api/api/")) {
+        $p = $p.Substring(4)
+    }
+
+    if (-not $p.StartsWith("/")) {
+        $p = "/" + $p
+    }
+
+    $p = $p -replace "/+", "/"
+    $p = $p -replace "/+$", ""
+
+    if ($p -match "^/[^/]+" -and -not $p.StartsWith("/api/")) {
+        # Frontend often calls /bookings, /users, etc where environment.apiUrl already contains /api.
+        $p = "/api" + $p
+    }
+
+    $p = $p -replace ":guid", ""
+    $p = $p -replace "\{[^}]+\}", "{var}"
+
+    return $p.ToLowerInvariant()
 }
 
-function ToRegex([string]$t) {
-    $e = [Regex]::Escape($t) -replace "\\\*", "[^/]+"
-    return "^$e$"
+function To-EndpointRegex {
+    param([string]$Normalized)
+    $escaped = [Regex]::Escape($Normalized)
+    $escaped = $escaped -replace "\\\{var\\\}", "[^/]+"
+    return "^$escaped$"
 }
 
-if ($SwaggerFile) { $sw = Get-Content -Raw $SwaggerFile | ConvertFrom-Json }
-else { $sw = Invoke-RestMethod -Uri $SwaggerUrl }
+function Extract-BackendEndpoints {
+    param([string]$ControllersDir)
 
-$backend = @()
-foreach ($p in $sw.paths.PSObject.Properties) {
-    foreach ($m in @("get","post","put","delete","patch")) {
-        $op = $p.Value.$m
-        if ($null -ne $op) {
-            $ctrl = if ($op.tags -and $op.tags.Count -gt 0) { $op.tags[0] } else { "Unknown" }
-            $backend += [pscustomobject]@{
-                Method = $m.ToUpperInvariant()
-                Url    = $p.Name
-                Norm   = NormUrl $p.Name
-                Regex  = ToRegex (NormUrl $p.Name)
-                Ctrl   = $ctrl
+    $result = @()
+    $files = Get-ChildItem -Path $ControllersDir -Filter "*Controller.cs" -File
+
+    foreach ($file in $files) {
+        $content = Get-Content -Path $file.FullName -Raw
+        $controller = [System.IO.Path]::GetFileNameWithoutExtension($file.Name) -replace "Controller$", ""
+
+        $routeMatch = [regex]::Match($content, '\[Route\("([^"]+)"\)\]')
+        if (-not $routeMatch.Success) {
+            continue
+        }
+
+        $baseRoute = $routeMatch.Groups[1].Value -replace "\[controller\]", $controller
+
+        $httpMatches = [regex]::Matches(
+            $content,
+            '\[Http(Get|Post|Put|Delete|Patch)(?:\("([^"]*)"\))?\]',
+            [System.Text.RegularExpressions.RegexOptions]::IgnoreCase
+        )
+
+        foreach ($m in $httpMatches) {
+            $method = $m.Groups[1].Value.ToUpperInvariant()
+            $suffix = $m.Groups[2].Value
+
+            $full = if ([string]::IsNullOrWhiteSpace($suffix)) {
+                $baseRoute
+            } else {
+                ($baseRoute.TrimEnd('/') + "/" + $suffix.TrimStart('/'))
+            }
+
+            $norm = Normalize-EndpointPath -Path $full
+            $result += [pscustomobject]@{
+                Method = $method
+                Url = "/" + $full.TrimStart('/')
+                Norm = $norm
+                Regex = To-EndpointRegex -Normalized $norm
+                Controller = $controller
+                Source = $file.FullName
             }
         }
     }
+
+    return $result | Sort-Object Controller, Url, Method -Unique
 }
 
-$fePaths = @(
-    (Join-Path $RepoRoot "Mulkchi.Frontend\src\app\core\services"),
-    (Join-Path $RepoRoot "Mulkchi.Frontend\src\app\features"),
-    (Join-Path $RepoRoot "src\app\core\services"),
-    (Join-Path $RepoRoot "src\app\features")
-) | Where-Object { Test-Path $_ }
+function Resolve-ApiVarMap {
+    param([string]$Content)
 
-$feCalls = @()
-foreach ($folder in $fePaths) {
-    foreach ($f in (Get-ChildItem $folder -Recurse -Filter *.ts)) {
-        $c = Get-Content -Raw $f.FullName
-        $matches2 = [regex]::Matches($c, '(this\.http\.(get|post|put|delete|patch))[^(]*\([''"]([^''"]+)[''"]')
-        foreach ($m in $matches2) {
-            $feCalls += [pscustomobject]@{
-                Method = $m.Groups[2].Value.ToUpperInvariant()
-                Url    = $m.Groups[3].Value
-                Norm   = NormUrl $m.Groups[3].Value
-                File   = $f.FullName.Replace((Resolve-Path $RepoRoot).Path, ".")
-            }
-        }
-        $matches3 = [regex]::Matches($c, '[''"](/api/[^''"]+)[''"]')
-        foreach ($m in $matches3) {
-            $feCalls += [pscustomobject]@{
-                Method = "ANY"
-                Url    = $m.Groups[1].Value
-                Norm   = NormUrl $m.Groups[1].Value
-                File   = $f.FullName.Replace((Resolve-Path $RepoRoot).Path, ".")
-            }
+    $map = @{}
+
+    $m1 = [regex]::Matches($Content, '(\w+)\s*=\s*`\$\{environment\.apiUrl\}([^`]+)`')
+    foreach ($m in $m1) {
+        $name = $m.Groups[1].Value
+        $value = "__API__" + $m.Groups[2].Value
+        $map[$name] = $value
+    }
+
+    $m2 = [regex]::Matches($Content, '(\w+)\s*=\s*environment\.apiUrl')
+    foreach ($m in $m2) {
+        $name = $m.Groups[1].Value
+        if (-not $map.ContainsKey($name)) {
+            $map[$name] = "__API__"
         }
     }
+
+    return $map
 }
 
-$used = 0
+function Resolve-HttpArg {
+    param(
+        [string]$Arg,
+        [hashtable]$ApiVarMap
+    )
+
+    $a = $Arg.Trim()
+
+    if ($a.Length -ge 2 -and [int][char]$a[0] -eq 96 -and [int][char]$a[$a.Length - 1] -eq 96) {
+        $body = $a.Substring(1, $a.Length - 2)
+        $body = $body.Replace('${environment.apiUrl}', '__API__')
+
+        foreach ($k in $ApiVarMap.Keys) {
+            $body = $body.Replace('${this.' + $k + '}', $ApiVarMap[$k])
+        }
+
+        # Replace any remaining runtime interpolation with placeholder
+        $body = $body -replace '\$\{[^}]+\}', '{var}'
+        return $body
+    }
+
+    $firstCharCode = if ($a.Length -gt 0) { [int][char]$a[0] } else { -1 }
+    $lastCharCode = if ($a.Length -gt 0) { [int][char]$a[$a.Length - 1] } else { -1 }
+    if (($firstCharCode -eq 34 -and $lastCharCode -eq 34) -or ($firstCharCode -eq 39 -and $lastCharCode -eq 39)) {
+        return $a.Substring(1, $a.Length - 2)
+    }
+
+    if ($a -match 'this\.(\w+)$') {
+        $varName = $Matches[1]
+        if ($ApiVarMap.ContainsKey($varName)) {
+            return $ApiVarMap[$varName]
+        }
+    }
+
+    return ""
+}
+
+function Extract-FrontendCalls {
+    param([string]$FrontendRoot)
+
+    $calls = @()
+    $files = Get-ChildItem -Path $FrontendRoot -Recurse -Filter "*.ts" -File |
+        Where-Object { $_.FullName -notlike "*.spec.ts" }
+
+    foreach ($file in $files) {
+        $content = Get-Content -Path $file.FullName -Raw
+        $apiVars = Resolve-ApiVarMap -Content $content
+
+        $httpMatches = [regex]::Matches(
+            $content,
+            'this\.http\.(get|post|put|delete|patch)(?:<[^>]*>)?\(([^,\n\r\)]+)',
+            [System.Text.RegularExpressions.RegexOptions]::IgnoreCase
+        )
+
+        foreach ($m in $httpMatches) {
+            $method = $m.Groups[1].Value.ToUpperInvariant()
+            $arg = $m.Groups[2].Value
+            $resolved = Resolve-HttpArg -Arg $arg -ApiVarMap $apiVars
+            if ([string]::IsNullOrWhiteSpace($resolved)) {
+                continue
+            }
+
+            $norm = Normalize-EndpointPath -Path $resolved
+            if (-not $norm.StartsWith("/api/")) {
+                continue
+            }
+
+            $calls += [pscustomobject]@{
+                Method = $method
+                Url = $resolved
+                Norm = $norm
+                File = $file.FullName
+            }
+        }
+
+        # Hardcoded /api/... literal extraction is intentionally skipped here.
+        # Most calls are captured from this.http.* patterns above.
+    }
+
+    return $calls | Sort-Object Method, Norm, File -Unique
+}
+
+$root = (Resolve-Path $RepoRoot).Path
+$controllersDir = Join-Path $root "Mulkchi.Api/Controllers"
+$frontendRoot = Join-Path $root "Mulkchi.Frontend/src/app"
+$outputPath = Join-Path $root $OutFile
+
+if (-not (Test-Path $controllersDir)) {
+    throw "Controllers directory not found: $controllersDir"
+}
+if (-not (Test-Path $frontendRoot)) {
+    throw "Frontend root not found: $frontendRoot"
+}
+
+$backend = Extract-BackendEndpoints -ControllersDir $controllersDir
+$frontend = Extract-FrontendCalls -FrontendRoot $frontendRoot
+
 $rows = @()
 $unused = @()
+$usedCount = 0
+
 foreach ($be in $backend) {
-    $hit = $feCalls | Where-Object { ($_.Method -eq "ANY" -or $_.Method -eq $be.Method) -and ($_.Norm -match $be.Regex) }
-    $isUsed = $hit.Count -gt 0
-    if ($isUsed) { $used++ } else { $unused += $be }
+    $hits = $frontend | Where-Object {
+        ($_.Method -eq "ANY" -or $_.Method -eq $be.Method) -and ($_.Norm -match $be.Regex)
+    }
+
+    $isUsed = @($hits).Count -gt 0
+    if ($isUsed) {
+        $usedCount++
+    } else {
+        $unused += $be
+    }
+
+    $files = if ($isUsed) {
+        ($hits | Select-Object -ExpandProperty File -Unique |
+            ForEach-Object { $_.Replace($root + "\\", "") }) -join "; "
+    } else {
+        ""
+    }
+
     $rows += [pscustomobject]@{
-        Method = $be.Method; Url = $be.Url; Ctrl = $be.Ctrl
-        Used   = if ($isUsed) { "YES" } else { "NO" }
-        Files  = if ($isUsed) { ($hit.File | Select-Object -Unique) -join "; " } else { "" }
+        Method = $be.Method
+        Url = $be.Url
+        Controller = $be.Controller
+        Used = if ($isUsed) { "YES" } else { "NO" }
+        Files = $files
     }
 }
 
-$feOnly = @()
-foreach ($fe in ($feCalls | Where-Object { $_.Norm -like "/api/*" })) {
-    $hit = $backend | Where-Object { ($fe.Method -eq "ANY" -or $_.Method -eq $fe.Method) -and ($fe.Norm -match $_.Regex) }
-    if (-not $hit) { $feOnly += $fe }
+$frontendOnly = @()
+foreach ($fe in $frontend) {
+    $match = $backend | Where-Object {
+        ($fe.Method -eq "ANY" -or $_.Method -eq $fe.Method) -and ($fe.Norm -match $_.Regex)
+    }
+
+    if (-not $match) {
+        $frontendOnly += [pscustomobject]@{
+            Method = $fe.Method
+            Url = $fe.Norm
+            File = $fe.File.Replace($root + "\\", "")
+        }
+    }
 }
 
-$pct = [math]::Round(($used * 100.0) / $backend.Count, 2)
+$total = $backend.Count
+$unusedCount = $unused.Count
+$coverage = if ($total -gt 0) { [math]::Round(($usedCount * 100.0) / $total, 2) } else { 0 }
 
-$out = @()
-$out += "# API Coverage Report"
-$out += ""
-$out += "## 1) Barcha endpointlar"
-$out += "| Method | URL | Controller | FE ishlatadimi | Fayllar |"
-$out += "|---|---|---|---|---|"
-foreach ($r in $rows | Sort-Object Ctrl,Url) { $out += "| $($r.Method) | $($r.Url) | $($r.Ctrl) | $($r.Used) | $($r.Files) |" }
-$out += ""
-$out += "## 2) Frontendda ISHLATILMAGAN ($($unused.Count) ta)"
-$out += "| Method | URL | Controller |"
-$out += "|---|---|---|"
-foreach ($r in $unused | Sort-Object Ctrl,Url) { $out += "| $($r.Method) | $($r.Url) | $($r.Ctrl) |" }
-$out += ""
-$out += "## 3) Frontendda bor, backendda YO'Q"
-$out += "| Method | URL | Fayl |"
-$out += "|---|---|---|"
-foreach ($r in ($feOnly | Select-Object -Unique Method,Url,File | Sort-Object File,Url)) { $out += "| $($r.Method) | $($r.Url) | $($r.File) |" }
-$out += ""
-$out += "## 4) Natija"
-$out += "- Jami: **$($backend.Count)**"
-$out += "- Ishlatilayotgan: **$used**"
-$out += "- Ishlatilmayotgan: **$($unused.Count)**"
-$out += "- Coverage: **$pct%**"
+$report = @()
+$report += "# API Coverage Report"
+$report += ""
+$report += "## 1) Barcha endpointlar"
+$report += "| Method | URL | Controller | FE ishlatadimi | Fayllar |"
+$report += "|---|---|---|---|---|"
+foreach ($r in ($rows | Sort-Object Controller, Url, Method)) {
+    $report += "| $($r.Method) | $($r.Url) | $($r.Controller) | $($r.Used) | $($r.Files) |"
+}
 
-$out | Set-Content -Path (Join-Path $RepoRoot $OutFile) -Encoding UTF8
-Write-Host "Tayyor! Coverage: $pct% | Jami: $($backend.Count) | Ishlatilayotgan: $used | Ishlatilmayotgan: $($unused.Count)"
+$report += ""
+$report += "## 2) Frontendda ISHLATILMAGAN ($unusedCount ta)"
+$report += "| Method | URL | Controller |"
+$report += "|---|---|---|"
+foreach ($r in ($unused | Sort-Object Controller, Url, Method)) {
+    $report += "| $($r.Method) | $($r.Url) | $($r.Controller) |"
+}
+
+$report += ""
+$report += "## 3) Frontendda bor, backendda YO'Q"
+$report += "| Method | URL | Fayl |"
+$report += "|---|---|---|"
+foreach ($r in ($frontendOnly | Sort-Object File, Url, Method | Select-Object -Unique Method, Url, File)) {
+    $report += "| $($r.Method) | $($r.Url) | $($r.File) |"
+}
+
+$report += ""
+$report += "## 4) Natija"
+$report += "- Jami: **$total**"
+$report += "- Ishlatilayotgan: **$usedCount**"
+$report += "- Ishlatilmayotgan: **$unusedCount**"
+$report += "- Coverage: **$coverage%**"
+
+$report | Set-Content -Path $outputPath -Encoding UTF8
+Write-Host "Tayyor! Coverage: $coverage% | Jami: $total | Ishlatilayotgan: $usedCount | Ishlatilmayotgan: $unusedCount"

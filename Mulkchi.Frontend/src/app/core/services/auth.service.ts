@@ -1,115 +1,191 @@
-import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, BehaviorSubject, tap, throwError } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { BehaviorSubject, Observable, tap, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { LoginRequest, RegisterRequest, AuthUserInfo, AuthUser, UserRole } from '../models/auth.model';
+import {
+  AuthUser,
+  AuthUserInfo,
+  ForgotPasswordRequest,
+  ForgotPasswordResponse,
+  LoginRequest,
+  RegisterRequest,
+  ResetPasswordRequest,
+  ResetPasswordResponse,
+  UserRole,
+} from '../models/auth.model';
 import { LoggingService } from './logging.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private apiUrl = `${environment.apiUrl}/auth`;
+  private readonly accessTokenKey = 'accessToken';
+  private readonly userKey = 'user';
+  private readonly legacyUserKey = 'auth_user';
 
   /**
    * Emits the current authenticated user (loaded from localStorage on startup).
-   * Tokens are never stored here or in localStorage — they live in httpOnly cookies
-   * (primary auth) and in `accessToken$` (in-memory, for SignalR only).
+   * The token is persisted in localStorage so HTTP requests and SignalR can reuse it
+   * after a page reload.
    */
   currentUser$ = new BehaviorSubject<AuthUser | null>(null);
 
   /**
    * In-memory access token for SignalR's accessTokenFactory.
-   * Lost on page refresh; recovered via a silent refresh call in AppComponent.
-   * Must NOT be written to localStorage or sessionStorage.
+   * Kept in sync with localStorage.
    */
   private accessToken$ = new BehaviorSubject<string | null>(null);
 
-  constructor(private http: HttpClient,
-    private logger: LoggingService) {
-    const saved = localStorage.getItem('auth_user');
-    if (saved && saved !== 'undefined' && saved !== 'null') {
-      try {
-        this.currentUser$.next(JSON.parse(saved));
-      } catch {
-        localStorage.removeItem('auth_user');
-      }
+  constructor(
+    private http: HttpClient,
+    private logger: LoggingService,
+  ) {
+    const savedUser = this.getStoredUser();
+    if (savedUser) {
+      this.currentUser$.next(savedUser);
+    }
+
+    const savedToken = localStorage.getItem(this.accessTokenKey);
+    if (savedToken && savedToken !== 'undefined' && savedToken !== 'null') {
+      this.accessToken$.next(savedToken);
     }
   }
 
   login(req: LoginRequest): Observable<AuthUserInfo> {
     return this.http
       .post<AuthUserInfo>(`${this.apiUrl}/login`, req, { withCredentials: true })
-      .pipe(tap(res => this.saveAuth(res)), catchError(this.handleError));
+      .pipe(
+        tap((res) => this.saveAuth(res)),
+        catchError(this.handleError),
+      );
   }
 
   register(req: RegisterRequest): Observable<AuthUserInfo> {
     return this.http
       .post<AuthUserInfo>(`${this.apiUrl}/register`, req, { withCredentials: true })
-      .pipe(tap(res => this.saveAuth(res)), catchError(this.handleError));
+      .pipe(
+        tap((res) => this.saveAuth(res)),
+        catchError(this.handleError),
+      );
   }
 
   /**
    * Silently refreshes the session using the httpOnly refresh-token cookie.
-   * No request body is needed — the cookie is sent automatically.
-   * Call this on application startup to restore an in-memory access token
-   * for SignalR after a page reload.
+   * Falls back to a refresh token from storage if one exists.
    */
   refreshToken(): Observable<AuthUserInfo> {
+    const refreshToken =
+      localStorage.getItem('refreshToken') ?? localStorage.getItem('refresh_token');
+    const body = refreshToken ? { refreshToken } : {};
+
     return this.http
-      .post<AuthUserInfo>(`${this.apiUrl}/refresh-token`, {}, { withCredentials: true })
-      .pipe(tap(res => this.saveAuth(res)), catchError(this.handleError));
+      .post<AuthUserInfo>(`${this.apiUrl}/refresh-token`, body, { withCredentials: true })
+      .pipe(
+        tap((res) => this.saveAuth(res)),
+        catchError(this.handleError),
+      );
   }
 
-  forgotPassword(email: string): Observable<any> {
+  forgotPassword(email: string): Observable<ForgotPasswordResponse> {
+    const request: ForgotPasswordRequest = { email };
+
     return this.http
-      .post(`${this.apiUrl}/forgot-password`, { email }, { withCredentials: true })
+      .post<ForgotPasswordResponse>(`${this.apiUrl}/forgot-password`, request, {
+        withCredentials: true,
+      })
+      .pipe(catchError(this.handleError));
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<ResetPasswordResponse> {
+    const request: ResetPasswordRequest = { token, newPassword };
+
+    return this.http
+      .post<ResetPasswordResponse>(`${this.apiUrl}/reset-password`, request, {
+        withCredentials: true,
+      })
       .pipe(catchError(this.handleError));
   }
 
   logout(): Observable<void> {
-    return this.http
-      .post<void>(`${this.apiUrl}/logout`, {}, { withCredentials: true })
-      .pipe(
-        tap(() => this.clearAuth()),
-        catchError(err => {
-          // Clear local state even if the server call fails
-          this.clearAuth();
-          return throwError(() => err);
-        })
-      );
+    const refreshToken =
+      localStorage.getItem('refreshToken') ?? localStorage.getItem('refresh_token');
+    const body = refreshToken ? { refreshToken } : {};
+
+    return this.http.post<void>(`${this.apiUrl}/logout`, body, { withCredentials: true }).pipe(
+      tap(() => this.clearAuth()),
+      catchError((err) => {
+        // Clear local state even if the server call fails
+        this.clearAuth();
+        return throwError(() => err);
+      }),
+    );
   }
 
   private saveAuth(res: AuthUserInfo): void {
-    // Store user display info in localStorage for UI persistence across reloads
     const user: AuthUser = {
-      id: res.userId,
+      id: String(res.userId),
       email: res.email,
       role: res.role,
       firstName: res.firstName ?? '',
       lastName: res.lastName ?? '',
-      avatarUrl: res.avatarUrl ?? undefined
+      avatarUrl: res.avatarUrl ?? undefined,
     };
-    localStorage.setItem('auth_user', JSON.stringify(user));
-    this.currentUser$.next(user);
 
-    // Keep the access token in memory ONLY — for SignalR's accessTokenFactory
-    this.accessToken$.next(res.accessToken ?? null);
+    localStorage.setItem(this.userKey, JSON.stringify(user));
+    localStorage.setItem(this.legacyUserKey, JSON.stringify(user));
+
+    if (res.accessToken) {
+      localStorage.setItem(this.accessTokenKey, res.accessToken);
+      this.accessToken$.next(res.accessToken);
+    } else {
+      localStorage.removeItem(this.accessTokenKey);
+      this.accessToken$.next(null);
+    }
+
+    this.currentUser$.next(user);
   }
 
   clearAuth(): void {
-    localStorage.removeItem('auth_user');
+    localStorage.removeItem(this.userKey);
+    localStorage.removeItem(this.legacyUserKey);
+    localStorage.removeItem(this.accessTokenKey);
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('refresh_token');
     this.currentUser$.next(null);
     this.accessToken$.next(null);
   }
 
-  private handleError(error: HttpErrorResponse) {
-    this.logger.error('Auth API Error:', error);
-    return throwError(() => error);
+  private getStoredUser(): AuthUser | null {
+    const rawUser = localStorage.getItem(this.userKey) ?? localStorage.getItem(this.legacyUserKey);
+
+    if (!rawUser || rawUser === 'undefined' || rawUser === 'null') {
+      return null;
+    }
+
+    try {
+      return JSON.parse(rawUser) as AuthUser;
+    } catch {
+      localStorage.removeItem(this.userKey);
+      localStorage.removeItem(this.legacyUserKey);
+      return null;
+    }
   }
+
+  private handleError = (error: HttpErrorResponse) => {
+    if (this.logger) {
+      this.logger.error('Auth API Error:', error);
+    }
+    return throwError(() => error);
+  };
 
   /** Returns the in-memory access token. Use ONLY for SignalR's accessTokenFactory. */
   getToken(): string | null {
-    return this.accessToken$.getValue();
+    const token = this.accessToken$.getValue() ?? localStorage.getItem(this.accessTokenKey);
+    if (token && this.accessToken$.getValue() !== token) {
+      this.accessToken$.next(token);
+    }
+
+    return token;
   }
 
   /**
@@ -121,13 +197,8 @@ export class AuthService {
     const user = this.currentUser$.getValue();
     if (!user) return false;
 
-    const token = this.accessToken$.getValue();
-    if (!token) {
-      // User info is present (from localStorage) but in-memory token is gone
-      // (e.g. after a page reload). Consider authenticated for UI purposes;
-      // the next API call will validate the session cookie.
-      return true;
-    }
+    const token = this.getToken();
+    if (!token) return false;
 
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
@@ -155,4 +226,3 @@ export class AuthService {
     return this.getUserRole() === UserRole.Admin;
   }
 }
-

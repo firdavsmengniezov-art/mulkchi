@@ -38,7 +38,7 @@ namespace Mulkchi.Api.Brokers.Storages
 
         public async ValueTask<PasswordResetToken> DeletePasswordResetTokenAsync(Guid tokenId)
         {
-            PasswordResetToken? token = await this.PasswordResetTokens.FindAsync(tokenId);
+            PasswordResetToken token = await this.PasswordResetTokens.FindAsync(tokenId);
             if (token is null)
                 return null!;
 

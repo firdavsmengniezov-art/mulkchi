@@ -1,5 +1,7 @@
 using Serilog;
 using Mulkchi.Api.DataSeed;
+using Microsoft.EntityFrameworkCore;
+using Mulkchi.Api.Brokers.Storages;
 
 namespace Mulkchi.Api;
 
@@ -30,6 +32,13 @@ public partial class Program
         startup.ConfigureServices(builder.Services);
         var app = builder.Build();
         startup.Configure(app, app.Environment);
+
+        // Apply pending migrations at startup so the database exists before seed runs.
+        using (var scope = app.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<StorageBroker>();
+            await db.Database.MigrateAsync();
+        }
 
         // Seed development data
         await DevelopmentDataSeeder.SeedAsync(app);
