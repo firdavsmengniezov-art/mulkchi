@@ -1,10 +1,10 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CommonModule } from '@angular/common';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { SavedSearchListComponent } from './saved-search-list.component';
-import { SavedSearchService } from '../../../core/services/saved-search.service';
 import { of, throwError } from 'rxjs';
 import { SavedSearch } from '../../../core/models/saved-search.model';
+import { SavedSearchService } from '../../../core/services/saved-search.service';
+import { SavedSearchListComponent } from './saved-search-list.component';
 
 describe('SavedSearchListComponent', () => {
   let component: SavedSearchListComponent;
@@ -27,7 +27,7 @@ describe('SavedSearchListComponent', () => {
       notifyByEmail: true,
       notifyByPush: true,
       createdAt: '2024-01-01T00:00:00Z',
-      updatedAt: '2024-01-01T00:00:00Z'
+      updatedAt: '2024-01-01T00:00:00Z',
     },
     {
       id: '2',
@@ -41,8 +41,8 @@ describe('SavedSearchListComponent', () => {
       notifyByEmail: false,
       notifyByPush: true,
       createdAt: '2024-01-02T00:00:00Z',
-      updatedAt: '2024-01-02T00:00:00Z'
-    }
+      updatedAt: '2024-01-02T00:00:00Z',
+    },
   ];
 
   beforeEach(async () => {
@@ -52,21 +52,17 @@ describe('SavedSearchListComponent', () => {
       'toggleSavedSearch',
       'getSearchSummary',
       'isActiveStatus',
-      'getNotificationSettings'
+      'getNotificationSettings',
     ]);
 
     await TestBed.configureTestingModule({
-      imports: [
-        CommonModule,
-        RouterTestingModule,
-        SavedSearchListComponent
-      ],
-      providers: [
-        { provide: SavedSearchService, useValue: spy }
-      ]
+      imports: [CommonModule, RouterTestingModule, SavedSearchListComponent],
+      providers: [{ provide: SavedSearchService, useValue: spy }],
     }).compileComponents();
 
-    savedSearchServiceSpy = TestBed.inject(SavedSearchService) as jasmine.SpyObj<SavedSearchService>;
+    savedSearchServiceSpy = TestBed.inject(
+      SavedSearchService,
+    ) as jasmine.SpyObj<SavedSearchService>;
     fixture = TestBed.createComponent(SavedSearchListComponent);
     component = fixture.componentInstance;
   });
@@ -78,16 +74,18 @@ describe('SavedSearchListComponent', () => {
   describe('ngOnInit', () => {
     it('should load saved searches on init', () => {
       // Arrange
-      savedSearchServiceSpy.getSavedSearches.and.returnValue(of({
-        success: true,
-        message: 'Success',
-        data: {
-          items: mockSavedSearches,
-          totalCount: 2,
-          page: 1,
-          pageSize: 10
-        }
-      }));
+      savedSearchServiceSpy.getSavedSearches.and.returnValue(
+        of({
+          success: true,
+          message: 'Success',
+          data: {
+            items: mockSavedSearches,
+            totalCount: 2,
+            page: 1,
+            pageSize: 10,
+          },
+        }),
+      );
 
       // Act
       component.ngOnInit();
@@ -112,23 +110,28 @@ describe('SavedSearchListComponent', () => {
       // Assert
       expect(component.savedSearches).toEqual([]);
       expect(component.isLoading).toBe(false);
-      expect(console.error).toHaveBeenCalledWith('Error loading saved searches:', 'Error');
+      expect(console.error).toHaveBeenCalledWith(
+        '[Mulkchi ERROR] Error loading saved searches:',
+        'Error',
+      );
     });
   });
 
   describe('loadSavedSearches', () => {
     it('should load saved searches with pagination', () => {
       // Arrange
-      savedSearchServiceSpy.getSavedSearches.and.returnValue(of({
-        success: true,
-        message: 'Success',
-        data: {
-          items: mockSavedSearches,
-          totalCount: 25,
-          page: 2,
-          pageSize: 10
-        }
-      }));
+      savedSearchServiceSpy.getSavedSearches.and.returnValue(
+        of({
+          success: true,
+          message: 'Success',
+          data: {
+            items: mockSavedSearches,
+            totalCount: 25,
+            page: 2,
+            pageSize: 10,
+          },
+        }),
+      );
 
       component.currentPage = 2;
 
@@ -210,16 +213,18 @@ describe('SavedSearchListComponent', () => {
 
     it('should delete saved search when confirmed', () => {
       // Arrange
-      savedSearchServiceSpy.deleteSavedSearch.and.returnValue(of({
-        success: true,
-        message: 'Deleted successfully'
-      }));
+      savedSearchServiceSpy.deleteSavedSearch.and.returnValue(
+        of({
+          success: true,
+          message: 'Deleted successfully',
+        }),
+      );
 
       // Act
       component.deleteSearch('1');
 
       // Assert
-      expect(window.confirm).toHaveBeenCalledWith('Bu qidiruvni o\'chirmoqchimisiz?');
+      expect(window.confirm).toHaveBeenCalledWith("Bu qidiruvni o'chirmoqchimisiz?");
       expect(savedSearchServiceSpy.deleteSavedSearch).toHaveBeenCalledWith('1');
       expect(component.loadSavedSearches).toHaveBeenCalled();
     });
@@ -246,11 +251,13 @@ describe('SavedSearchListComponent', () => {
     it('should toggle saved search status', () => {
       // Arrange
       const event = { target: { checked: true } };
-      savedSearchServiceSpy.toggleSavedSearch.and.returnValue(of({
-        success: true,
-        message: 'Success',
-        data: { ...mockSavedSearches[0], isActive: true }
-      }));
+      savedSearchServiceSpy.toggleSavedSearch.and.returnValue(
+        of({
+          success: true,
+          message: 'Success',
+          data: { ...mockSavedSearches[0], isActive: true },
+        }),
+      );
 
       // Act
       component.toggleSearch('1', event);
@@ -270,7 +277,10 @@ describe('SavedSearchListComponent', () => {
       component.toggleSearch('1', event);
 
       // Assert
-      expect(console.error).toHaveBeenCalledWith('Error toggling saved search:', 'Error');
+      expect(console.error).toHaveBeenCalledWith(
+        '[Mulkchi ERROR] Error toggling saved search:',
+        'Error',
+      );
     });
   });
 
@@ -320,7 +330,9 @@ describe('SavedSearchListComponent', () => {
 
       // Assert
       expect(result).toBe('Email, Push');
-      expect(savedSearchServiceSpy.getNotificationSettings).toHaveBeenCalledWith(mockSavedSearches[0]);
+      expect(savedSearchServiceSpy.getNotificationSettings).toHaveBeenCalledWith(
+        mockSavedSearches[0],
+      );
     });
   });
 });
