@@ -18,7 +18,7 @@ import {
   providedIn: 'root',
 })
 export class AiRecommendationService {
-  private readonly apiUrl = `${environment.apiUrl}/ai-recommendations`;
+  private readonly apiUrl = `${environment.apiUrl}/AiRecommendations`;
 
   constructor(
     private http: HttpClient,

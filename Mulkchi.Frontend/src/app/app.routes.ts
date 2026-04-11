@@ -1,6 +1,28 @@
-import { Routes } from '@angular/router';
+import { Routes, UrlMatcher, UrlSegment } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
+
+const propertyDetailMatcher: UrlMatcher = (segments: UrlSegment[]) => {
+  if (segments.length !== 2) {
+    return null;
+  }
+
+  if (segments[0].path !== 'properties') {
+    return null;
+  }
+
+  const propertyId = segments[1].path.toLowerCase();
+  if (propertyId === 'create' || propertyId === 'edit') {
+    return null;
+  }
+
+  return {
+    consumed: segments,
+    posParams: {
+      id: segments[1],
+    },
+  };
+};
 
 export const routes: Routes = [
   {
@@ -39,19 +61,19 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'properties/:id',
-    loadComponent: () =>
-      import('./features/properties/property-detail/property-detail.component').then(
-        (m) => m.PropertyDetailComponent,
-      ),
-  },
-  {
     path: 'properties/create',
     canActivate: [authGuard, roleGuard],
     data: { roles: ['Host', 'Admin'] },
     loadComponent: () =>
       import('./features/properties/property-form/property-form.component').then(
         (m) => m.PropertyFormComponent,
+      ),
+  },
+  {
+    matcher: propertyDetailMatcher,
+    loadComponent: () =>
+      import('./features/properties/property-detail/property-detail.component').then(
+        (m) => m.PropertyDetailComponent,
       ),
   },
   {

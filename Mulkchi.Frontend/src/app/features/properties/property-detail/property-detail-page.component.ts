@@ -76,7 +76,7 @@ export class PropertyDetailPageComponent implements OnInit {
     });
 
     // 2. Track view asynchronously
-    this.http.post(`${environment.apiUrl}/properties/${id}/views`, {}).subscribe({
+    this.http.post(`${environment.apiUrl}/PropertyViews`, { propertyId: id }).subscribe({
       error: (e) => this.logger.log('View track ignored', e),
     });
 

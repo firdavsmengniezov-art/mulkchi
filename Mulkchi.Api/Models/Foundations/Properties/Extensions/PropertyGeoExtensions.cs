@@ -20,9 +20,9 @@ public static class PropertyGeoExtensions
         return properties.Where(p =>
             p.Latitude.HasValue && p.Longitude.HasValue &&
             (2.0 * EarthRadiusKm * Math.Asin(Math.Sqrt(
-                Math.Pow(Math.Sin((p.Latitude.Value * Math.PI / 180.0 - latRad) / 2.0), 2.0) +
-                Math.Cos(latRad) * Math.Cos(p.Latitude.Value * Math.PI / 180.0) *
-                Math.Pow(Math.Sin((p.Longitude.Value * Math.PI / 180.0 - lonRad) / 2.0), 2.0)
+                Math.Pow(Math.Sin((p.Latitude!.Value * Math.PI / 180.0 - latRad) / 2.0), 2.0) +
+                Math.Cos(latRad) * Math.Cos(p.Latitude!.Value * Math.PI / 180.0) *
+                Math.Pow(Math.Sin((p.Longitude!.Value * Math.PI / 180.0 - lonRad) / 2.0), 2.0)
             ))) <= radiusInKm);
     }
 
@@ -38,9 +38,9 @@ public static class PropertyGeoExtensions
             .Where(p => p.Latitude.HasValue && p.Longitude.HasValue)
             .OrderBy(p =>
                 2.0 * EarthRadiusKm * Math.Asin(Math.Sqrt(
-                    Math.Pow(Math.Sin((p.Latitude.Value * Math.PI / 180.0 - latRad) / 2.0), 2.0) +
-                    Math.Cos(latRad) * Math.Cos(p.Latitude.Value * Math.PI / 180.0) *
-                    Math.Pow(Math.Sin((p.Longitude.Value * Math.PI / 180.0 - lonRad) / 2.0), 2.0)
+                    Math.Pow(Math.Sin((p.Latitude!.Value * Math.PI / 180.0 - latRad) / 2.0), 2.0) +
+                    Math.Cos(latRad) * Math.Cos(p.Latitude!.Value * Math.PI / 180.0) *
+                    Math.Pow(Math.Sin((p.Longitude!.Value * Math.PI / 180.0 - lonRad) / 2.0), 2.0)
                 )));
     }
 }

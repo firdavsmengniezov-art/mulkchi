@@ -41,9 +41,17 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.isLoggedIn$ = this.authService.currentUser$.pipe(map((u) => !!u));
     this.currentUser$ = this.authService.currentUser$;
     this.isHost$ = this.authService.currentUser$.pipe(
-      map((u) => (u ? u.role === 1 || u.role === 2 : false)),
+      map((u) => {
+        const role = u?.role as unknown;
+        return !!u && (role === 1 || role === 2 || role === 'Host' || role === 'Admin');
+      }),
     );
-    this.isAdmin$ = this.authService.currentUser$.pipe(map((u) => (u ? u.role === 2 : false)));
+    this.isAdmin$ = this.authService.currentUser$.pipe(
+      map((u) => {
+        const role = u?.role as unknown;
+        return !!u && (role === 2 || role === 'Admin');
+      }),
+    );
   }
 
   ngOnInit(): void {
