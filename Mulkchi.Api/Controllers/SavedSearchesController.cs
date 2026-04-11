@@ -31,10 +31,7 @@ namespace Mulkchi.Api.Controllers
 
                 savedSearch.UserId = currentUserId;
                 SavedSearch addedSavedSearch = await this.savedSearchService.AddSavedSearchAsync(savedSearch);
-                return CreatedAtAction(
-                    nameof(GetSavedSearchByIdAsync),
-                    new { id = addedSavedSearch.Id },
-                    addedSavedSearch);
+                return Created($"/api/savedsearches/{addedSavedSearch.Id}", addedSavedSearch);
             }
             catch (SavedSearchValidationException savedSearchValidationException)
             {

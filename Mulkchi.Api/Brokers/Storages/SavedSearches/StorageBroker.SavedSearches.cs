@@ -22,6 +22,12 @@ namespace Mulkchi.Api.Brokers.Storages
 
         public async ValueTask<SavedSearch> UpdateSavedSearchAsync(SavedSearch savedSearch)
         {
+            var trackedEntry = this.ChangeTracker.Entries<SavedSearch>()
+                .FirstOrDefault(entry => entry.Entity.Id == savedSearch.Id);
+
+            if (trackedEntry is not null)
+                trackedEntry.State = EntityState.Detached;
+
             this.Entry(savedSearch).State = EntityState.Modified;
             await this.SaveChangesAsync();
             return savedSearch;

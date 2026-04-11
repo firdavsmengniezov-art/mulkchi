@@ -28,6 +28,10 @@ public class AuthController : ControllerBase
         try
         {
             AuthResponse response = await this.authService.LoginAsync(request);
+
+            if (response is null)
+                return Unauthorized(new { message = "Invalid email or password." });
+
             SetAuthCookies(response);
             return Ok(new AuthUserInfo(response));
         }
@@ -60,6 +64,10 @@ public class AuthController : ControllerBase
         try
         {
             AuthResponse response = await this.authService.RegisterAsync(request);
+
+            if (response is null)
+                return Unauthorized(new { message = "Registration failed." });
+
             SetAuthCookies(response);
             return Created("auth/register", new AuthUserInfo(response));
         }
