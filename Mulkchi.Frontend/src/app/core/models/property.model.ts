@@ -1,5 +1,3 @@
-import { UserRole } from './auth.model';
-
 export enum PropertyType {
   Apartment = 'Apartment',
   House = 'House',
@@ -72,6 +70,9 @@ export interface PropertySearchParams {
   hasSchoolNearby?: boolean;
   hasHospitalNearby?: boolean;
   sortBy?: string;
+  latitude?: number;
+  longitude?: number;
+  radiusKm?: number;
   page?: number;
   pageSize?: number;
 }
