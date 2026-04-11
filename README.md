@@ -38,14 +38,14 @@ Mulkchi — O‘zbekiston ko‘chmas mulk platformasi uchun full-stack loyiha (A
 ### 2) Backend sozlash va ishga tushirish
 
 ```bash
-cd /home/runner/work/Mulkchi/Mulkchi
+cd Mulkchi
 dotnet restore Mulkchi.sln
 ```
 
 `JwtSettings:Secret` bo‘sh bo‘lsa API ishga tushmaydi. Secret ni user-secrets yoki env orqali bering:
 
 ```bash
-cd /home/runner/work/Mulkchi/Mulkchi/Mulkchi.Api
+cd Mulkchi/Mulkchi.Api
 dotnet user-secrets init
 dotnet user-secrets set "JwtSettings:Secret" "kamida-32-belgili-kuchli-maxfiy-kalit"
 ```
@@ -55,7 +55,7 @@ Kerak bo‘lsa DB connection string ni ham sozlang (`ConnectionStrings:DefaultCo
 API ni ishga tushirish:
 
 ```bash
-cd /home/runner/work/Mulkchi/Mulkchi
+cd Mulkchi
 dotnet run --project Mulkchi.Api
 ```
 
@@ -65,7 +65,7 @@ Swagger: `http://localhost:5009/swagger`
 ### 3) Frontend ishga tushirish
 
 ```bash
-cd /home/runner/work/Mulkchi/Mulkchi/Mulkchi.Frontend
+cd Mulkchi/Mulkchi.Frontend
 npm ci
 npm start
 ```
@@ -76,7 +76,7 @@ Development rejimida `/api` va `/hubs` so‘rovlari `proxy.conf.js` orqali backe
 ## Docker orqali ishga tushirish
 
 ```bash
-cd /home/runner/work/Mulkchi/Mulkchi
+cd Mulkchi
 cp env.example .env
 docker compose up --build
 ```
@@ -97,7 +97,7 @@ Asosiy servislar: `db`, `redis`, `backend`, `frontend`.
 Backend:
 
 ```bash
-cd /home/runner/work/Mulkchi/Mulkchi
+cd Mulkchi
 dotnet build Mulkchi.sln -c Release
 dotnet test Mulkchi.sln -c Release
 ```
@@ -105,7 +105,7 @@ dotnet test Mulkchi.sln -c Release
 Frontend:
 
 ```bash
-cd /home/runner/work/Mulkchi/Mulkchi/Mulkchi.Frontend
+cd Mulkchi/Mulkchi.Frontend
 npm run build
 npm run test:ci
 ```
