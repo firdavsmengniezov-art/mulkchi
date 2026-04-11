@@ -8,6 +8,7 @@ using Mulkchi.Api.Services.Foundations.Payments;
 using Mulkchi.Api.Services.Foundations.Properties;
 using Mulkchi.Api.Services.Foundations.AI;
 using Mulkchi.Api.Services.Foundations.Analytics;
+using Mulkchi.Api.Services.Foundations.AiRecommendations;
 using Mulkchi.Api.Services.Foundations.Users;
 using System.Collections.Generic;
 using System;
@@ -28,6 +29,7 @@ public class AnalyticsController : ControllerBase
     private readonly IUserService userService;
     private readonly IPaymentService paymentService;
     private readonly IDiscountService discountService;
+    private readonly IAiRecommendationService aiRecommendationService;
 
     public AnalyticsController(
         IAnalyticsService analyticsService,
@@ -36,7 +38,8 @@ public class AnalyticsController : ControllerBase
         IBookingService bookingService,
         IUserService userService,
         IPaymentService paymentService,
-        IDiscountService discountService)
+        IDiscountService discountService,
+        IAiRecommendationService aiRecommendationService)
     {
         this.analyticsService = analyticsService;
         this.priceRecommendationService = priceRecommendationService;
@@ -45,6 +48,7 @@ public class AnalyticsController : ControllerBase
         this.userService = userService;
         this.paymentService = paymentService;
         this.discountService = discountService;
+        this.aiRecommendationService = aiRecommendationService;
     }
 
     [HttpGet("dashboard")]
@@ -69,9 +73,71 @@ public class AnalyticsController : ControllerBase
             var marketOverviewObj = await this.analyticsService.GetMarketOverviewAsync();
             var regionObj = await this.analyticsService.GetAnalyticsByRegionAsync();
             var priceTrendsObj = await this.analyticsService.GetPriceTrendsAsync();
+            var recommendationQuery = this.aiRecommendationService.RetrieveAllAiRecommendations();
 
             var regionStats = (regionObj as IEnumerable<object>)?.ToList() ?? new List<object>();
             var priceTrends = (priceTrendsObj as IEnumerable<object>)?.ToList() ?? new List<object>();
+
+            int totalRecommendations = recommendationQuery.Count();
+            int viewedRecommendations = recommendationQuery.Count(recommendation => recommendation.IsActedUpon);
+            int clickedRecommendations = viewedRecommendations;
+            decimal clickThroughRate = totalRecommendations > 0
+                ? (decimal)clickedRecommendations / totalRecommendations
+                : 0m;
+            decimal recommendationConversionRate = totalRecommendations > 0
+                ? (decimal)viewedRecommendations / totalRecommendations
+                : 0m;
+
+            var propertyTitleById = properties.ToDictionary(property => property.Id, property => property.Title);
+
+            var topRecommendationTypes = recommendationQuery
+                .GroupBy(recommendation => recommendation.Type)
+                .Select(group => new
+                {
+                    type = group.Key.ToString(),
+                    count = group.Count(),
+                    clickRate = group.Count() > 0
+                        ? (decimal)group.Count(item => item.IsActedUpon) / group.Count()
+                        : 0m,
+                    conversionRate = group.Count() > 0
+                        ? (decimal)group.Count(item => item.IsActedUpon) / group.Count()
+                        : 0m,
+                    averageScore = group.Average(item => item.Score)
+                })
+                .OrderByDescending(item => item.count)
+                .Take(5)
+                .ToArray();
+
+            var recommendationPerformance = recommendationQuery
+                .Where(recommendation => recommendation.PropertyId.HasValue)
+                .GroupBy(recommendation => recommendation.PropertyId!.Value)
+                .Select(group => new
+                {
+                    propertyId = group.Key,
+                    propertyTitle = propertyTitleById.ContainsKey(group.Key)
+                        ? propertyTitleById[group.Key]
+                        : "Unknown",
+                    recommendationsCount = group.Count(),
+                    clicksCount = group.Count(item => item.IsActedUpon),
+                    bookingsCount = 0,
+                    conversionRate = group.Count() > 0
+                        ? (decimal)group.Count(item => item.IsActedUpon) / group.Count()
+                        : 0m,
+                    revenue = 0m
+                })
+                .OrderByDescending(item => item.recommendationsCount)
+                .Take(10)
+                .ToArray();
+
+            int variantACount = recommendationQuery.Count(recommendation =>
+                recommendation.Metadata != null && recommendation.Metadata.Contains("\"abVariant\":\"A\""));
+            int variantBCount = recommendationQuery.Count(recommendation =>
+                recommendation.Metadata != null && recommendation.Metadata.Contains("\"abVariant\":\"B\""));
+
+            int variantAClicks = recommendationQuery.Count(recommendation =>
+                recommendation.IsActedUpon && recommendation.Metadata != null && recommendation.Metadata.Contains("\"abVariant\":\"A\""));
+            int variantBClicks = recommendationQuery.Count(recommendation =>
+                recommendation.IsActedUpon && recommendation.Metadata != null && recommendation.Metadata.Contains("\"abVariant\":\"B\""));
 
             var dashboard = new
             {
@@ -153,14 +219,33 @@ public class AnalyticsController : ControllerBase
                 },
                 recommendations = new
                 {
-                    totalRecommendations = 0,
-                    viewedRecommendations = 0,
-                    clickedRecommendations = 0,
-                    conversionRate = 0m,
-                    clickThroughRate = 0m,
-                    topRecommendationTypes = Array.Empty<object>(),
-                    recommendationPerformance = Array.Empty<object>(),
-                    userEngagement = new { averageViewTime = 0, clickThroughRate = 0m, bounceRate = 0m, engagementScore = 0m }
+                    totalRecommendations,
+                    viewedRecommendations,
+                    clickedRecommendations,
+                    conversionRate = recommendationConversionRate,
+                    clickThroughRate,
+                    topRecommendationTypes,
+                    recommendationPerformance,
+                    abTestPerformance = new
+                    {
+                        variantA = new
+                        {
+                            count = variantACount,
+                            ctr = variantACount > 0 ? (decimal)variantAClicks / variantACount : 0m
+                        },
+                        variantB = new
+                        {
+                            count = variantBCount,
+                            ctr = variantBCount > 0 ? (decimal)variantBClicks / variantBCount : 0m
+                        }
+                    },
+                    userEngagement = new
+                    {
+                        averageViewTime = 0,
+                        clickThroughRate,
+                        bounceRate = 0m,
+                        engagementScore = clickThroughRate
+                    }
                 },
                 marketOverview = marketOverviewObj
             };

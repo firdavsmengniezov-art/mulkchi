@@ -112,6 +112,49 @@ npm run test:ci
 
 Eslatma: ushbu repoda `npm run lint` uchun Angular lint target hozircha sozlanmagan.
 
+## Tavsiya tizimi va geolokatsiya (Hybrid)
+
+Loyihada mulk tavsiyasi uchun gibrid yondashuv ishlatiladi. Backend endpoint:
+
+- `POST /api/AiRecommendations/hybrid`
+
+Request (asosiy maydonlar):
+
+- `userId` (ixtiyoriy)
+- `latitude`, `longitude` (ixtiyoriy, geolokatsiya)
+- `radiusKm` (default: `10`)
+- `limit` (default: `10`, max: `50`)
+
+### Scoring formulasi
+
+Hybrid score qat'iy ushbu vaznlarda hisoblanadi:
+
+- masofa mosligi: **35%**
+- narx diapazoni mosligi: **25%**
+- xona soni mosligi: **20%**
+- mulk turi mosligi: **15%**
+- foydalanuvchi xususiyatlari mosligi: **5%**
+
+Masofa hisobida Haversine formulasi qo‘llanadi (`PropertyGeoExtensions.DistanceKm`).
+
+### A/B variant
+
+Hybrid response har bir recommendation uchun `abVariant` (`A` yoki `B`) qaytaradi.
+Variant deterministik ravishda `propertyId` va `userId` kombinatsiyasidan hosil qilinadi.
+
+### Dashboard analytics
+
+`GET /api/analytics/dashboard` ichidagi `recommendations` blokida quyidagilar real hisoblanadi:
+
+- `totalRecommendations`
+- `viewedRecommendations`
+- `clickedRecommendations`
+- `clickThroughRate`
+- `conversionRate`
+- `topRecommendationTypes`
+- `recommendationPerformance`
+- `abTestPerformance` (`variantA`, `variantB` count va CTR)
+
 ## Litsenziya
 
 MIT — batafsil: [LICENSE](LICENSE)
