@@ -63,6 +63,12 @@ public partial class AuthService
         }
         catch (DbUpdateException dbUpdateException)
         {
+            if (IsDuplicateUserEmailConflict(dbUpdateException))
+            {
+                throw CreateAndLogDependencyValidationException(
+                    new AlreadyExistsUserEmailException("A user with this email already exists."));
+            }
+
             var failedStorage = new FailedAuthStorageException(
                 message: "Failed auth storage error occurred, contact support.",
                 innerException: dbUpdateException);
@@ -165,5 +171,25 @@ public partial class AuthService
         this.loggingBroker.LogError(authServiceException);
 
         return authServiceException;
+    }
+
+    private static bool IsDuplicateUserEmailConflict(DbUpdateException dbUpdateException)
+    {
+        static bool IsUsersEmailConstraintText(string text) =>
+            text.Contains("IX_Users_Email", StringComparison.OrdinalIgnoreCase) ||
+            (text.Contains("duplicate key", StringComparison.OrdinalIgnoreCase) &&
+             text.Contains("dbo.Users", StringComparison.OrdinalIgnoreCase));
+
+        if (dbUpdateException.InnerException is SqlException sqlException &&
+            (sqlException.Number == 2601 || sqlException.Number == 2627))
+        {
+            return IsUsersEmailConstraintText(sqlException.Message);
+        }
+
+        string errorText = string.IsNullOrWhiteSpace(dbUpdateException.InnerException?.Message)
+            ? dbUpdateException.Message
+            : $"{dbUpdateException.Message} {dbUpdateException.InnerException.Message}";
+
+        return IsUsersEmailConstraintText(errorText);
     }
 }
