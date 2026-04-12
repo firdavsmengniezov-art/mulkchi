@@ -21,7 +21,7 @@ FROM build AS publish
 RUN dotnet publish "Mulkchi.Api.csproj" \
     -c $BUILD_CONFIGURATION \
     -o /app/publish \
-    /p:UseAppHost=false
+    -p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
