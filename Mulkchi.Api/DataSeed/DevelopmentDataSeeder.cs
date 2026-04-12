@@ -133,7 +133,7 @@ public static class DevelopmentDataSeeder
                 FirstName = template.FirstName,
                 LastName = template.LastName,
                 Email = email,
-                Phone = GenerateUniqueDemoPhone(i, existingPhones),
+                Phone = GenerateUniqueDemoPhone(existingCount + users.Count, existingPhones),
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Demo12345!"),
                 AvatarUrl = string.Empty,
                 Bio = "Mulkchi demo foydalanuvchisi",
@@ -164,7 +164,7 @@ public static class DevelopmentDataSeeder
         string phone = GenerateDemoPhone(candidateIndex);
         while (existingPhones.Contains(phone))
         {
-            candidateIndex += TargetUserCount;
+            candidateIndex++;
             phone = GenerateDemoPhone(candidateIndex);
         }
 
