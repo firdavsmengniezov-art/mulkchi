@@ -175,17 +175,20 @@ public partial class AuthService
 
     private static bool IsDuplicateUserEmailConflict(DbUpdateException dbUpdateException)
     {
+        static bool IsUsersEmailConstraintText(string text) =>
+            text.Contains("IX_Users_Email", StringComparison.OrdinalIgnoreCase) ||
+            (text.Contains("duplicate key", StringComparison.OrdinalIgnoreCase) &&
+             text.Contains("dbo.Users", StringComparison.OrdinalIgnoreCase));
+
         if (dbUpdateException.InnerException is SqlException sqlException &&
             (sqlException.Number == 2601 || sqlException.Number == 2627))
         {
-            return true;
+            return IsUsersEmailConstraintText(sqlException.Message);
         }
 
         string errorText =
             $"{dbUpdateException.Message} {dbUpdateException.InnerException?.Message}";
 
-        return errorText.Contains("IX_Users_Email", StringComparison.OrdinalIgnoreCase) ||
-               (errorText.Contains("duplicate key", StringComparison.OrdinalIgnoreCase) &&
-                errorText.Contains("dbo.Users", StringComparison.OrdinalIgnoreCase));
+        return IsUsersEmailConstraintText(errorText);
     }
 }
