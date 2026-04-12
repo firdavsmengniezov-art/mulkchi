@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using Mulkchi.Api.Models.Foundations.Auth;
 using Mulkchi.Api.Models.Foundations.Auth.Exceptions;
@@ -101,6 +102,55 @@ public partial class AuthServiceTests
 
         this.storageBrokerMock.Verify(broker =>
             broker.SelectUserByEmailAsync(It.IsAny<string>()),
+            Times.Once);
+
+        this.loggingBrokerMock.Verify(broker =>
+            broker.LogError(It.IsAny<Exception>()),
+            Times.Once);
+
+        this.storageBrokerMock.VerifyNoOtherCalls();
+        this.loggingBrokerMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ShouldThrowDependencyValidationException_OnRegister_WhenDuplicateUserEmailDbUpdateOccurs()
+    {
+        // given
+        RegisterRequest inputRequest = CreateRandomRegisterRequest();
+        DateTimeOffset now = DateTimeOffset.UtcNow;
+
+        this.dateTimeBrokerMock.Setup(broker =>
+            broker.GetCurrentDateTimeOffset())
+                .Returns(now);
+
+        this.storageBrokerMock.Setup(broker =>
+            broker.SelectUserByEmailAsync(It.IsAny<string>()))
+                .ReturnsAsync((User?)null);
+
+        var dbUpdateException = new DbUpdateException(
+            "Cannot insert duplicate key row in object 'dbo.Users' with unique index 'IX_Users_Email'.");
+
+        this.storageBrokerMock.Setup(broker =>
+            broker.InsertUserAsync(It.IsAny<User>()))
+                .ThrowsAsync(dbUpdateException);
+
+        // when
+        ValueTask<AuthResponse> registerTask =
+            this.authService.RegisterAsync(inputRequest);
+
+        // then
+        AuthDependencyValidationException actualException =
+            await Assert.ThrowsAsync<AuthDependencyValidationException>(
+                testCode: async () => await registerTask);
+
+        actualException.InnerException.Should().BeOfType<AlreadyExistsUserEmailException>();
+
+        this.storageBrokerMock.Verify(broker =>
+            broker.SelectUserByEmailAsync(It.IsAny<string>()),
+            Times.Once);
+
+        this.storageBrokerMock.Verify(broker =>
+            broker.InsertUserAsync(It.IsAny<User>()),
             Times.Once);
 
         this.loggingBrokerMock.Verify(broker =>
