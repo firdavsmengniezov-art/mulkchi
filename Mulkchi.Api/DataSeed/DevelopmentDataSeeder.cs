@@ -28,7 +28,7 @@ public static class DevelopmentDataSeeder
         var now = DateTimeOffset.UtcNow;
 
         List<User> existingUsers = await db.SelectAllUsers().ToListAsync();
-        var usersToAdd = CreateUsersToAdd(existingUsers.Count, now);
+        var usersToAdd = CreateUsersToAdd(existingUsers, now);
         foreach (User user in usersToAdd)
         {
             await db.InsertUserAsync(user);
@@ -83,8 +83,9 @@ public static class DevelopmentDataSeeder
             discountsToAdd.Count);
     }
 
-    private static List<User> CreateUsersToAdd(int existingCount, DateTimeOffset now)
+    private static List<User> CreateUsersToAdd(IReadOnlyList<User> existingUsers, DateTimeOffset now)
     {
+        int existingCount = existingUsers.Count;
         if (existingCount >= TargetUserCount)
         {
             return new List<User>();
@@ -104,16 +105,29 @@ public static class DevelopmentDataSeeder
             new { FirstName = "Nigora", LastName = "Xolmatova", Role = UserRole.Guest, Badge = HostBadge.None, Gender = Gender.Female, Language = "ru" }
         };
 
+        int usersNeeded = TargetUserCount - existingCount;
+        var existingEmails = new HashSet<string>(
+            existingUsers
+                .Where(user => !string.IsNullOrWhiteSpace(user.Email))
+                .Select(user => user.Email),
+            StringComparer.OrdinalIgnoreCase);
+
         var users = new List<User>();
-        for (int i = existingCount; i < TargetUserCount; i++)
+        for (int i = 0; i < templates.Length && users.Count < usersNeeded; i++)
         {
             var template = templates[i];
+            string email = $"{template.FirstName.ToLowerInvariant()}.{template.LastName.ToLowerInvariant()}@demo.mulkchi.uz";
+            if (existingEmails.Contains(email))
+            {
+                continue;
+            }
+
             users.Add(new User
             {
                 Id = Guid.NewGuid(),
                 FirstName = template.FirstName,
                 LastName = template.LastName,
-                Email = $"{template.FirstName.ToLowerInvariant()}.{template.LastName.ToLowerInvariant()}@demo.mulkchi.uz",
+                Email = email,
                 Phone = $"+99890{(1000000 + i * 733):0000000}",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Demo12345!"),
                 AvatarUrl = string.Empty,
