@@ -186,8 +186,9 @@ public partial class AuthService
             return IsUsersEmailConstraintText(sqlException.Message);
         }
 
-        string errorText =
-            $"{dbUpdateException.Message} {dbUpdateException.InnerException?.Message}";
+        string errorText = string.IsNullOrWhiteSpace(dbUpdateException.InnerException?.Message)
+            ? dbUpdateException.Message
+            : $"{dbUpdateException.Message} {dbUpdateException.InnerException.Message}";
 
         return IsUsersEmailConstraintText(errorText);
     }
