@@ -111,6 +111,11 @@ public static class DevelopmentDataSeeder
                 .Where(user => !string.IsNullOrWhiteSpace(user.Email))
                 .Select(user => user.Email),
             StringComparer.OrdinalIgnoreCase);
+        var existingPhones = new HashSet<string>(
+            existingUsers
+                .Where(user => !string.IsNullOrWhiteSpace(user.Phone))
+                .Select(user => user.Phone),
+            StringComparer.OrdinalIgnoreCase);
 
         var users = new List<User>();
         for (int i = 0; i < templates.Length && users.Count < usersNeeded; i++)
@@ -128,7 +133,7 @@ public static class DevelopmentDataSeeder
                 FirstName = template.FirstName,
                 LastName = template.LastName,
                 Email = email,
-                Phone = $"+99890{(1000000 + i * 733):0000000}",
+                Phone = GenerateUniqueDemoPhone(i, existingPhones),
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Demo12345!"),
                 AvatarUrl = string.Empty,
                 Bio = "Mulkchi demo foydalanuvchisi",
@@ -152,6 +157,23 @@ public static class DevelopmentDataSeeder
 
         return users;
     }
+
+    private static string GenerateUniqueDemoPhone(int templateIndex, HashSet<string> existingPhones)
+    {
+        int candidateIndex = templateIndex;
+        string phone = GenerateDemoPhone(candidateIndex);
+        while (existingPhones.Contains(phone))
+        {
+            candidateIndex += TargetUserCount;
+            phone = GenerateDemoPhone(candidateIndex);
+        }
+
+        existingPhones.Add(phone);
+        return phone;
+    }
+
+    private static string GenerateDemoPhone(int index) =>
+        $"+99890{(1000000 + index * 733):0000000}";
 
     private static List<Property> CreatePropertiesToAdd(int existingCount, IReadOnlyList<User> hosts, DateTimeOffset now)
     {
