@@ -10,6 +10,7 @@ namespace Mulkchi.Api.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // Keep data compatible with upcoming nvarchar(450) + unique index.
             migrationBuilder.Sql(
                 """
                 UPDATE [Users]
@@ -55,6 +56,7 @@ namespace Mulkchi.Api.Migrations
                     WHERE [Email] IS NOT NULL
                 )
                 UPDATE [u]
+                -- Move duplicate emails to an RFC-reserved non-routable domain while keeping rows unique/traceable.
                 SET [Email] = CONCAT('duplicate+', CONVERT(nvarchar(36), [u].[Id]), '@mulkchi.invalid')
                 FROM [Users] AS [u]
                 INNER JOIN DuplicateUsers AS [du] ON [u].[Id] = [du].[Id]
