@@ -10,6 +10,14 @@ namespace Mulkchi.Api.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql(
+                """
+                UPDATE [Users]
+                SET [Email] = NULL
+                WHERE [Email] IS NOT NULL
+                  AND LEN([Email]) > 450;
+                """);
+
             migrationBuilder.AlterColumn<string>(
                 name: "Email",
                 table: "Users",
@@ -34,6 +42,40 @@ namespace Mulkchi.Api.Migrations
                 scale: 6,
                 nullable: false,
                 defaultValue: 0m);
+
+            migrationBuilder.Sql(
+                """
+                ;WITH DuplicateUsers AS
+                (
+                    SELECT [Id],
+                           ROW_NUMBER() OVER (
+                               PARTITION BY [Email]
+                               ORDER BY [CreatedDate], [Id]) AS [RowNumber]
+                    FROM [Users]
+                    WHERE [Email] IS NOT NULL
+                )
+                UPDATE [u]
+                SET [Email] = NULL
+                FROM [Users] AS [u]
+                INNER JOIN DuplicateUsers AS [du] ON [u].[Id] = [du].[Id]
+                WHERE [du].[RowNumber] > 1;
+                """);
+
+            migrationBuilder.Sql(
+                """
+                ;WITH DuplicateFavorites AS
+                (
+                    SELECT [Id],
+                           ROW_NUMBER() OVER (
+                               PARTITION BY [UserId], [PropertyId]
+                               ORDER BY [CreatedDate], [Id]) AS [RowNumber]
+                    FROM [Favorites]
+                )
+                DELETE [f]
+                FROM [Favorites] AS [f]
+                INNER JOIN DuplicateFavorites AS [df] ON [f].[Id] = [df].[Id]
+                WHERE [df].[RowNumber] > 1;
+                """);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_Email",
