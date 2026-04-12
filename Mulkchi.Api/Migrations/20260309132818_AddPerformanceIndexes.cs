@@ -13,7 +13,7 @@ namespace Mulkchi.Api.Migrations
             migrationBuilder.Sql(
                 """
                 UPDATE [Users]
-                SET [Email] = NULL
+                SET [Email] = LEFT([Email], 450)
                 WHERE [Email] IS NOT NULL
                   AND LEN([Email]) > 450;
                 """);
@@ -55,7 +55,7 @@ namespace Mulkchi.Api.Migrations
                     WHERE [Email] IS NOT NULL
                 )
                 UPDATE [u]
-                SET [Email] = NULL
+                SET [Email] = CONCAT('duplicate+', CONVERT(nvarchar(36), [u].[Id]), '@mulkchi.invalid')
                 FROM [Users] AS [u]
                 INNER JOIN DuplicateUsers AS [du] ON [u].[Id] = [du].[Id]
                 WHERE [du].[RowNumber] > 1;
