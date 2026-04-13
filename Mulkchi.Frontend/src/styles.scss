@@ -186,13 +186,21 @@
   }
   
   .btn-primary {
-    @apply btn bg-brand text-white hover:bg-brand-600 focus:ring-brand-500;
+    @apply btn text-white;
+    background-color: var(--color-brand);
     @apply shadow-md hover:shadow-lg;
+  }
+  .btn-primary:hover {
+    background-color: var(--color-brand-dark);
   }
   
   .btn-secondary {
-    @apply btn bg-secondary text-white hover:bg-secondary-600 focus:ring-secondary-500;
+    @apply btn text-white;
+    background-color: var(--color-secondary);
     @apply shadow-md hover:shadow-lg;
+  }
+  .btn-secondary:hover {
+    background-color: #152a45;
   }
   
   .btn-outline {
@@ -239,13 +247,14 @@
   .form-input {
     @apply block w-full px-4 py-3 text-gray-900 bg-white;
     @apply border border-gray-300 rounded-lg;
-    @apply focus:ring-2 focus:ring-brand-500 focus:border-brand-500;
+    @apply focus:ring-2 focus:border-brand;
     @apply placeholder:text-gray-400;
     @apply transition-colors duration-200;
+    --tw-ring-color: var(--color-brand);
   }
   
   .form-input-error {
-    @apply form-input border-error focus:ring-error-500 focus:border-error;
+    @apply form-input border-error focus:ring-red-500 focus:border-error;
   }
   
   .form-select {
@@ -266,23 +275,28 @@
   }
   
   .badge-success {
-    @apply badge bg-success-light text-success;
+    @apply badge text-green-700;
+    background-color: var(--color-success-light);
   }
   
   .badge-warning {
-    @apply badge bg-warning-light text-warning;
+    @apply badge text-amber-700;
+    background-color: var(--color-warning-light);
   }
   
   .badge-error {
-    @apply badge bg-error-light text-error;
+    @apply badge text-red-700;
+    background-color: var(--color-error-light);
   }
   
   .badge-info {
-    @apply badge bg-info-light text-info;
+    @apply badge text-blue-700;
+    background-color: var(--color-info-light);
   }
   
   .badge-brand {
-    @apply badge bg-brand-light text-brand;
+    @apply badge text-brand;
+    background-color: var(--color-brand-light);
   }
   
   /* Alerts */
@@ -291,19 +305,27 @@
   }
   
   .alert-success {
-    @apply alert bg-success-light text-success border border-success/20;
+    @apply alert text-green-700 border;
+    background-color: var(--color-success-light);
+    border-color: rgba(16, 185, 129, 0.2);
   }
   
   .alert-warning {
-    @apply alert bg-warning-light text-warning border border-warning/20;
+    @apply alert text-amber-700 border;
+    background-color: var(--color-warning-light);
+    border-color: rgba(245, 158, 11, 0.2);
   }
   
   .alert-error {
-    @apply alert bg-error-light text-error border border-error/20;
+    @apply alert text-red-700 border;
+    background-color: var(--color-error-light);
+    border-color: rgba(239, 68, 68, 0.2);
   }
   
   .alert-info {
-    @apply alert bg-info-light text-info border border-info/20;
+    @apply alert text-blue-700 border;
+    background-color: var(--color-info-light);
+    border-color: rgba(59, 130, 246, 0.2);
   }
   
   /* Skeleton Loading */

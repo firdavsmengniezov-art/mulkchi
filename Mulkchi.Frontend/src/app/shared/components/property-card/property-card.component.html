@@ -17,7 +17,7 @@
               [class.bg-brand]="property.listingType === 'Sale'"
               [class.text-white]="property.listingType === 'Sale'"
               [class.bg-secondary]="property.listingType === 'Rent'"
-              [class.bg-success]="property.listingType === 'DailyRent' || property.listingType === 'ShortTermRent'">
+              [class.bg-success]="property.listingType === 'DailyRent'">
           @switch (property.listingType) {
             @case ('Sale') { Sotuv }
             @case ('Rent') { Ijara }
@@ -27,7 +27,7 @@
         }
         
         <!-- VIP/Featured Badge -->
-        @if (property.isVip || property.isFeatured) {
+        @if (property.isFeatured) {
         <span class="px-2.5 py-1 bg-yellow-400 text-yellow-900 rounded-lg text-xs font-bold shadow-md">
           ⭐ VIP
         </span>
@@ -122,7 +122,7 @@
     </div>
 
     <!-- Rating & Reviews -->
-    @if (property.averageRating || property.reviewCount) {
+    @if (property.averageRating || property.reviewsCount) {
     <div class="flex items-center gap-2 mt-1">
       <div class="flex items-center gap-1">
         <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
@@ -130,8 +130,8 @@
         </svg>
         <span class="font-medium text-gray-900">{{ property.averageRating || '4.5' }}</span>
       </div>
-      @if (property.reviewCount) {
-      <span class="text-sm text-gray-500">({{ property.reviewCount }} sharh)</span>
+      @if (property.reviewsCount) {
+      <span class="text-sm text-gray-500">({{ property.reviewsCount }} sharh)</span>
       }
     </div>
     }

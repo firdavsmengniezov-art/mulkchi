@@ -63,7 +63,7 @@ export class PropertyCardComponent implements OnChanges {
       Land: '/assets/images/placeholder-property.svg',
       Commercial: '/assets/images/placeholder-property.svg',
     };
-    return photos[this.property.type] || photos.Apartment;
+    return photos[this.property.type] || photos['Apartment'];
   }
 
   onImageError(event: any): void {
