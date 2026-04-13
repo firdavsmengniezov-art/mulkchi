@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 import {
   ContactMethod,
@@ -12,10 +12,16 @@ import {
 import { HomeRequestService } from '../../../core/services/home-request.service';
 import { LoggingService } from '../../../core/services/logging.service';
 
+interface Step {
+  id: number;
+  label: string;
+  icon: string;
+}
+
 @Component({
   selector: 'app-home-request-form',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './home-request-form.component.html',
   styleUrls: ['./home-request-form.component.scss'],
 })
@@ -23,6 +29,17 @@ export class HomeRequestFormComponent implements OnInit {
   loading = false;
   submitted = false;
   error = '';
+  
+  // Step management
+  currentStep = 0;
+  totalSteps = 4;
+  
+  steps: Step[] = [
+    { id: 0, label: 'Asosiy', icon: 'document' },
+    { id: 1, label: 'Joylashuv', icon: 'location' },
+    { id: 2, label: 'Byudjet', icon: 'currency' },
+    { id: 3, label: 'Aloqa', icon: 'user' },
+  ];
 
   // Form data
   formData: CreateHomeRequestRequest = {
@@ -51,14 +68,19 @@ export class HomeRequestFormComponent implements OnInit {
   listingTypes = Object.values(ListingType);
   contactMethods = Object.values(ContactMethod);
   regions = [
-    'Tashkent',
-    'Samarkand',
-    'Bukhara',
-    'Fergana',
-    'Andijan',
+    'Toshkent',
+    'Samarqand',
+    'Buxoro',
+    'Farg\'ona',
+    'Andijon',
     'Namangan',
-    'Khorezm',
-    'Karakalpakstan',
+    'Xorazm',
+    'Qoraqalpog\'iston',
+    'Navoiy',
+    'Jizzax',
+    'Sirdaryo',
+    'Qashqadaryo',
+    'Surxondaryo',
   ];
 
   constructor(
@@ -66,7 +88,76 @@ export class HomeRequestFormComponent implements OnInit {
     public router: Router,
     private logger: LoggingService) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    // Initialize form
+  }
+  
+  // Step navigation
+  nextStep(): void {
+    if (this.currentStep < this.totalSteps - 1 && this.isStepValid(this.currentStep)) {
+      this.currentStep++;
+      this.scrollToTop();
+    }
+  }
+  
+  prevStep(): void {
+    if (this.currentStep > 0) {
+      this.currentStep--;
+      this.scrollToTop();
+    }
+  }
+  
+  goToStep(stepIndex: number): void {
+    // Only allow going to completed steps or current step
+    if (stepIndex <= this.currentStep || this.canAccessStep(stepIndex)) {
+      this.currentStep = stepIndex;
+      this.scrollToTop();
+    }
+  }
+  
+  canAccessStep(stepIndex: number): boolean {
+    // Check if all previous steps are valid
+    for (let i = 0; i < stepIndex; i++) {
+      if (!this.isStepValid(i)) {
+        return false;
+      }
+    }
+    return true;
+  }
+  
+  isStepValid(stepIndex: number): boolean {
+    switch (stepIndex) {
+      case 0: // Basic info
+        return !!(
+          this.formData.title?.trim() &&
+          this.formData.title.length >= 5 &&
+          this.formData.description?.trim() &&
+          this.formData.description.length >= 20 &&
+          this.formData.propertyType &&
+          this.formData.listingType
+        );
+      case 1: // Location
+        return !!(
+          this.formData.location?.trim() &&
+          this.formData.region
+        );
+      case 2: // Budget (optional fields, always valid)
+        return this.isBudgetValid() && this.isAreaValid();
+      case 3: // Contact
+        return !!(
+          this.formData.contactInfo?.phone?.trim() &&
+          this.formData.contactInfo?.email?.trim() &&
+          this.isValidEmail(this.formData.contactInfo?.email || '') &&
+          this.formData.contactInfo?.preferredContactMethod
+        );
+      default:
+        return false;
+    }
+  }
+  
+  scrollToTop(): void {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
   onSubmit(): void {
     if (this.loading || !this.isFormValid()) return;
@@ -78,12 +169,10 @@ export class HomeRequestFormComponent implements OnInit {
       next: (request) => {
         this.submitted = true;
         this.loading = false;
-
-        // Scroll to success message
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        this.scrollToTop();
       },
       error: (err) => {
-        this.error = 'Failed to submit home request. Please try again.';
+        this.error = 'So\'rovni yuborishda xatolik yuz berdi. Iltimos, qayta urinib ko\'ring.';
         this.logger.error('Error creating home request:', err);
         this.loading = false;
       },
@@ -113,6 +202,7 @@ export class HomeRequestFormComponent implements OnInit {
     };
     this.submitted = false;
     this.error = '';
+    this.currentStep = 0;
   }
 
   // Form validation
@@ -136,29 +226,29 @@ export class HomeRequestFormComponent implements OnInit {
   // Helper methods for display
   getPropertyTypeLabel(type: PropertyType): string {
     const typeLabels: Record<string, string> = {
-      [PropertyType.Apartment]: 'Apartment',
-      [PropertyType.House]: 'House',
-      [PropertyType.Office]: 'Office',
-      [PropertyType.Commercial]: 'Commercial',
-      [PropertyType.Land]: 'Land',
+      [PropertyType.Apartment]: 'Kvartira',
+      [PropertyType.House]: 'Hovli uy',
+      [PropertyType.Office]: 'Ofis',
+      [PropertyType.Commercial]: 'Tijorat binosi',
+      [PropertyType.Land]: 'Yer uchastkasi',
     };
     return typeLabels[type as string] || type;
   }
 
   getListingTypeLabel(type: ListingType): string {
     const typeLabels: Record<string, string> = {
-      [ListingType.Sale]: 'For Sale',
-      [ListingType.Rent]: 'For Rent',
-      [ListingType.DailyRent]: 'Daily Rent',
+      [ListingType.Sale]: 'Sotib olish',
+      [ListingType.Rent]: 'Uzoq muddatli ijara',
+      [ListingType.DailyRent]: 'Kunlik ijara',
     };
     return typeLabels[type as string] || type;
   }
 
   getContactMethodLabel(method: ContactMethod): string {
     const methodLabels: Record<string, string> = {
-      [ContactMethod.Phone]: 'Phone',
+      [ContactMethod.Phone]: 'Telefon',
       [ContactMethod.Email]: 'Email',
-      [ContactMethod.Both]: 'Both',
+      [ContactMethod.Both]: 'Telefon va Email',
     };
     return methodLabels[method] || method;
   }
