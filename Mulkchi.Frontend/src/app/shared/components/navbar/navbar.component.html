@@ -1,37 +1,78 @@
-<nav class="navbar" [class.navbar--scrolled]="isScrolled">
-  <div class="navbar__container">
-    <div class="navbar__row">
-      <a routerLink="/" class="navbar__logo" (click)="closeMobileMenu()">
-        <div class="navbar__logo-mark">M</div>
-        <span class="navbar__logo-text">Mulkchi</span>
+<!-- Modern Navbar -->
+<nav class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 transition-all duration-300"
+     [class.shadow-md]="isScrolled">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      
+      <!-- Logo -->
+      <a routerLink="/" class="flex items-center gap-2 group" (click)="closeMobileMenu()">
+        <div class="w-9 h-9 rounded-xl bg-brand text-white flex items-center justify-center font-bold text-lg 
+                    group-hover:scale-105 transition-transform duration-200">
+          M
+        </div>
+        <span class="text-xl font-bold text-gray-900">Mulkchi</span>
       </a>
 
-      <div class="navbar__search desktop-only" role="search">
-        <svg class="navbar__search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-          stroke-width="2" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" />
-        </svg>
-        <input type="text" class="navbar__search-input" placeholder="Qidirish: kvartira, uy, ofis..." />
+      <!-- Desktop Navigation -->
+      <div class="hidden md:flex items-center gap-1">
+        <a routerLink="/" 
+           class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200"
+           routerLinkActive="text-brand bg-brand-light"
+           [routerLinkActiveOptions]="{exact: true}">Bosh sahifa</a>
+        <a routerLink="/properties" 
+           class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200"
+           routerLinkActive="text-brand bg-brand-light">E'lonlar</a>
+        <a routerLink="/ai-price" 
+           class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200"
+           routerLinkActive="text-brand bg-brand-light">AI Baho</a>
       </div>
 
-      <div class="navbar__actions">
-        <div class="navbar__dropdown lang-switcher">
-          <button type="button" class="navbar__action-btn" (click)="toggleLangMenu()">
-            <span class="navbar__lang-short">{{ currentLang.code.toUpperCase() }}</span>
-            <svg class="navbar__chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-              <path
-                d="M12 15.5a.74.74 0 0 1-.53-.22l-5-5a.75.75 0 1 1 1.06-1.06L12 13.69l4.47-4.47a.75.75 0 0 1 1.06 1.06l-5 5a.74.74 0 0 1-.53.22Z" />
+      <!-- Desktop Search -->
+      <div class="hidden lg:flex flex-1 max-w-md mx-8" role="search">
+        <div class="relative w-full">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" />
+          </svg>
+          <input type="text" 
+                 class="w-full pl-10 pr-4 py-2 bg-gray-100 border-transparent focus:bg-white focus:border-brand focus:ring-2 focus:ring-brand/20 
+                        rounded-xl text-sm transition-all duration-200 outline-none"
+                 placeholder="Qidirish: kvartira, uy, ofis..." />
+        </div>
+      </div>
+
+      <!-- Right Actions -->
+      <div class="flex items-center gap-2">
+        
+        <!-- Language Switcher -->
+        <div class="relative">
+          <button type="button" 
+                  class="hidden sm:flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 
+                         hover:bg-gray-100 transition-all duration-200"
+                  (click)="toggleLangMenu()">
+            <span class="text-lg">{{ currentLang.flag }}</span>
+            <span class="uppercase text-xs font-semibold">{{ currentLang.code }}</span>
+            <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" 
+                 [class.rotate-180]="showLangMenu"
+                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
             </svg>
           </button>
 
           @if (showLangMenu) {
-          <div class="navbar__menu navbar__menu--lang">
+          <div class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-50 animate-fade-in">
             @for (lang of languages; track lang.code) {
-            <button type="button" class="navbar__menu-item"
-              [class.navbar__menu-item--active]="lang.code === currentLang.code" (click)="changeLang(lang.code)">
-              <span>{{ lang.flag }}</span>
-              <span>{{ lang.label }}</span>
+            <button type="button" 
+                    class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    [class.bg-brand-light]="lang.code === currentLang.code"
+                    [class.text-brand]="lang.code === currentLang.code"
+                    (click)="changeLang(lang.code)">
+              <span class="text-lg">{{ lang.flag }}</span>
+              <span class="font-medium">{{ lang.label }}</span>
+              @if (lang.code === currentLang.code) {
+              <svg class="w-4 h-4 ml-auto text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              }
             </button>
             }
           </div>
@@ -39,84 +80,205 @@
         </div>
 
         @if (isLoggedIn) {
-        <div class="navbar__status desktop-only">
-          <span class="navbar__status-dot" [class.navbar__status-dot--online]="isSignalRConnected"></span>
-          <span>{{ isSignalRConnected ? ('NAV.ONLINE' | translate) : ('NAV.OFFLINE' | translate) }}</span>
-        </div>
-
-        <a routerLink="/notifications" class="navbar__icon-link" aria-label="Notifications">
+        <!-- Notification -->
+        <a routerLink="/notifications" 
+           class="relative p-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-all duration-200"
+           aria-label="Notifications">
           <app-notification-bell></app-notification-bell>
         </a>
-        }
 
-        <a routerLink="/properties/create" class="navbar__cta desktop-only" (click)="closeMobileMenu()">
-          + E'lon qo'shish
+        <!-- Add Listing Button -->
+        <a routerLink="/properties/create" 
+           class="hidden sm:flex items-center gap-1.5 px-4 py-2 bg-brand text-white rounded-lg font-medium text-sm 
+                  hover:bg-brand-600 shadow-md hover:shadow-lg transition-all duration-200"
+           (click)="closeMobileMenu()">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          <span>E'lon qo'shish</span>
         </a>
 
-        <div class="navbar__dropdown user-menu">
-          <button type="button" class="navbar__profile-btn" (click)="toggleUserMenu()" aria-label="User menu">
-            <span class="navbar__profile-avatar">{{ userInitial }}</span>
+        <!-- User Menu -->
+        <div class="relative ml-1">
+          <button type="button" 
+                  class="flex items-center gap-2 p-1.5 rounded-xl hover:bg-gray-100 transition-all duration-200"
+                  (click)="toggleUserMenu()"
+                  aria-label="User menu">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand to-brand-600 text-white flex items-center justify-center font-semibold text-sm">
+              {{ userInitial }}
+            </div>
+            <svg class="w-4 h-4 text-gray-400 hidden sm:block transition-transform duration-200" 
+                 [class.rotate-180]="showUserMenu"
+                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
           </button>
 
           @if (showUserMenu) {
-          <div class="navbar__menu navbar__menu--user">
+          <div class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50 animate-fade-in">
             @if (isLoggedIn) {
-            <div class="navbar__menu-user">
-              <div class="navbar__menu-user-name">{{ currentUser?.firstName }} {{ currentUser?.lastName }}</div>
-              <div class="navbar__menu-user-email">{{ currentUser?.email }}</div>
+            <div class="px-4 py-3 border-b border-gray-100">
+              <p class="font-semibold text-gray-900">{{ currentUser?.firstName }} {{ currentUser?.lastName }}</p>
+              <p class="text-sm text-gray-500 truncate">{{ currentUser?.email }}</p>
             </div>
-
-            <a routerLink="/profile" class="navbar__menu-item" (click)="showUserMenu = false">{{ 'NAV.PROFILE' |
-              translate }}</a>
-            <a routerLink="/chat" class="navbar__menu-item" (click)="showUserMenu = false">{{ 'NAV.CHAT' | translate
-              }}</a>
-            <a routerLink="/favorites" class="navbar__menu-item" (click)="showUserMenu = false">{{ 'NAV.FAVORITES' |
-              translate }}</a>
-            <a routerLink="/saved-searches" class="navbar__menu-item" (click)="showUserMenu = false">{{
-              'NAV.SAVED_SEARCHES' | translate }}</a>
-            <button type="button" class="navbar__menu-item" (click)="logout()">{{ 'NAV.LOGOUT' | translate }}</button>
+            <div class="py-1">
+              <a routerLink="/profile" 
+                 class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                 (click)="showUserMenu = false">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+                Profil
+              </a>
+              <a routerLink="/chat" 
+                 class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                 (click)="showUserMenu = false">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                </svg>
+                Xabarlar
+              </a>
+              <a routerLink="/favorites" 
+                 class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                 (click)="showUserMenu = false">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                </svg>
+                Sevimlilar
+              </a>
+              <a routerLink="/saved-searches" 
+                 class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                 (click)="showUserMenu = false">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+                </svg>
+                Saqlangan qidiruvlar
+              </a>
+            </div>
+            <div class="border-t border-gray-100 py-1">
+              <button type="button" 
+                      class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-error hover:bg-error-light transition-colors"
+                      (click)="logout()">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                </svg>
+                Chiqish
+              </button>
+            </div>
             } @else {
-            <a routerLink="/login" class="navbar__menu-item" (click)="showUserMenu = false">{{ 'NAV.LOGIN' | translate
-              }}</a>
-            <a routerLink="/register" class="navbar__menu-item" (click)="showUserMenu = false">Ro'yxatdan o'tish</a>
+            <div class="py-1">
+              <a routerLink="/login" 
+                 class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                 (click)="showUserMenu = false">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                </svg>
+                Kirish
+              </a>
+              <a routerLink="/register" 
+                 class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                 (click)="showUserMenu = false">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                </svg>
+                Ro'yxatdan o'tish
+              </a>
+            </div>
             }
           </div>
           }
         </div>
+        } @else {
+        <!-- Login Button (Guest) -->
+        <a routerLink="/login" 
+           class="hidden sm:flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 
+                  hover:bg-gray-100 rounded-lg transition-all duration-200">
+          Kirish
+        </a>
+        <a routerLink="/register" 
+           class="hidden sm:flex items-center gap-1.5 px-4 py-2 bg-brand text-white rounded-lg font-medium text-sm 
+                  hover:bg-brand-600 shadow-md hover:shadow-lg transition-all duration-200">
+          Ro'yxatdan o'tish
+        </a>
+        }
 
-        <button type="button" class="navbar__mobile-toggle" (click)="toggleMobileMenu()"
-          aria-label="Toggle mobile menu">
+        <!-- Mobile Menu Toggle -->
+        <button type="button" 
+                class="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-all duration-200"
+                (click)="toggleMobileMenu()"
+                aria-label="Toggle mobile menu">
           @if (isMobileMenuOpen) {
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
-            stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
           } @else {
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
-            stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5m-16.5 5.25h16.5m-16.5 5.25h16.5" />
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
           }
         </button>
       </div>
     </div>
 
-    <div class="navbar__search mobile-only" role="search">
-      <svg class="navbar__search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-        stroke-width="2" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" />
-      </svg>
-      <input type="text" class="navbar__search-input" placeholder="Qidirish..." />
-    </div>
-
+    <!-- Mobile Menu -->
     @if (isMobileMenuOpen) {
-    <div class="navbar__mobile-menu">
-      <a routerLink="/" class="navbar__mobile-link" (click)="closeMobileMenu()">Bosh sahifa</a>
-      <a routerLink="/properties" class="navbar__mobile-link" (click)="closeMobileMenu()">E'lonlar</a>
-      <a routerLink="/chat" class="navbar__mobile-link" (click)="closeMobileMenu()">Xabarlar</a>
-      <a routerLink="/profile" class="navbar__mobile-link" (click)="closeMobileMenu()">Profil</a>
-      <a routerLink="/properties/create" class="navbar__mobile-cta" (click)="closeMobileMenu()">+ E'lon qo'shish</a>
+    <div class="md:hidden border-t border-gray-200 py-4 animate-fade-in">
+      <div class="space-y-1">
+        <a routerLink="/" 
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+           (click)="closeMobileMenu()">
+          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+          Bosh sahifa
+        </a>
+        <a routerLink="/properties" 
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+           (click)="closeMobileMenu()">
+          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+          </svg>
+          E'lonlar
+        </a>
+        <a routerLink="/ai-price" 
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+           (click)="closeMobileMenu()">
+          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+          </svg>
+          AI Baho
+        </a>
+        <a routerLink="/chat" 
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+           (click)="closeMobileMenu()">
+          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+          </svg>
+          Xabarlar
+        </a>
+        @if (isLoggedIn) {
+        <a routerLink="/profile" 
+           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+           (click)="closeMobileMenu()">
+          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
+          Profil
+        </a>
+        }
+      </div>
+      
+      <div class="mt-4 pt-4 border-t border-gray-200">
+        <a routerLink="/properties/create" 
+           class="flex items-center justify-center gap-2 w-full px-4 py-3 bg-brand text-white rounded-xl font-medium 
+                  hover:bg-brand-600 transition-colors"
+           (click)="closeMobileMenu()">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          E'lon qo'shish
+        </a>
+      </div>
     </div>
     }
   </div>
