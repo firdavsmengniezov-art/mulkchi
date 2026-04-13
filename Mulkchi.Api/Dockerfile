@@ -1,3 +1,6 @@
+# Backend API uchun Dockerfile
+# .NET 9.0 Runtime va SDK ishlatiladi
+
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app

@@ -1,11 +1,15 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 
+# Build cache uchun package fayllarini alohida copy qilish
 COPY package*.json ./
-RUN npm ci --prefer-offline
+RUN npm ci --prefer-offline --no-audit --no-fund
 
+# Source kodni copy qilish
 COPY . .
-RUN npm run build -- --configuration production
+
+# Production build
+RUN npm run build -- --configuration production --output-path=dist/mulkchi-frontend/browser
 
 FROM nginx:alpine AS final
 

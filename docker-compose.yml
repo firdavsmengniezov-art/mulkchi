@@ -95,14 +95,24 @@ services:
     environment:
       - NODE_ENV=development
       - API_PROXY_TARGET=http://backend:80
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
     volumes:
       - ./Mulkchi.Frontend:/app
       - /app/node_modules
+      - /app/.angular
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     networks:
       - mulkchi-network
     restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://localhost:4200']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
   # 📊 Monitoring Stack
   prometheus:
