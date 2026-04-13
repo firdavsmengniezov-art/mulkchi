@@ -1,36 +1,52 @@
-<div class="dashboard">
-  <div class="dash-header">
-    <div class="container dash-header-inner">
-      <div>
-        <h1>{{ 'DASHBOARD.TITLE' | translate }}</h1>
-        <p>{{ 'DASHBOARD.SUBTITLE' | translate }}</p>
+<div class="min-h-screen bg-gray-50">
+  <!-- Header -->
+  <div class="bg-white border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">{{ 'DASHBOARD.TITLE' | translate }}</h1>
+          <p class="text-gray-500 mt-1">{{ 'DASHBOARD.SUBTITLE' | translate }}</p>
+        </div>
+        <button class="btn-primary flex items-center gap-2" routerLink="/properties/create">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          {{ 'DASHBOARD.NEW_LISTING' | translate }}
+        </button>
       </div>
-      <button class="btn-new" routerLink="/properties/create">+ {{ 'DASHBOARD.NEW_LISTING' | translate }}</button>
     </div>
   </div>
 
-  <div class="container dash-body">
-    <!-- STATS -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon">🏠</div>
-        <div class="stat-val">{{ totalProperties }}</div>
-        <div class="stat-label">{{ 'DASHBOARD.TOTAL_PROPERTIES' | translate }}</div>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div class="bg-white rounded-2xl p-6 shadow-soft hover-lift">
+        <div class="w-12 h-12 rounded-xl bg-brand/10 flex items-center justify-center text-2xl mb-4">
+          🏠
+        </div>
+        <div class="text-3xl font-bold text-gray-900">{{ totalProperties }}</div>
+        <div class="text-sm text-gray-500 mt-1">{{ 'DASHBOARD.TOTAL_PROPERTIES' | translate }}</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon">📅</div>
-        <div class="stat-val">{{ totalBookings }}</div>
-        <div class="stat-label">{{ 'DASHBOARD.TOTAL_BOOKINGS' | translate }}</div>
+      <div class="bg-white rounded-2xl p-6 shadow-soft hover-lift">
+        <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center text-2xl mb-4">
+          📅
+        </div>
+        <div class="text-3xl font-bold text-gray-900">{{ totalBookings }}</div>
+        <div class="text-sm text-gray-500 mt-1">{{ 'DASHBOARD.TOTAL_BOOKINGS' | translate }}</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon">⭐</div>
-        <div class="stat-val">4.8</div>
-        <div class="stat-label">{{ 'DASHBOARD.AVERAGE_RATING' | translate }}</div>
+      <div class="bg-white rounded-2xl p-6 shadow-soft hover-lift">
+        <div class="w-12 h-12 rounded-xl bg-yellow-100 flex items-center justify-center text-2xl mb-4">
+          ⭐
+        </div>
+        <div class="text-3xl font-bold text-gray-900">4.8</div>
+        <div class="text-sm text-gray-500 mt-1">{{ 'DASHBOARD.AVERAGE_RATING' | translate }}</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon">👁</div>
-        <div class="stat-val">{{ properties.length * 50 }}</div>
-        <div class="stat-label">{{ 'DASHBOARD.TOTAL_VIEWS' | translate }}</div>
+      <div class="bg-white rounded-2xl p-6 shadow-soft hover-lift">
+        <div class="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center text-2xl mb-4">
+          👁
+        </div>
+        <div class="text-3xl font-bold text-gray-900">{{ properties.length * 50 }}</div>
+        <div class="text-sm text-gray-500 mt-1">{{ 'DASHBOARD.TOTAL_VIEWS' | translate }}</div>
       </div>
     </div>
 
@@ -55,12 +71,22 @@
       </table>
     </div>
 
-    <!-- TABS -->
-    <div class="tabs">
-      <button [class.active]="activeTab === 'properties'" (click)="activeTab = 'properties'">
+    <!-- Tabs -->
+    <div class="bg-white rounded-2xl p-1.5 shadow-soft inline-flex mb-6">
+      <button class="px-6 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-2"
+              [class.bg-brand]="activeTab === 'properties'"
+              [class.text-white]="activeTab === 'properties'"
+              [class.text-gray-600]="activeTab !== 'properties'"
+              [class.hover:bg-gray-100]="activeTab !== 'properties'"
+              (click)="activeTab = 'properties'">
         🏠 {{ 'DASHBOARD.PROPERTIES' | translate }}
       </button>
-      <button [class.active]="activeTab === 'bookings'" (click)="activeTab = 'bookings'">
+      <button class="px-6 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-2"
+              [class.bg-brand]="activeTab === 'bookings'"
+              [class.text-white]="activeTab === 'bookings'"
+              [class.text-gray-600]="activeTab !== 'bookings'"
+              [class.hover:bg-gray-100]="activeTab !== 'bookings'"
+              (click)="activeTab = 'bookings'">
         📅 {{ 'DASHBOARD.BOOKINGS' | translate }}
       </button>
     </div>
@@ -68,13 +94,21 @@
     <!-- PROPERTIES TAB -->
     @if (activeTab === 'properties') {
     @if (loading) {
-    <div class="loading">{{ 'COMMON.LOADING' | translate }}</div>
+    <div class="bg-white rounded-2xl p-12 shadow-soft flex flex-col items-center justify-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-brand mb-4"></div>
+      <p class="text-gray-500">{{ 'COMMON.LOADING' | translate }}</p>
+    </div>
     } @else if (properties.length === 0) {
-    <div class="empty">
-      <div style="font-size:48px">🏠</div>
-      <h3>{{ 'DASHBOARD.NO_LISTINGS' | translate }}</h3>
-      <p>{{ 'DASHBOARD.ADD_FIRST' | translate }}</p>
-      <button class="btn-new" routerLink="/properties/create">+ {{ 'DASHBOARD.NEW_LISTING' | translate }}</button>
+    <div class="bg-white rounded-2xl p-12 shadow-soft text-center">
+      <div class="w-20 h-20 bg-brand/10 rounded-full flex items-center justify-center text-4xl mx-auto mb-4">🏠</div>
+      <h3 class="text-xl font-bold text-gray-900 mb-2">{{ 'DASHBOARD.NO_LISTINGS' | translate }}</h3>
+      <p class="text-gray-500 mb-6">{{ 'DASHBOARD.ADD_FIRST' | translate }}</p>
+      <button class="btn-primary" routerLink="/properties/create">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        {{ 'DASHBOARD.NEW_LISTING' | translate }}
+      </button>
     </div>
     } @else {
     <div class="table-wrap">
@@ -123,9 +157,10 @@
     <!-- BOOKINGS TAB -->
     @if (activeTab === 'bookings') {
     @if (bookings.length === 0) {
-    <div class="empty">
-      <div style="font-size:48px">📅</div>
-      <h3>{{ 'DASHBOARD.NO_BOOKINGS' | translate }}</h3>
+    <div class="bg-white rounded-2xl p-12 shadow-soft text-center">
+      <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center text-4xl mx-auto mb-4">📅</div>
+      <h3 class="text-xl font-bold text-gray-900 mb-2">{{ 'DASHBOARD.NO_BOOKINGS' | translate }}</h3>
+      <p class="text-gray-500">Hozircha bronlashlar mavjud emas</p>
     </div>
     } @else {
     <div class="table-wrap">

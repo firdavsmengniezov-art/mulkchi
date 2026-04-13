@@ -6,6 +6,7 @@ import { map, Observable } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { LanguageService } from '../../../core/services/language.service';
 import { SignalRService } from '../../../core/services/signalr.service';
+import { ThemeService } from '../../../core/services/theme.service';
 import { NotificationBellComponent } from '../notifications/notification-bell/notification-bell.component';
 
 @Component({
@@ -36,6 +37,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private signalRService = inject(SignalRService);
   private languageService = inject(LanguageService);
+  private themeService = inject(ThemeService);
 
   constructor() {
     this.isLoggedIn$ = this.authService.currentUser$.pipe(map((u) => !!u));
@@ -78,8 +80,15 @@ export class NavbarComponent implements OnInit, OnDestroy {
     if (email && email.length > 0) {
       return email.charAt(0).toUpperCase();
     }
+    return '?';
+  }
 
-    return 'U';
+  isDarkMode(): boolean {
+    return this.themeService.isDarkMode();
+  }
+
+  toggleDarkMode(): void {
+    this.themeService.toggle();
   }
 
   get currentLang() {
