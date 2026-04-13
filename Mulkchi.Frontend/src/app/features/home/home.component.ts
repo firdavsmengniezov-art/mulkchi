@@ -41,6 +41,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   selectedQuickTag = '';
   currentView: 'grid' | 'list' | 'map' = 'grid';
   sortBy: 'newest' | 'priceAsc' | 'priceDesc' = 'newest';
+  userLatitude: number | null = null;
+  userLongitude: number | null = null;
+  hasUserLocation = false;
 
   // Search form fields
   searchRegion = '';
@@ -76,6 +79,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loading = true;
+    this.captureUserLocation();
 
     this.propertyService
       .getProperties(1, 8)
@@ -96,6 +100,28 @@ export class HomeComponent implements OnInit, OnDestroy {
           this.loading = false;
         },
       });
+  }
+
+  private captureUserLocation(): void {
+    if (!('geolocation' in navigator)) {
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        this.userLatitude = position.coords.latitude;
+        this.userLongitude = position.coords.longitude;
+        this.hasUserLocation = true;
+      },
+      () => {
+        this.hasUserLocation = false;
+      },
+      {
+        enableHighAccuracy: false,
+        timeout: 6000,
+        maximumAge: 300000,
+      },
+    );
   }
 
   ngOnDestroy() {

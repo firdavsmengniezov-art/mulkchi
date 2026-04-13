@@ -2,10 +2,11 @@ import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { RegisterRequest } from '../../../core/models/auth.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { LoggingService } from '../../../core/services/logging.service';
+import { UiToastService } from '../../../core/services/ui-toast.service';
 
 @Component({
   selector: 'app-register',
@@ -30,27 +31,32 @@ export class RegisterComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
   private logger = inject(LoggingService);
+  private readonly toast = inject(UiToastService);
+  private readonly translate = inject(TranslateService);
 
   register() {
     if (!this.firstName || !this.email || !this.password || !this.phone) {
-      this.errorMsg = "Barcha maydonlarni to'ldiring";
+      this.errorMsg = this.translate.instant('AUTH.MESSAGES.FILL_REQUIRED_FIELDS');
+      this.toast.error(this.errorMsg);
       return;
     }
 
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
     if (!passwordRegex.test(this.password)) {
-      this.errorMsg =
-        "Parol kamida 8 ta belgi, katta harf, kichik harf, raqam va maxsus belgi bo'lishi kerak";
+      this.errorMsg = this.translate.instant('AUTH.MESSAGES.PASSWORD_RULES');
+      this.toast.error(this.errorMsg);
       return;
     }
 
     if (this.password !== this.confirmPassword) {
-      this.errorMsg = 'Parollar mos kelmadi';
+      this.errorMsg = this.translate.instant('AUTH.MESSAGES.PASSWORD_MISMATCH');
+      this.toast.error(this.errorMsg);
       return;
     }
 
     if (!this.acceptTerms) {
-      this.errorMsg = 'Foydalanish shartlariga rozilik bildiring';
+      this.errorMsg = this.translate.instant('AUTH.MESSAGES.ACCEPT_TERMS');
+      this.toast.error(this.errorMsg);
       return;
     }
 
@@ -69,19 +75,22 @@ export class RegisterComponent {
     this.authService.register(registerRequest).subscribe({
       next: (response) => {
         this.loading = false;
-        this.router.navigate(['/']);
+        this.toast.success(this.translate.instant('AUTH.MESSAGES.REGISTER_SUCCESS'));
+        this.router.navigate(['/register-success'], {
+          queryParams: { email: this.email },
+        });
       },
       error: (err) => {
         this.loading = false;
 
         if (err.status === 409) {
-          this.errorMsg =
-            "Bu email allaqachon ro'yxatdan o'tgan. Iltimos, boshqa emaildan foydalaning.";
+          this.errorMsg = this.translate.instant('AUTH.MESSAGES.REGISTER_CONFLICT');
         } else if (err.status === 400) {
-          this.errorMsg = "Ma'lumotlar noto'g'ri. Iltimos, barcha maydonlarni to'g'ri to'ldiring.";
+          this.errorMsg = this.translate.instant('AUTH.MESSAGES.REGISTER_BAD_REQUEST');
         } else {
-          this.errorMsg = "Ro'yxatdan o'tishda xatolik. Iltimos, qayta urinib ko'ring.";
+          this.errorMsg = this.translate.instant('AUTH.MESSAGES.REGISTER_FAILED');
         }
+        this.toast.error(this.errorMsg);
         this.logger.error('Registration error:', err);
       },
     });

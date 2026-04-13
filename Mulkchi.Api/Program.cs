@@ -11,12 +11,6 @@ public partial class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Add User Secrets for development
-        if (builder.Environment.IsDevelopment())
-        {
-            builder.Configuration.AddUserSecrets<Program>();
-        }
-
         // Configure Serilog
         Log.Logger = new LoggerConfiguration()
             .ReadFrom.Configuration(builder.Configuration)

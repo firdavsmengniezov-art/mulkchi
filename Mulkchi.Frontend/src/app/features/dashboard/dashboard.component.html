@@ -34,6 +34,27 @@
       </div>
     </div>
 
+    <div class="table-wrap" *ngIf="priceTrends.length > 0" style="margin-top: 16px;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Oy</th>
+            <th>O'rtacha sotuv narxi</th>
+            <th>Listinglar soni</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (trend of priceTrends; track trend.month) {
+          <tr>
+            <td>{{ trend.month }}</td>
+            <td>${{ trend.averagePrice | number: '1.0-0' }}</td>
+            <td>{{ trend.listingsCount }}</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
     <!-- TABS -->
     <div class="tabs">
       <button [class.active]="activeTab === 'properties'" (click)="activeTab = 'properties'">
@@ -46,93 +67,94 @@
 
     <!-- PROPERTIES TAB -->
     @if (activeTab === 'properties') {
-      @if (loading) {
-        <div class="loading">{{ 'COMMON.LOADING' | translate }}</div>
-      } @else if (properties.length === 0) {
-        <div class="empty">
-          <div style="font-size:48px">🏠</div>
-          <h3>{{ 'DASHBOARD.NO_LISTINGS' | translate }}</h3>
-          <p>{{ 'DASHBOARD.ADD_FIRST' | translate }}</p>
-          <button class="btn-new" routerLink="/properties/create">+ {{ 'DASHBOARD.NEW_LISTING' | translate }}</button>
-        </div>
-      } @else {
-        <div class="table-wrap">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>{{ 'DASHBOARD.PROPERTY_NAME' | translate }}</th>
-                <th>{{ 'DASHBOARD.TYPE' | translate }}</th>
-                <th>{{ 'DASHBOARD.PRICE' | translate }}</th>
-                <th>{{ 'DASHBOARD.VIEWS' | translate }}</th>
-                <th>{{ 'DASHBOARD.STATUS' | translate }}</th>
-                <th>{{ 'DASHBOARD.ACTIONS' | translate }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (p of properties; track p.id) {
-                <tr>
-                  <td>
-                    <div class="prop-name">
-                      <div class="prop-thumb">🏠</div>
-                      <div>
-                        <div class="prop-title">{{ p.title }}</div>
-                        <div class="prop-loc">{{ p.city }}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td><span class="type-tag">{{ getListingTypeText(p.listingType) }}</span></td>
-                  <td class="price-cell">{{ getPrice(p) }}</td>
-                  <td>{{ p.viewsCount || 0 }}</td>
-                  <td><span class="status-dot available">{{ 'DASHBOARD.ACTIVE' | translate }}</span></td>
-                  <td>
-                    <div class="action-btns">
-                      <button class="btn-edit" [routerLink]="['/properties', p.id]">{{ 'DASHBOARD.VIEW' | translate }}</button>
-                      <button class="btn-delete" (click)="deleteProperty(p.id)">{{ 'DASHBOARD.DELETE' | translate }}</button>
-                    </div>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      }
+    @if (loading) {
+    <div class="loading">{{ 'COMMON.LOADING' | translate }}</div>
+    } @else if (properties.length === 0) {
+    <div class="empty">
+      <div style="font-size:48px">🏠</div>
+      <h3>{{ 'DASHBOARD.NO_LISTINGS' | translate }}</h3>
+      <p>{{ 'DASHBOARD.ADD_FIRST' | translate }}</p>
+      <button class="btn-new" routerLink="/properties/create">+ {{ 'DASHBOARD.NEW_LISTING' | translate }}</button>
+    </div>
+    } @else {
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>{{ 'DASHBOARD.PROPERTY_NAME' | translate }}</th>
+            <th>{{ 'DASHBOARD.TYPE' | translate }}</th>
+            <th>{{ 'DASHBOARD.PRICE' | translate }}</th>
+            <th>{{ 'DASHBOARD.VIEWS' | translate }}</th>
+            <th>{{ 'DASHBOARD.STATUS' | translate }}</th>
+            <th>{{ 'DASHBOARD.ACTIONS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of properties; track p.id) {
+          <tr>
+            <td>
+              <div class="prop-name">
+                <div class="prop-thumb">🏠</div>
+                <div>
+                  <div class="prop-title">{{ p.title }}</div>
+                  <div class="prop-loc">{{ p.city }}</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="type-tag">{{ getListingTypeText(p.listingType) }}</span></td>
+            <td class="price-cell">{{ getPrice(p) }}</td>
+            <td>{{ p.viewsCount || 0 }}</td>
+            <td><span class="status-dot available">{{ 'DASHBOARD.ACTIVE' | translate }}</span></td>
+            <td>
+              <div class="action-btns">
+                <button class="btn-edit" [routerLink]="['/properties', p.id]">{{ 'DASHBOARD.VIEW' | translate
+                  }}</button>
+                <button class="btn-delete" (click)="deleteProperty(p.id)">{{ 'DASHBOARD.DELETE' | translate }}</button>
+              </div>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    }
     }
 
     <!-- BOOKINGS TAB -->
     @if (activeTab === 'bookings') {
-      @if (bookings.length === 0) {
-        <div class="empty">
-          <div style="font-size:48px">📅</div>
-          <h3>{{ 'DASHBOARD.NO_BOOKINGS' | translate }}</h3>
-        </div>
-      } @else {
-        <div class="table-wrap">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>{{ 'DASHBOARD.PROPERTY' | translate }}</th>
-                <th>{{ 'BOOKING.CHECK_IN' | translate }}</th>
-                <th>{{ 'BOOKING.CHECK_OUT' | translate }}</th>
-                <th>{{ 'DASHBOARD.GUESTS' | translate }}</th>
-                <th>{{ 'DASHBOARD.TOTAL' | translate }}</th>
-                <th>{{ 'DASHBOARD.STATUS' | translate }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (b of bookings; track b.id) {
-                <tr>
-                  <td>{{ b.property?.title || ('PROPERTY.NO_NAME' | translate) }}</td>
-                  <td>{{ b.checkInDate | date:'dd.MM.yyyy' }}</td>
-                  <td>{{ b.checkOutDate | date:'dd.MM.yyyy' }}</td>
-                  <td>{{ b.guestsCount }}</td>
-                  <td>${{ b.totalPrice }}</td>
-                  <td><span [class]="'status-dot ' + getStatusClass(b.status)">{{ getStatusText(b.status) }}</span></td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      }
+    @if (bookings.length === 0) {
+    <div class="empty">
+      <div style="font-size:48px">📅</div>
+      <h3>{{ 'DASHBOARD.NO_BOOKINGS' | translate }}</h3>
+    </div>
+    } @else {
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>{{ 'DASHBOARD.PROPERTY' | translate }}</th>
+            <th>{{ 'BOOKING.CHECK_IN' | translate }}</th>
+            <th>{{ 'BOOKING.CHECK_OUT' | translate }}</th>
+            <th>{{ 'DASHBOARD.GUESTS' | translate }}</th>
+            <th>{{ 'DASHBOARD.TOTAL' | translate }}</th>
+            <th>{{ 'DASHBOARD.STATUS' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (b of bookings; track b.id) {
+          <tr>
+            <td>{{ b.property?.title || ('PROPERTY.NO_NAME' | translate) }}</td>
+            <td>{{ b.checkInDate | date:'dd.MM.yyyy' }}</td>
+            <td>{{ b.checkOutDate | date:'dd.MM.yyyy' }}</td>
+            <td>{{ b.guestsCount }}</td>
+            <td>${{ b.totalPrice }}</td>
+            <td><span [class]="'status-dot ' + getStatusClass(b.status)">{{ getStatusText(b.status) }}</span></td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    }
     }
   </div>
 </div>

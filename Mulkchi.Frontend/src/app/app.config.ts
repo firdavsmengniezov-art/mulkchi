@@ -1,11 +1,13 @@
+import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { ApplicationConfig, importProvidersFrom } from '@angular/core';
-import { provideRouter } from '@angular/router';
-import { provideHttpClient, withInterceptors, HttpClient } from '@angular/common/http';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
-import { Observable, of } from 'rxjs';
-import { jwtInterceptor } from './core/interceptors/jwt.interceptor';
+import { provideRouter } from '@angular/router';
+import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { Observable } from 'rxjs';
 import { routes } from './app.routes';
+import { errorToastInterceptor } from './core/interceptors/error-toast.interceptor';
+import { jwtInterceptor } from './core/interceptors/jwt.interceptor';
 
 // Custom loader that loads translations from assets
 class CustomTranslateLoader implements TranslateLoader {
@@ -23,17 +25,18 @@ export function HttpLoaderFactory(http: HttpClient) {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
-    provideHttpClient(withInterceptors([jwtInterceptor])),
+    provideHttpClient(withInterceptors([jwtInterceptor, errorToastInterceptor])),
     provideAnimations(),
     importProvidersFrom(
+      MatSnackBarModule,
       TranslateModule.forRoot({
         defaultLanguage: 'uz',
         loader: {
           provide: TranslateLoader,
           useFactory: HttpLoaderFactory,
-          deps: [HttpClient]
-        }
-      })
-    )
-  ]
+          deps: [HttpClient],
+        },
+      }),
+    ),
+  ],
 };

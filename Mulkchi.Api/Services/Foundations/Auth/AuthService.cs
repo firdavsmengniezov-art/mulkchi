@@ -103,8 +103,15 @@ public partial class AuthService : IAuthService
 
             User addedUser = await this.storageBroker.InsertUserAsync(user);
 
-            // Send email verification
-            await SendEmailVerificationAsync(addedUser);
+            // Do not block account creation when SMTP is misconfigured in development.
+            try
+            {
+                await SendEmailVerificationAsync(addedUser);
+            }
+            catch (Exception exception)
+            {
+                this.loggingBroker.LogError(exception);
+            }
 
             return await GenerateAndSaveAuthResponseAsync(addedUser);
         });

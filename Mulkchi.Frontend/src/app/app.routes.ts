@@ -40,6 +40,13 @@ export const routes: Routes = [
       import('./features/auth/register/register.component').then((m) => m.RegisterComponent),
   },
   {
+    path: 'register-success',
+    loadComponent: () =>
+      import('./features/auth/register-success/register-success.component').then(
+        (m) => m.RegisterSuccessComponent,
+      ),
+  },
+  {
     path: 'forgot-password',
     loadComponent: () =>
       import('./features/auth/forgot-password/forgot-password.component').then(

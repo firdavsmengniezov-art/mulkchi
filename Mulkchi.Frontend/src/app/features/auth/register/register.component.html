@@ -29,7 +29,8 @@
           </div>
 
           <h2 class="text-4xl lg:text-5xl font-bold mb-8 leading-tight">
-            Yangi akkaunt<br>yaratish
+            {{ 'AUTH.REGISTER_PAGE.HERO_TITLE_LINE1' | translate }}<br>{{ 'AUTH.REGISTER_PAGE.HERO_TITLE_LINE2' |
+            translate }}
           </h2>
 
           <div class="space-y-4 text-lg">
@@ -38,28 +39,28 @@
                 stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
               </svg>
-              Bir daqiqada bepul ro'yxatdan o'ting
+              {{ 'AUTH.REGISTER_PAGE.HERO_POINT_1' | translate }}
             </div>
             <div class="flex items-center gap-3">
               <svg class="w-6 h-6 text-green-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                 stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
               </svg>
-              Mulk izlang yoki e'lon bering
+              {{ 'AUTH.REGISTER_PAGE.HERO_POINT_2' | translate }}
             </div>
             <div class="flex items-center gap-3">
               <svg class="w-6 h-6 text-green-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                 stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
               </svg>
-              Xavfsiz va ishonchli to'lovlar
+              {{ 'AUTH.REGISTER_PAGE.HERO_POINT_3' | translate }}
             </div>
             <div class="flex items-center gap-3">
               <svg class="w-6 h-6 text-green-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                 stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
               </svg>
-              24/7 mijozlar qo'llab-quvvatlashi
+              {{ 'AUTH.REGISTER_PAGE.HERO_POINT_4' | translate }}
             </div>
           </div>
         </div>
@@ -68,8 +69,8 @@
       <div class="w-full md:w-1/2 flex items-center justify-center p-6 sm:p-10">
         <div class="w-full max-w-md p-2 sm:p-4 animate-fade-in">
           <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-dark mb-2">Ro'yxatdan o'tish</h1>
-            <p class="text-light">Mulkchi tizimida o'z akkauntingizni yarating</p>
+            <h1 class="text-3xl font-bold text-dark mb-2">{{ 'AUTH.REGISTER' | translate }}</h1>
+            <p class="text-light">{{ 'AUTH.REGISTER_PAGE.SUBTITLE' | translate }}</p>
           </div>
 
           @if (errorMsg) {
@@ -89,38 +90,42 @@
 
             <div class="grid grid-cols-2 gap-4">
               <div class="flex flex-col">
-                <label class="text-sm font-medium text-dark mb-1 ml-1">Ism</label>
-                <input type="text" [(ngModel)]="firstName" name="firstName" placeholder="Ali"
+                <label class="text-sm font-medium text-dark mb-1 ml-1">{{ 'AUTH.FIRST_NAME' | translate }}</label>
+                <input type="text" [(ngModel)]="firstName" name="firstName"
+                  [placeholder]="'AUTH.REGISTER_PAGE.FIRST_NAME_PLACEHOLDER' | translate"
                   class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-dark focus:ring-2 focus:ring-brand focus:border-brand outline-none transition">
               </div>
               <div class="flex flex-col">
-                <label class="text-sm font-medium text-dark mb-1 ml-1">Familiya</label>
-                <input type="text" [(ngModel)]="lastName" name="lastName" placeholder="Valiyev"
+                <label class="text-sm font-medium text-dark mb-1 ml-1">{{ 'AUTH.LAST_NAME' | translate }}</label>
+                <input type="text" [(ngModel)]="lastName" name="lastName"
+                  [placeholder]="'AUTH.REGISTER_PAGE.LAST_NAME_PLACEHOLDER' | translate"
                   class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-dark focus:ring-2 focus:ring-brand focus:border-brand outline-none transition">
               </div>
             </div>
 
             <div class="flex flex-col">
-              <label class="text-sm font-medium text-dark mb-1 ml-1">Email</label>
-              <input type="email" [(ngModel)]="email" name="email" placeholder="email@misol.com"
+              <label class="text-sm font-medium text-dark mb-1 ml-1">{{ 'AUTH.EMAIL' | translate }}</label>
+              <input type="email" [(ngModel)]="email" name="email"
+                [placeholder]="'AUTH.REGISTER_PAGE.EMAIL_PLACEHOLDER' | translate"
                 class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-dark focus:ring-2 focus:ring-brand focus:border-brand outline-none transition">
             </div>
 
             <div class="flex flex-col">
-              <label class="text-sm font-medium text-dark mb-1 ml-1">Telefon raqam</label>
-              <input type="tel" [(ngModel)]="phone" name="phone" placeholder="+998 90 123 45 67"
+              <label class="text-sm font-medium text-dark mb-1 ml-1">{{ 'AUTH.PHONE' | translate }}</label>
+              <input type="tel" [(ngModel)]="phone" name="phone"
+                [placeholder]="'AUTH.REGISTER_PAGE.PHONE_PLACEHOLDER' | translate"
                 class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-dark focus:ring-2 focus:ring-brand focus:border-brand outline-none transition" />
             </div>
 
             <div class="flex flex-col">
-              <label class="text-sm font-medium text-dark mb-1 ml-1">Parol</label>
+              <label class="text-sm font-medium text-dark mb-1 ml-1">{{ 'AUTH.PASSWORD' | translate }}</label>
               <div class="relative">
                 <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" name="password"
-                  placeholder="Kamida 6 ta belgi"
+                  [placeholder]="'AUTH.REGISTER_PAGE.PASSWORD_PLACEHOLDER' | translate"
                   class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 pr-12 py-3 text-dark focus:ring-2 focus:ring-brand focus:border-brand outline-none transition" />
                 <button type="button" (click)="togglePasswordVisibility()"
                   class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-dark"
-                  aria-label="Toggle password visibility">
+                  [attr.aria-label]="'AUTH.REGISTER_PAGE.TOGGLE_PASSWORD' | translate">
                   @if (showPassword) {
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                     stroke="currentColor" class="w-4 h-4">
@@ -140,14 +145,14 @@
             </div>
 
             <div class="flex flex-col">
-              <label class="text-sm font-medium text-dark mb-1 ml-1">Parolni tasdiqlang</label>
+              <label class="text-sm font-medium text-dark mb-1 ml-1">{{ 'AUTH.CONFIRM_PASSWORD' | translate }}</label>
               <div class="relative">
                 <input [type]="showConfirmPassword ? 'text' : 'password'" [(ngModel)]="confirmPassword"
-                  name="confirmPassword" placeholder="Parolni qayta kiriting"
+                  name="confirmPassword" [placeholder]="'AUTH.REGISTER_PAGE.CONFIRM_PASSWORD_PLACEHOLDER' | translate"
                   class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 pr-12 py-3 text-dark focus:ring-2 focus:ring-brand focus:border-brand outline-none transition" />
                 <button type="button" (click)="toggleConfirmPasswordVisibility()"
                   class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-dark"
-                  aria-label="Toggle confirm password visibility">
+                  [attr.aria-label]="'AUTH.REGISTER_PAGE.TOGGLE_CONFIRM_PASSWORD' | translate">
                   @if (showConfirmPassword) {
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                     stroke="currentColor" class="w-4 h-4">
@@ -170,10 +175,10 @@
               <input type="checkbox" [(ngModel)]="acceptTerms" name="acceptTerms"
                 class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand" />
               <span>
-                <a href="#" class="text-brand hover:underline">Foydalanish shartlari</a>
-                va
-                <a href="#" class="text-brand hover:underline">maxfiylik siyosati</a>
-                ga roziman
+                <a href="#" class="text-brand hover:underline">{{ 'AUTH.REGISTER_PAGE.TERMS' | translate }}</a>
+                {{ 'AUTH.REGISTER_PAGE.AND' | translate }}
+                <a href="#" class="text-brand hover:underline">{{ 'AUTH.REGISTER_PAGE.PRIVACY' | translate }}</a>
+                {{ 'AUTH.REGISTER_PAGE.ACCEPT_SUFFIX' | translate }}
               </span>
             </label>
 
@@ -182,15 +187,17 @@
                 <div class="w-full border-t border-gray-200"></div>
               </div>
               <div class="relative flex justify-center text-xs uppercase">
-                <span class="bg-white px-2 text-gray-400">yoki</span>
+                <span class="bg-white px-2 text-gray-400">{{ 'AUTH.OR' | translate }}</span>
               </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
               <button type="button"
-                class="w-full rounded-xl border border-gray-200 py-2.5 text-sm font-medium hover:bg-gray-50 transition">Google</button>
+                class="w-full rounded-xl border border-gray-200 py-2.5 text-sm font-medium hover:bg-gray-50 transition">{{
+                'AUTH.REGISTER_PAGE.GOOGLE' | translate }}</button>
               <button type="button"
-                class="w-full rounded-xl border border-gray-200 py-2.5 text-sm font-medium hover:bg-gray-50 transition">Facebook</button>
+                class="w-full rounded-xl border border-gray-200 py-2.5 text-sm font-medium hover:bg-gray-50 transition">{{
+                'AUTH.REGISTER_PAGE.FACEBOOK' | translate }}</button>
             </div>
 
             <button type="submit" [disabled]="loading"
@@ -203,16 +210,16 @@
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                 </path>
               </svg>
-              <span>Ro'yxatdan o'tilmoqda...</span>
+              <span>{{ 'AUTH.REGISTER_PAGE.LOADING' | translate }}</span>
               } @else {
-              <span>Ro'yxatdan o'tish</span>
+              <span>{{ 'AUTH.REGISTER' | translate }}</span>
               }
             </button>
           </form>
 
           <div class="mt-8 text-center text-sm text-light">
-            Allaqachon hisobingiz bormi?
-            <a routerLink="/login" class="font-bold text-brand hover:underline">Tizimga kirish</a>
+            {{ 'AUTH.HAS_ACCOUNT' | translate }}
+            <a routerLink="/login" class="font-bold text-brand hover:underline">{{ 'AUTH.LOGIN_LINK' | translate }}</a>
           </div>
         </div>
       </div>
@@ -221,6 +228,6 @@
   </main>
 
   <footer class="py-4 px-4 text-center text-sm text-light border-t border-gray-200 bg-white">
-    © 2026 Mulkchi. Barcha huquqlar himoyalangan.
+    {{ 'AUTH.PAGE_FOOTER' | translate }}
   </footer>
 </div>

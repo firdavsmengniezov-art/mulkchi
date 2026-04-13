@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { Subscription } from 'rxjs';
@@ -14,9 +14,12 @@ import { LoggingService } from '../../../core/services/logging.service';
   templateUrl: './ai-recommendations.component.html',
   styleUrls: ['./ai-recommendations.component.scss'],
 })
-export class AiRecommendationsComponent implements OnInit, OnDestroy {
+export class AiRecommendationsComponent implements OnInit, OnChanges, OnDestroy {
   @Input() title: string = 'Siz uchun maxsus tavsiyalar';
   @Input() location: string = '';
+  @Input() latitude: number | null = null;
+  @Input() longitude: number | null = null;
+  @Input() radiusKm: number = 10;
   @Input() type: RecommendationType | null = null;
   @Input() propertyId: string | null = null;
   @Input() limit: number = 10;
@@ -41,7 +44,29 @@ export class AiRecommendationsComponent implements OnInit, OnDestroy {
     }
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!this.autoLoad) {
+      return;
+    }
+
+    const shouldReload =
+      !!changes['location'] ||
+      !!changes['latitude'] ||
+      !!changes['longitude'] ||
+      !!changes['radiusKm'] ||
+      !!changes['type'] ||
+      !!changes['propertyId'] ||
+      !!changes['limit'];
+
+    if (shouldReload && !changes['autoLoad']?.firstChange) {
+      this.loadRecommendations();
+    }
+  }
+
   loadRecommendations(): void {
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
+    this.subscriptions = [];
+
     this.loading = true;
     this.error = '';
 
@@ -50,6 +75,15 @@ export class AiRecommendationsComponent implements OnInit, OnDestroy {
     if (this.propertyId) {
       // Get similar properties for a specific property
       observable = this.aiRecommendationService.getSimilarProperties(this.propertyId, this.limit);
+    } else if (this.latitude != null && this.longitude != null) {
+      observable = this.aiRecommendationService.getRecommendations({
+        latitude: this.latitude,
+        longitude: this.longitude,
+        radiusKm: this.radiusKm,
+        limit: this.limit,
+        includeViewed: false,
+        includeClicked: false,
+      });
     } else if (this.location?.trim()) {
       // Get location-based recommendations
       observable = this.aiRecommendationService.getLocationRecommendations(
@@ -153,7 +187,7 @@ export class AiRecommendationsComponent implements OnInit, OnDestroy {
   }
 
   getRecommendationImage(recommendation: AiRecommendation): string {
-    return recommendation.property.imageUrl || '/assets/images/placeholder-property.jpg';
+    return recommendation.property.imageUrl || '/assets/images/placeholder-property.svg';
   }
 
   isHighScore(score: number): boolean {

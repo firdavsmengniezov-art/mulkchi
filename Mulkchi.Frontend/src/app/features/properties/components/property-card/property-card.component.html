@@ -1,4 +1,4 @@
-<div class="property-card" [routerLink]="['/properties', property.id]">
+<div class="property-card card rounded-xl" [routerLink]="['/properties', property.id]">
   <div class="card-image">
     <img [src]="images[currentImageIndex]" [alt]="property.title" loading="lazy" />
 
@@ -45,12 +45,8 @@
           <span class="price-period">{{ priceSuffix }}</span>
         </div>
       </div>
-      <span
-        class="card-listing-type"
-        [class.rent]="property.listingType === 'Rent'"
-        [class.sale]="property.listingType === 'Sale'"
-        [class.shortterm]="property.listingType === 'DailyRent'"
-      >
+      <span class="card-listing-type" [class.rent]="property.listingType === 'Rent'"
+        [class.sale]="property.listingType === 'Sale'" [class.shortterm]="property.listingType === 'DailyRent'">
         {{ property.listingType === 'Rent' ? 'Ijara' : property.listingType === 'Sale' ? 'Sotish' : 'Qisqa muddatli' }}
       </span>
     </div>

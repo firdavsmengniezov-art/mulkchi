@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -13,7 +13,7 @@ import { PropertyService } from '../../core/services/property.service';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule, TranslateModule],
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss']
+  styleUrls: ['./dashboard.component.scss'],
 })
 export class DashboardComponent implements OnInit {
   properties: any[] = [];
@@ -23,6 +23,7 @@ export class DashboardComponent implements OnInit {
   // Stats
   totalProperties = 0;
   totalBookings = 0;
+  priceTrends: { month: string; averagePrice: number; listingsCount: number }[] = [];
 
   constructor(
     private analyticsService: AnalyticsService,
@@ -38,24 +39,24 @@ export class DashboardComponent implements OnInit {
     this.loading = true;
 
     forkJoin({
-      marketOverview: this.analyticsService
-        .getMarketOverview()
-        .pipe(catchError(() => of(null))),
-      byRegion: this.analyticsService
-        .getByRegion()
-        .pipe(catchError(() => of([]))),
-      properties: this.propertyService
-        .getProperties(1, 50)
-        .pipe(map((result) => result.items ?? []), catchError(() => of([]))),
-      bookings: this.bookingService
-        .getMyBookings(1, 50)
-        .pipe(map((result) => result.items ?? []), catchError(() => of([]))),
-    }).subscribe(({ marketOverview, byRegion, properties, bookings }) => {
+      marketOverview: this.analyticsService.getMarketOverview().pipe(catchError(() => of(null))),
+      byRegion: this.analyticsService.getByRegion().pipe(catchError(() => of([]))),
+      priceTrends: this.analyticsService.getPriceTrends().pipe(catchError(() => of([]))),
+      properties: this.propertyService.getProperties(1, 50).pipe(
+        map((result) => result.items ?? []),
+        catchError(() => of([])),
+      ),
+      bookings: this.bookingService.getMyBookings(1, 50).pipe(
+        map((result) => result.items ?? []),
+        catchError(() => of([])),
+      ),
+    }).subscribe(({ marketOverview, byRegion, priceTrends, properties, bookings }) => {
       const overview = (marketOverview ?? {}) as any;
       const regionData = Array.isArray(byRegion) ? byRegion : [];
 
       this.properties = properties;
       this.bookings = bookings;
+      this.priceTrends = Array.isArray(priceTrends) ? priceTrends.slice(-3).reverse() : [];
       this.totalProperties = Number(
         overview.totalListings ??
           overview.totalProperties ??
@@ -68,7 +69,7 @@ export class DashboardComponent implements OnInit {
   }
 
   deleteProperty(id: string) {
-    if (!confirm('Mulkni o\'chirishni tasdiqlaysizmi?')) return;
+    if (!confirm("Mulkni o'chirishni tasdiqlaysizmi?")) return;
     this.propertyService.deleteProperty(id).subscribe({
       next: () => {
         this.properties = this.properties.filter((p) => p.id !== id);
@@ -78,26 +79,26 @@ export class DashboardComponent implements OnInit {
   }
 
   getListingTypeText(type: string): string {
-    const map: any = { 'Rent': 'Ijara', 'Sale': 'Sotiladi', 'DailyRent': 'Kunlik' };
+    const map: any = { Rent: 'Ijara', Sale: 'Sotiladi', DailyRent: 'Kunlik' };
     return map[type] || type;
   }
 
   getStatusClass(status: string): string {
     const map: any = {
-      'Pending': 'status-pending',
-      'Confirmed': 'status-confirmed',
-      'Cancelled': 'status-cancelled',
-      'Completed': 'status-completed'
+      Pending: 'status-pending',
+      Confirmed: 'status-confirmed',
+      Cancelled: 'status-cancelled',
+      Completed: 'status-completed',
     };
     return map[status] || '';
   }
 
   getStatusText(status: string): string {
     const map: any = {
-      'Pending': 'Kutilmoqda',
-      'Confirmed': 'Tasdiqlangan',
-      'Cancelled': 'Bekor qilingan',
-      'Completed': 'Tugallangan'
+      Pending: 'Kutilmoqda',
+      Confirmed: 'Tasdiqlangan',
+      Cancelled: 'Bekor qilingan',
+      Completed: 'Tugallangan',
     };
     return map[status] || status;
   }
@@ -107,5 +108,9 @@ export class DashboardComponent implements OnInit {
     if (p.salePrice) return `$${p.salePrice.toLocaleString()}`;
     if (p.pricePerNight) return `$${p.pricePerNight}/kun`;
     return 'Narx mavjud emas';
+  }
+
+  get latestAveragePrice(): number {
+    return this.priceTrends[0]?.averagePrice ?? 0;
   }
 }

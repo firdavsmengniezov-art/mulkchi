@@ -63,14 +63,27 @@
           <div class="relative">
             <img [src]="getRecommendationImage(recommendation)" [alt]="recommendation.property.title"
               class="w-full h-48 object-cover rounded-lg"
-              (error)="$event.target.src='/assets/images/placeholder-property.jpg'">
+              (error)="$event.target.src='/assets/images/placeholder-property.svg'">
+
 
             <!-- Recommendation Badge -->
-            <div class="absolute top-2 left-2">
+            <div class="absolute top-2 left-2 flex flex-col gap-2">
               <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
                 [class]="getRecommendationTypeColor(recommendation.recommendationType)">
                 {{ getRecommendationTypeLabel(recommendation.recommendationType) }}
               </span>
+              <span *ngIf="recommendation.property.distanceKm != null"
+                class="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-blue-700 border border-blue-200">
+                {{ recommendation.property.distanceKm | number:'1.0-1' }} km {{ recommendation.property.distanceKm < 5
+                  ? 'yaqin' : 'uzoq' }} </span>
+                  <button type="button"
+                    class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-50 text-blue-700 text-xs border border-blue-200 hover:bg-blue-100 transition"
+                    title="Joylashuvni saqlash">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Saqlash
+                  </button>
             </div>
 
             <!-- Score Badge -->
@@ -149,7 +162,7 @@
         <div class="relative">
           <img [src]="getRecommendationImage(recommendation)" [alt]="recommendation.property.title"
             class="w-full h-48 object-cover rounded-lg"
-            (error)="$event.target.src='/assets/images/placeholder-property.jpg'">
+            (error)="$event.target.src='/assets/images/placeholder-property.svg'">
 
           <!-- Recommendation Badge -->
           <div class="absolute top-2 left-2">

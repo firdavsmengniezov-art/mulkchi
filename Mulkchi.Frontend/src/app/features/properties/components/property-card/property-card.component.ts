@@ -19,7 +19,7 @@ export class PropertyCardComponent {
 
   get images(): string[] {
     return this.property.images?.length
-      ? this.property.images.map(image => image.url)
+      ? this.property.images.map((image) => image.url)
       : ['/assets/images/property-placeholder.jpg'];
   }
 
@@ -52,7 +52,3 @@ export class PropertyCardComponent {
     return '';
   }
 }
-
-
-
-

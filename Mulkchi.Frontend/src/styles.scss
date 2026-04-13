@@ -15,7 +15,17 @@
   --mulk-text-2: #7f8c8d;
   --mulk-border: rgba(44, 62, 80, 0.12);
   --mulk-radius: 10px;
+  --mulk-radius-lg: 18px;
+  --mulk-radius-xl: 24px;
+  --mulk-radius-full: 999px;
+  --mulk-spacing-xs: 4px;
+  --mulk-spacing-sm: 8px;
+  --mulk-spacing-md: 12px;
+  --mulk-spacing-lg: 20px;
+  --mulk-spacing-xl: 32px;
   --mulk-shadow: 0 2px 12px rgba(192, 57, 43, 0.08);
+  --mulk-shadow-lg: 0 8px 24px rgba(44, 62, 80, 0.06);
+}
 }
 
 @layer base {
@@ -26,9 +36,68 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-brand text-white px-5 py-3 rounded-xl font-semibold transition hover:opacity-90 shadow-md;
+    @apply bg-brand text-white px-5 py-3 font-semibold transition hover:opacity-90 shadow-md;
+    border-radius: var(--mulk-radius-xl);
   }
   .btn-outline {
-    @apply border border-gray-300 bg-white text-dark px-5 py-3 rounded-xl font-semibold transition hover:border-dark shadow-sm;
+    @apply border border-gray-300 bg-white text-dark px-5 py-3 font-semibold transition hover:border-dark shadow-sm;
+    border-radius: var(--mulk-radius-xl);
   }
+  .card {
+    background: #fff;
+    border: 1px solid var(--mulk-border);
+    border-radius: var(--mulk-radius-lg);
+    box-shadow: var(--mulk-shadow);
+    padding: var(--mulk-spacing-lg);
+  }
+  .card-xl {
+    border-radius: var(--mulk-radius-xl);
+    box-shadow: var(--mulk-shadow-lg);
+    padding: var(--mulk-spacing-xl);
+  }
+  .rounded-xl {
+    border-radius: var(--mulk-radius-xl) !important;
+  }
+  .rounded-lg {
+    border-radius: var(--mulk-radius-lg) !important;
+  }
+  .rounded-full {
+    border-radius: var(--mulk-radius-full) !important;
+  }
+  .shadow-lg {
+    box-shadow: var(--mulk-shadow-lg) !important;
+  }
+  .shadow {
+    box-shadow: var(--mulk-shadow) !important;
+  }
+  .p-lg {
+    padding: var(--mulk-spacing-lg) !important;
+  }
+  .p-xl {
+    padding: var(--mulk-spacing-xl) !important;
+  }
+  .gap-md {
+    gap: var(--mulk-spacing-md) !important;
+  }
+  .gap-lg {
+    gap: var(--mulk-spacing-lg) !important;
+  }
+  .gap-xl {
+    gap: var(--mulk-spacing-xl) !important;
+  }
+}
+
+.toast-success {
+  --mdc-snackbar-container-color: #166534;
+  --mdc-snackbar-supporting-text-color: #ffffff;
+}
+
+.toast-error {
+  --mdc-snackbar-container-color: #b91c1c;
+  --mdc-snackbar-supporting-text-color: #ffffff;
+}
+
+.toast-info {
+  --mdc-snackbar-container-color: #1d4ed8;
+  --mdc-snackbar-supporting-text-color: #ffffff;
 }

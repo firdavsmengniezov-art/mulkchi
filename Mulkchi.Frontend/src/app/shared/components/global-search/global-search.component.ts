@@ -1,23 +1,20 @@
-import { Component, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 
+import { AnnouncementService } from '../../../core/services/announcement.service';
 import { PropertyService } from '../../../core/services/property.service';
 import { UserService } from '../../../core/services/user.service';
-import { AnnouncementService } from '../../../core/services/announcement.service';
-import { Property } from '../../../core/models/property.model';
-import { User } from '../../../core/models/user.model';
-import { Announcement } from '../../../core/models/announcement.model';
 
 @Component({
   selector: 'app-global-search',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './global-search.component.html',
-  styleUrls: ['./global-search.component.scss']
+  styleUrls: ['./global-search.component.scss'],
 })
 export class GlobalSearchComponent implements OnInit {
   @Output() searchClosed = new EventEmitter<void>();
@@ -33,18 +30,20 @@ export class GlobalSearchComponent implements OnInit {
     private propertyService: PropertyService,
     private userService: UserService,
     private announcementService: AnnouncementService,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
-    this.searchSubject.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
-      switchMap(query => this.performSearch(query))
-    ).subscribe(results => {
-      this.searchResults = results;
-      this.isSearching = false;
-    });
+    this.searchSubject
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap((query) => this.performSearch(query)),
+      )
+      .subscribe((results) => {
+        this.searchResults = results;
+        this.isSearching = false;
+      });
   }
 
   onSearchInput(): void {
@@ -62,17 +61,19 @@ export class GlobalSearchComponent implements OnInit {
 
     // Search properties using the real backend search endpoint with query param
     if (this.selectedCategory === 'all' || this.selectedCategory === 'properties') {
-      return new Promise(resolve => {
+      return new Promise((resolve) => {
         this.propertyService
           .searchProperties({ page: 1, pageSize: 5, title: query, city: query } as any)
           .subscribe({
             next: (response: any) => {
               const items: any[] = response.items || [];
               items.forEach((property: any) => {
-                const price = property.monthlyRent || property.salePrice || property.pricePerNight || 0;
-                const imageUrl = property.images?.[0]?.thumbnailUrl ||
-                                 property.images?.[0]?.url ||
-                                 '/assets/images/placeholder-property.jpg';
+                const price =
+                  property.monthlyRent || property.salePrice || property.pricePerNight || 0;
+                const imageUrl =
+                  property.images?.[0]?.thumbnailUrl ||
+                  property.images?.[0]?.url ||
+                  '/assets/images/placeholder-property.svg';
                 results.push({
                   type: 'property',
                   id: property.id,
@@ -92,7 +93,7 @@ export class GlobalSearchComponent implements OnInit {
 
     // Search users (admin only)
     if ((this.selectedCategory === 'all' || this.selectedCategory === 'users') && this.isAdmin()) {
-      return new Promise(resolve => {
+      return new Promise((resolve) => {
         this.userService.searchUsers(query, 1, 5).subscribe({
           next: (response: any) => {
             response.items.forEach((user: any) => {
@@ -115,7 +116,7 @@ export class GlobalSearchComponent implements OnInit {
 
     // Search announcements
     if (this.selectedCategory === 'all' || this.selectedCategory === 'announcements') {
-      return new Promise(resolve => {
+      return new Promise((resolve) => {
         this.announcementService.getAnnouncements(1, 5).subscribe({
           next: (response: any) => {
             const items: any[] = response.items || [];
@@ -170,16 +171,16 @@ export class GlobalSearchComponent implements OnInit {
     const icons: Record<string, string> = {
       property: '🏠',
       user: '👤',
-      announcement: '📢'
+      announcement: '📢',
     };
     return icons[type] || '📄';
   }
 
   getResultTypeLabel(type: string): string {
     const labels: Record<string, string> = {
-      property: 'Ob\'ekt',
+      property: "Ob'ekt",
       user: 'Foydalanuvchi',
-      announcement: 'E\'lon'
+      announcement: "E'lon",
     };
     return labels[type] || type;
   }
@@ -188,7 +189,7 @@ export class GlobalSearchComponent implements OnInit {
     const colors: Record<string, string> = {
       property: 'bg-blue-100 text-blue-800',
       user: 'bg-green-100 text-green-800',
-      announcement: 'bg-purple-100 text-purple-800'
+      announcement: 'bg-purple-100 text-purple-800',
     };
     return colors[type] || 'bg-gray-100 text-gray-800';
   }

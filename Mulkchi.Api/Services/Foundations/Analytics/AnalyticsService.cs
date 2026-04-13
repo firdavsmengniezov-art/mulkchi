@@ -70,19 +70,30 @@ public class AnalyticsService : IAnalyticsService
     {
         var twelveMonthsAgo = System.DateTimeOffset.UtcNow.AddMonths(-12);
 
-        var priceTrends = await this.storageBroker.Properties
+        var monthlyData = await this.storageBroker.Properties
             .Where(p => !p.DeletedDate.HasValue && p.CreatedDate >= twelveMonthsAgo)
             .GroupBy(p => new { p.CreatedDate.Year, p.CreatedDate.Month })
             .Select(g => new
             {
-                month = $"{g.Key.Year}-{g.Key.Month:D2}",
+                year = g.Key.Year,
+                monthNumber = g.Key.Month,
                 averagePrice = g
                     .Where(p => p.SalePrice.HasValue && p.SalePrice > 0)
                     .Average(p => (decimal?)p.SalePrice) ?? 0,
                 listingsCount = g.Count()
             })
-            .OrderBy(x => x.month)
+            .OrderBy(x => x.year)
+            .ThenBy(x => x.monthNumber)
             .ToListAsync();
+
+        var priceTrends = monthlyData
+            .Select(item => new
+            {
+                month = $"{item.year}-{item.monthNumber:D2}",
+                item.averagePrice,
+                item.listingsCount
+            })
+            .ToList();
 
         return priceTrends;
     }
