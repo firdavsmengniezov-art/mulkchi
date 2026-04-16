@@ -91,7 +91,7 @@ export class PaymentService {
     return `https://my.click.uz/services/pay?${params.toString()}`;
   }
 
-  private handleError(error: HttpErrorResponse) {
+  private handleError = (error: HttpErrorResponse) => {
     this.logger.error('Payment API Error:', error);
     return throwError(() => error);
   }

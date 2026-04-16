@@ -180,7 +180,7 @@ export class UserService {
     return new Date(dateString).toLocaleString('uz-UZ');
   }
 
-  private handleError(error: any): Observable<never> {
+  private handleError = (error: any): Observable<never> => {
     this.logger.error('UserService error:', error);
     let errorMessage = 'An error occurred with user operations';
 

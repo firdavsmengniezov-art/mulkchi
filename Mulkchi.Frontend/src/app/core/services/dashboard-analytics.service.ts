@@ -302,7 +302,7 @@ export class DashboardAnalyticsService {
     };
   }
 
-  private handleError(error: any): Observable<never> {
+  private handleError = (error: any): Observable<never> => {
     this.logger.error('DashboardAnalyticsService error:', error);
     let errorMessage = 'An error occurred with analytics data';
 

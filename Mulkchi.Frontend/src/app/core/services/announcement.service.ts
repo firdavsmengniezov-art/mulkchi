@@ -58,7 +58,7 @@ export class AnnouncementService {
     });
   }
 
-  private handleError(error: any): Observable<never> {
+  private handleError = (error: any): Observable<never> => {
     this.logger.error('AnnouncementService error:', error);
     let errorMessage = 'An error occurred with announcements';
 

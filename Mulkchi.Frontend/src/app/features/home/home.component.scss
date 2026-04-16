@@ -1,11 +1,128 @@
+/* Home Component Specific Styles */
+:host {
+  display: block;
+}
+
+/* Hero Section Animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.hero-search {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Property Card Hover Effects */
+.property-card {
+  transition: all var(--transition-base);
+}
+
+.property-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-elevated);
+}
+
+.property-card-image {
+  transition: transform var(--transition-base);
+}
+
+.property-card:hover .property-card-image {
+  transform: scale(1.05);
+}
+
+/* Stats Counter Animation */
+@keyframes countUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stat-card {
+  animation: countUp 0.6s ease-out forwards;
+}
+
+.stat-card:nth-child(1) { animation-delay: 0.1s; }
+.stat-card:nth-child(2) { animation-delay: 0.2s; }
+.stat-card:nth-child(3) { animation-delay: 0.3s; }
+.stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+/* Feature Card Hover Effects */
+.feature-card {
+  transition: all var(--transition-base);
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+}
+
+.feature-card:hover .feature-icon {
+  transform: scale(1.1);
+}
+
+.feature-icon {
+  transition: transform var(--transition-base);
+}
+
+/* CTA Section Background Pattern */
+.cta-pattern {
+  background-image: 
+    radial-gradient(circle at 20% 50%, rgba(201, 168, 76, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(27, 58, 107, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 20%, rgba(201, 168, 76, 0.05) 0%, transparent 50%);
+}
+
+/* Search Form Focus Effects */
+.search-input:focus {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(27, 58, 107, 0.15);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: var(--text-3xl);
+  }
+  
+  .property-card {
+    margin-bottom: var(--space-4);
+  }
+  
+  .feature-card {
+    margin-bottom: var(--space-6);
+  }
+}
+
+/* Loading States */
+.skeleton-property {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Uzbek Ornament Pattern */
 .uzbek-ornament {
   height: 10px;
   border-radius: 999px;
   background-image: repeating-conic-gradient(
     from 45deg,
-    var(--mulk-primary) 0deg 25deg,
+    var(--color-primary) 0deg 25deg,
     transparent 25deg 50deg,
-    var(--mulk-gold) 50deg 75deg,
+    var(--color-accent) 50deg 75deg,
     transparent 75deg 100deg
   );
   background-size: 24px 24px;

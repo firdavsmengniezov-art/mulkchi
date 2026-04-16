@@ -20,6 +20,7 @@ export class DashboardComponent implements OnInit {
   bookings: any[] = [];
   loading = true;
   activeTab = 'properties';
+  activeSection = 'overview';
   // Stats
   totalProperties = 0;
   totalBookings = 0;
@@ -112,5 +113,15 @@ export class DashboardComponent implements OnInit {
 
   get latestAveragePrice(): number {
     return this.priceTrends[0]?.averagePrice ?? 0;
+  }
+
+  // New methods for redesigned dashboard
+  setActiveSection(section: string) {
+    this.activeSection = section;
+  }
+
+  editProperty(id: string) {
+    // TODO: Implement edit property functionality
+    console.log('Edit property:', id);
   }
 }

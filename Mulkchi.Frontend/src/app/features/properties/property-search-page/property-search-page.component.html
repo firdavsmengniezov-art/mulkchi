@@ -1,68 +1,283 @@
-<!-- Sticky filter bar -->
-<app-property-filter-bar [initialParams]="params" (filtersChanged)="onFiltersChanged($event)"></app-property-filter-bar>
+<!-- Search Page Header -->
+<div class="search-header bg-white border-b border-gray-200 sticky top-16 z-40">
+  <div class="container py-4">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <!-- Results Count -->
+      <div class="flex items-center gap-2">
+        <h1 class="text-xl font-semibold text-gray-900">
+          <span *ngIf="!isLoading">{{ totalCount }} ta mulk topildi</span>
+          <span *ngIf="isLoading">Qidirilmoqda...</span>
+        </h1>
+        <span class="text-sm text-gray-500" *ngIf="searchLocation">
+          {{ searchLocation }}
+        </span>
+      </div>
 
-<div class="search-page-content">
-	<!-- Results header -->
-	<div class="results-header">
-		<div class="results-count" *ngIf="!isLoading">
-			<strong>{{ totalCount }}</strong> <span>ta mulk topildi</span>
-		</div>
-		<div class="header-actions">
-			<button class="view-toggle-btn" (click)="toggleView()" title="{{ showMapView ? 'Ro\'yxat ko\'rinishi' : 'Xarita ko\'rinishi' }}">
-				<span *ngIf="!showMapView">🗺️ Xarita</span>
-				<span *ngIf="showMapView">☰ Ro'yxat</span>
-			</button>
-			<select class="sort-select" [(ngModel)]="params.sortBy" (change)="loadProperties()">
-				<option [ngValue]="undefined">Saralash</option>
-				<option value="price_asc">💰 Arzon birinchi</option>
-				<option value="price_desc">💎 Qimmat birinchi</option>
-				<option value="rating">⭐ Reyting bo'yicha</option>
-				<option value="newest">🆕 Yangi birinchi</option>
-			</select>
-		</div>
-	</div>
+      <!-- View Controls -->
+      <div class="flex items-center gap-3">
+        <!-- View Toggle -->
+        <div class="flex bg-gray-100 rounded-lg p-1">
+          <button 
+            class="px-3 py-2 rounded-md text-sm font-medium transition-colors"
+            [class]="!showMapView ? 'bg-white text-primary shadow-sm' : 'text-gray-600 hover:text-gray-900'"
+            (click)="setViewMode(false)"
+            title="Ro'yxat ko'rinishi">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
+          <button 
+            class="px-3 py-2 rounded-md text-sm font-medium transition-colors"
+            [class]="showMapView ? 'bg-white text-primary shadow-sm' : 'text-gray-600 hover:text-gray-900'"
+            (click)="setViewMode(true)"
+            title="Xarita ko'rinishi">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+            </svg>
+          </button>
+        </div>
 
-	<!-- Map view -->
-	<div class="map-view" *ngIf="showMapView && !isLoading">
-		<app-property-map
-			*ngIf="mapMarkers.length > 0; else noMapMarkers"
-			[markers]="mapMarkers"
-			[zoom]="11"
-			height="600px">
-		</app-property-map>
-		<ng-template #noMapMarkers>
-			<div class="empty-state">
-				<div class="empty-icon">🗺️</div>
-				<p>Xaritada ko'rsatish uchun koordinatali mulklar topilmadi.</p>
-			</div>
-		</ng-template>
-	</div>
+        <!-- Sort Dropdown -->
+        <select 
+          [(ngModel)]="params.sortBy" 
+          (change)="loadProperties()"
+          class="form-select w-auto text-sm">
+          <option [ngValue]="undefined">Saralash</option>
+          <option value="price_asc">Arzon birinchi</option>
+          <option value="price_desc">Qimmat birinchi</option>
+          <option value="rating">Reyting bo'yicha</option>
+          <option value="newest">Yangi birinchi</option>
+          <option value="size_m2_asc">Maydon bo'yicha</option>
+        </select>
 
-	<!-- Skeleton loading -->
-	<div class="properties-grid" *ngIf="isLoading">
-		<app-property-skeleton *ngFor="let s of skeletonArray"></app-property-skeleton>
-	</div>
+        <!-- Save Search -->
+        <button 
+          (click)="saveSearch()"
+          class="btn btn-ghost btn-sm"
+          title="Qidiruvni saqlash">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
-	<!-- Results grid (hidden when map view is active) -->
-	<div class="properties-grid" *ngIf="!isLoading && !showMapView && properties.length > 0">
-		<app-property-card *ngFor="let property of properties" [property]="property"
-			(favoriteToggled)="onFavoriteToggled($event)"></app-property-card>
-	</div>
+<!-- Main Content Area -->
+<div class="container py-6">
+  <div class="flex flex-col lg:flex-row gap-6">
+    <!-- Filter Sidebar -->
+    <aside class="lg:w-80 flex-shrink-0" *ngIf="!showMapView">
+      <div class="card sticky top-32">
+        <div class="card-header">
+          <div class="flex items-center justify-between">
+            <h3 class="font-semibold text-gray-900">Filtrlar</h3>
+            <button 
+              (click)="resetFilters()"
+              class="text-sm text-primary hover:text-primary-light">
+              Tozalash
+            </button>
+          </div>
+        </div>
+        
+        <div class="card-body space-y-6">
+          <!-- Property Type -->
+          <div class="form-group">
+            <label class="form-label">Mulk turi</label>
+            <div class="space-y-2">
+              <label class="flex items-center cursor-pointer">
+                <input type="checkbox" [(ngModel)]="filters.apartment" class="mr-2" (change)="applyFilters()">
+                <span class="text-sm">Kvartira</span>
+              </label>
+              <label class="flex items-center cursor-pointer">
+                <input type="checkbox" [(ngModel)]="filters.house" class="mr-2" (change)="applyFilters()">
+                <span class="text-sm">Uy</span>
+              </label>
+              <label class="flex items-center cursor-pointer">
+                <input type="checkbox" [(ngModel)]="filters.land" class="mr-2" (change)="applyFilters()">
+                <span class="text-sm">Yer uchastkasi</span>
+              </label>
+              <label class="flex items-center cursor-pointer">
+                <input type="checkbox" [(ngModel)]="filters.commercial" class="mr-2" (change)="applyFilters()">
+                <span class="text-sm">Kommersiya</span>
+              </label>
+            </div>
+          </div>
 
-	<!-- Empty state (Inline instead of separate component for now) -->
-	<div class="empty-state" *ngIf="!isLoading && properties.length === 0">
-		<div class="empty-icon">🏡</div>
-		<h3>Mulklar topilmadi</h3>
-		<p>Boshqa filtrlarni tanlab ko'ring.</p>
-		<button class="btn-clear" (click)="onFiltersChanged({ page: 1, pageSize: 12 })">
-			Filtrlarni tozalash
-		</button>
-	</div>
+          <!-- Price Range -->
+          <div class="form-group">
+            <label class="form-label">Narx, $</label>
+            <div class="grid grid-cols-2 gap-2">
+              <input 
+                type="number" 
+                [(ngModel)]="filters.minPrice"
+                placeholder="Dan"
+                class="form-input text-sm"
+                (input)="debounceFilter()">
+              <input 
+                type="number" 
+                [(ngModel)]="filters.maxPrice"
+                placeholder="Gacha"
+                class="form-input text-sm"
+                (input)="debounceFilter()">
+            </div>
+            <!-- Price Range Slider -->
+            <div class="mt-3">
+              <input 
+                type="range" 
+                [(ngModel)]="filters.maxPrice"
+                min="0" 
+                max="500000" 
+                step="10000"
+                class="w-full"
+                (input)="debounceFilter()">
+            </div>
+          </div>
 
-	<!-- Pagination (only in list view) -->
-	<div class="pagination" *ngIf="!isLoading && !showMapView && totalPages > 1">
-		<button [disabled]="params.page === 1" (click)="onPageChange(params.page! - 1)">‹</button>
-		<span class="page-info">{{ params.page }} / {{ totalPages }}</span>
-		<button [disabled]="params.page === totalPages" (click)="onPageChange(params.page! + 1)">›</button>
-	</div>
+          <!-- Rooms -->
+          <div class="form-group">
+            <label class="form-label">Xonalar soni</label>
+            <div class="grid grid-cols-3 gap-2">
+              <button 
+                *ngFor="let rooms of [1,2,3,4,5,6]"
+                (click)="toggleRooms(rooms)"
+                [class]="filters.rooms?.includes(rooms) ? 'btn-primary' : 'btn-outline'"
+                class="btn btn-sm">
+                {{ rooms }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Area -->
+          <div class="form-group">
+            <label class="form-label">Maydon, m²</label>
+            <div class="grid grid-cols-2 gap-2">
+              <input 
+                type="number" 
+                [(ngModel)]="filters.minArea"
+                placeholder="Dan"
+                class="form-input text-sm"
+                (input)="debounceFilter()">
+              <input 
+                type="number" 
+                [(ngModel)]="filters.maxArea"
+                placeholder="Gacha"
+                class="form-input text-sm"
+                (input)="debounceFilter()">
+            </div>
+          </div>
+
+          <!-- Additional Features -->
+          <div class="form-group">
+            <label class="form-label">Qo'shimcha imkoniyatlar</label>
+            <div class="space-y-2">
+              <label class="flex items-center cursor-pointer">
+                <input type="checkbox" [(ngModel)]="filters.hasParking" class="mr-2" (change)="applyFilters()">
+                <span class="text-sm">Parking</span>
+              </label>
+              <label class="flex items-center cursor-pointer">
+                <input type="checkbox" [(ngModel)]="filters.hasFurniture" class="mr-2" (change)="applyFilters()">
+                <span class="text-sm">Mebel</span>
+              </label>
+              <label class="flex items-center cursor-pointer">
+                <input type="checkbox" [(ngModel)]="filters.newBuilding" class="mr-2" (change)="applyFilters()">
+                <span class="text-sm">Yangi bino</span>
+              </label>
+              <label class="flex items-center cursor-pointer">
+                <input type="checkbox" [(ngModel)]="filters.hasRepair" class="mr-2" (change)="applyFilters()">
+                <span class="text-sm">Ta'mir</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1">
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div *ngFor="let i of [1,2,3,4,5,6]" class="skeleton h-80 rounded-lg"></div>
+      </div>
+
+      <!-- Map View -->
+      <div *ngIf="showMapView && !isLoading" class="map-container">
+        <div class="card">
+          <div class="relative h-[600px]">
+            <app-property-map
+              *ngIf="mapMarkers.length > 0; else noMapMarkers"
+              [markers]="mapMarkers"
+              [zoom]="11"
+              height="600px">
+            </app-property-map>
+            <ng-template #noMapMarkers>
+              <div class="flex flex-col items-center justify-center h-full text-gray-500">
+                <svg class="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                </svg>
+                <p class="text-lg font-medium">Xaritada ko'rsatish uchun koordinatali mulklar topilmadi</p>
+                <p class="text-sm mt-2">Ba'zi mulklar xaritada ko'rsatilmaydi</p>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+
+      <!-- Properties Grid -->
+      <div *ngIf="!isLoading && !showMapView && properties.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <app-property-card 
+          *ngFor="let property of properties" 
+          [property]="property"
+          (favoriteToggled)="onFavoriteToggled($event)">
+        </app-property-card>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!isLoading && properties.length === 0" class="text-center py-16">
+        <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2">Mulklar topilmadi</h3>
+        <p class="text-gray-600 mb-6">Boshqa filtrlarni tanlab ko'ring yoki qidiruv shartlarini o'zgartiring</p>
+        <button (click)="resetFilters()" class="btn btn-primary">
+          Filtrlarni tozalash
+        </button>
+      </div>
+
+      <!-- Pagination -->
+      <div *ngIf="!isLoading && !showMapView && totalPages > 1" class="flex items-center justify-center mt-8 space-x-2">
+        <button 
+          [disabled]="params.page === 1"
+          (click)="onPageChange(params.page! - 1)"
+          class="btn btn-outline btn-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        
+        <!-- Page Numbers -->
+        <div class="flex space-x-1">
+          <button 
+            *ngFor="let page of getPageNumbers()"
+            (click)="onPageChange(page)"
+            [class]="page === params.page ? 'btn-primary btn-sm' : 'btn btn-ghost btn-sm'"
+            class="min-w-[40px]">
+            {{ page }}
+          </button>
+        </div>
+        
+        <button 
+          [disabled]="params.page === totalPages"
+          (click)="onPageChange(params.page! + 1)"
+          class="btn btn-outline btn-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+    </main>
+  </div>
 </div>

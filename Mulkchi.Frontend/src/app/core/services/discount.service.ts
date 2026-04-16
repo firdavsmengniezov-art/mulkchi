@@ -176,7 +176,7 @@ export class DiscountService {
     return discount.maxUsageCount ? discount.currentUsageCount >= discount.maxUsageCount : false;
   }
 
-  private handleError(error: any): Observable<never> {
+  private handleError = (error: any): Observable<never> => {
     this.logger.error('DiscountService error:', error);
     let errorMessage = 'An error occurred with discounts';
     

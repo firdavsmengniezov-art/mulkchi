@@ -212,7 +212,7 @@ export class RentalContractService {
     }
   }
 
-  private handleError(error: any): Observable<never> {
+  private handleError = (error: any): Observable<never> => {
     this.logger.error('RentalContractService error:', error);
     let errorMessage = 'An error occurred with rental contracts';
     

@@ -19,6 +19,12 @@ interface PagedResult<T> {
   pageSize: number;
 }
 
+interface SearchQuery {
+  location: string;
+  propertyType: string;
+  priceRange: string;
+}
+
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -52,6 +58,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   searchPriceMax = 500000;
   showAdvancedFilters = false;
   rooms = '';
+
+  // New search query for redesigned form
+  searchQuery: SearchQuery = {
+    location: '',
+    propertyType: '',
+    priceRange: ''
+  };
 
   // Regions list
   regions = [
@@ -144,6 +157,45 @@ export class HomeComponent implements OnInit, OnDestroy {
         rooms: this.rooms || undefined,
       },
     });
+    // Small delay just to show the spinner UX feedback
+    setTimeout(() => {
+      this.isSearching = false;
+    }, 300);
+  }
+
+  onSearch(event: Event) {
+    event.preventDefault();
+    this.isSearching = true;
+    
+    // Parse price range if provided
+    let minPrice = undefined;
+    let maxPrice = undefined;
+    
+    if (this.searchQuery.priceRange) {
+      if (this.searchQuery.priceRange === '0-50000') {
+        minPrice = 0;
+        maxPrice = 50000;
+      } else if (this.searchQuery.priceRange === '50000-100000') {
+        minPrice = 50000;
+        maxPrice = 100000;
+      } else if (this.searchQuery.priceRange === '100000-200000') {
+        minPrice = 100000;
+        maxPrice = 200000;
+      } else if (this.searchQuery.priceRange === '200000+') {
+        minPrice = 200000;
+        maxPrice = undefined;
+      }
+    }
+
+    this.router.navigate(['/properties'], {
+      queryParams: {
+        location: this.searchQuery.location || undefined,
+        type: this.searchQuery.propertyType || undefined,
+        minPrice: minPrice,
+        maxPrice: maxPrice,
+      },
+    });
+
     // Small delay just to show the spinner UX feedback
     setTimeout(() => {
       this.isSearching = false;

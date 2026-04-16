@@ -113,4 +113,31 @@ export class PropertyDetailPageComponent implements OnInit {
       },
     });
   }
+
+  // New methods for redesigned UI
+  toggleFavorite() {
+    // TODO: Implement favorite toggle functionality
+    console.log('Toggle favorite for property:', this.property?.id);
+  }
+
+  shareProperty() {
+    if (navigator.share) {
+      navigator.share({
+        title: this.property?.title,
+        text: this.property?.description,
+        url: window.location.href
+      }).catch(err => console.log('Error sharing:', err));
+    } else {
+      // Fallback: Copy to clipboard
+      this.copyToClipboard(window.location.href);
+    }
+  }
+
+  copyToClipboard(text: string) {
+    navigator.clipboard.writeText(text).then(() => {
+      alert('Link muvaffaqiyatli nusxalandi!');
+    }).catch(err => {
+      console.error('Failed to copy:', err);
+    });
+  }
 }
