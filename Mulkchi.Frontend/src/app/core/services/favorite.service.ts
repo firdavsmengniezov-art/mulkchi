@@ -68,7 +68,7 @@ export class FavoriteService {
     );
   }
 
-  private handleError(error: HttpErrorResponse) {
+  private handleError = (error: HttpErrorResponse) => {
     this.logger.error('Favorite API Error:', error);
     return throwError(() => error);
   }

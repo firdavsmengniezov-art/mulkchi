@@ -364,7 +364,7 @@ export class AiRecommendationService {
     return (type as RecommendationType) || RecommendationType.PreferenceBased;
   }
 
-  private handleError(error: any): Observable<never> {
+  private handleError = (error: any): Observable<never> => {
     this.logger.error('AiRecommendationService error:', error);
     let errorMessage = 'An error occurred with AI recommendations';
 

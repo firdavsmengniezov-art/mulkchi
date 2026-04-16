@@ -96,7 +96,7 @@ export class BookingService {
       .pipe(catchError(this.handleError));
   }
 
-  private handleError(error: HttpErrorResponse) {
+  private handleError = (error: HttpErrorResponse) => {
     this.logger.error('Booking API Error:', error);
     return throwError(() => error);
   }

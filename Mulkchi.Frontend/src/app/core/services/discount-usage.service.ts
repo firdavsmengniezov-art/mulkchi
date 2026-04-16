@@ -80,7 +80,7 @@ export class DiscountUsageService {
     );
   }
 
-  private handleError(error: any): Observable<never> {
+  private handleError = (error: any): Observable<never> => {
     this.logger.error('DiscountUsageService error:', error);
     let errorMessage = 'An error occurred with discount usages';
 

@@ -61,7 +61,7 @@ export class SavedSearchService {
     );
   }
 
-  private handleError(error: HttpErrorResponse) {
+  private handleError = (error: HttpErrorResponse) => {
     this.logger.error('SavedSearch API Error:', error);
     return throwError(() => error);
   }

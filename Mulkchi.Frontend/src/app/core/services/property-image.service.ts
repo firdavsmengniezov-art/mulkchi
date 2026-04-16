@@ -102,7 +102,7 @@ export class PropertyImageService {
       .pipe(catchError(this.handleError));
   }
 
-  private handleError(error: any): Observable<never> {
+  private handleError = (error: any): Observable<never> => {
     this.logger.error('PropertyImageService error:', error);
     let errorMessage = 'An error occurred with property images';
 

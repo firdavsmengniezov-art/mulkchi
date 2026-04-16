@@ -63,8 +63,12 @@ export class PropertyService {
       .pipe(catchError(this.handleError));
   }
 
-  private handleError(error: HttpErrorResponse) {
-    this.logger.error('API Error:', error);
+  private handleError = (error: HttpErrorResponse) => {
+    if (this.logger) {
+      this.logger.error('API Error:', error);
+    } else {
+      console.error('API Error (logger not available):', error);
+    }
     return throwError(() => error);
   }
 }

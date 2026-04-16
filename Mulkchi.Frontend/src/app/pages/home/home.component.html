@@ -1,0 +1,168 @@
+<!-- Home Page - PropTech Design System -->
+<div class="home-page">
+  
+  <!-- Navbar -->
+  <app-navbar></app-navbar>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-background">
+      <img 
+        src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1920&q=80" 
+        alt="Modern luxury home"
+        class="hero-image"
+      />
+      <div class="hero-overlay"></div>
+    </div>
+    
+    <div class="hero-content">
+      <div class="hero-container">
+        <h1 class="hero-headline">
+          O'zbekistonda eng yaxshi mulklar
+        </h1>
+        <p class="hero-subtext">
+          Sotish, sotib olish va ijaraga olish uchun eng ishonchli platforma
+        </p>
+        
+        <!-- Search Bar -->
+        <div class="hero-search">
+          <app-search-bar (search)="onSearch($event)"></app-search-bar>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="hero-quick-stats">
+          <div class="quick-stat">
+            <span class="quick-stat-value">{{ formatNumber(stats.totalListings) }}+</span>
+            <span class="quick-stat-label">E'lonlar</span>
+          </div>
+          <div class="quick-stat-divider"></div>
+          <div class="quick-stat">
+            <span class="quick-stat-value">{{ stats.cities }}+</span>
+            <span class="quick-stat-label">Shaharlar</span>
+          </div>
+          <div class="quick-stat-divider"></div>
+          <div class="quick-stat">
+            <span class="quick-stat-value">{{ formatNumber(stats.users) }}+</span>
+            <span class="quick-stat-label">Foydalanuvchilar</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Row -->
+  <section class="stats-section">
+    <div class="container">
+      <div class="stats-grid">
+        <!-- Stat Card 1 -->
+        <div class="stat-card">
+          <div class="stat-icon blue">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-number">{{ formatNumber(stats.totalListings) }}</span>
+            <span class="stat-label">Jami e'lonlar</span>
+          </div>
+        </div>
+
+        <!-- Stat Card 2 -->
+        <div class="stat-card">
+          <div class="stat-icon green">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-number">{{ stats.cities }}</span>
+            <span class="stat-label">Shaharlar</span>
+          </div>
+        </div>
+
+        <!-- Stat Card 3 -->
+        <div class="stat-card">
+          <div class="stat-icon purple">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-number">{{ formatNumber(stats.users) }}</span>
+            <span class="stat-label">Foydalanuvchilar</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Listings -->
+  <section class="featured-section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-title-wrapper">
+          <h2 class="section-title">Tanlangan e'lonlar</h2>
+          <p class="section-subtitle">
+            Eng sara mulklar va eng yaxshi takliflar
+          </p>
+        </div>
+        <a routerLink="/properties" class="view-all-link">
+          <span>Barchasini ko'rish</span>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+          </svg>
+        </a>
+      </div>
+
+      <div class="properties-grid">
+        @for (property of featuredProperties; track property.id) {
+        <app-property-card 
+          [property]="property"
+          class="property-card-wrapper">
+        </app-property-card>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Banner -->
+  <section class="cta-section">
+    <div class="cta-background">
+      <img 
+        src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1920&q=80" 
+        alt="Real estate"
+        class="cta-image"
+      />
+      <div class="cta-overlay"></div>
+    </div>
+    <div class="container">
+      <div class="cta-content">
+        <div class="cta-text">
+          <h2 class="cta-title">O'z mulkingizni soting yoki ijaraga bering</h2>
+          <p class="cta-description">
+            Mulkchida e'lon joylashtirish oson va tez. Millionlab foydalanuvchilar sizning mulkingizni ko'radi.
+          </p>
+        </div>
+        <div class="cta-actions">
+          <a routerLink="/properties/create" class="cta-button primary">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            <span>E'lon joylashtiring</span>
+          </a>
+          <a routerLink="/help" class="cta-button secondary">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>Batafsil ma'lumot</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <app-footer></app-footer>
+
+</div>

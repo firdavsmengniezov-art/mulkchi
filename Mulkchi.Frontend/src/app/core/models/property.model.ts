@@ -60,11 +60,13 @@ export interface PropertyImage {
 export interface PropertySearchParams {
   region?: string;
   city?: string;
+  location?: string;
   minPrice?: number;
   maxPrice?: number;
   bedrooms?: number;
   listingType?: string;
   propertyType?: string;
+  propertyTypes?: string[];
   hasMetroNearby?: boolean;
   hasMarketNearby?: boolean;
   hasSchoolNearby?: boolean;
