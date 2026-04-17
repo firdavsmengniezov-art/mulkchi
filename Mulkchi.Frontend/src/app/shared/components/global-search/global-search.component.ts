@@ -8,6 +8,25 @@ import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { AnnouncementService } from '../../../core/services/announcement.service';
 import { PropertyService } from '../../../core/services/property.service';
 import { UserService } from '../../../core/services/user.service';
+import { Property, PropertySearchParams } from '../../../core/models/property.model';
+import { PagedResult } from '../../../core/models/paged-result.model';
+import { User } from '../../../core/models/user.model';
+import { Announcement } from '../../../core/models/announcement.model';
+
+// Service return types (not full PagedResult)
+interface UserSearchResult {
+  items: User[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+}
+
+interface AnnouncementSearchResult {
+  items: Announcement[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+}
 
 @Component({
   selector: 'app-global-search',
@@ -63,11 +82,11 @@ export class GlobalSearchComponent implements OnInit {
     if (this.selectedCategory === 'all' || this.selectedCategory === 'properties') {
       return new Promise((resolve) => {
         this.propertyService
-          .searchProperties({ page: 1, pageSize: 5, title: query, city: query } as any)
+          .searchProperties({ page: 1, pageSize: 5, location: query } as PropertySearchParams)
           .subscribe({
-            next: (response: any) => {
-              const items: any[] = response.items || [];
-              items.forEach((property: any) => {
+            next: (response: PagedResult<Property>) => {
+              const items: Property[] = response.items || [];
+              items.forEach((property: Property) => {
                 const price =
                   property.monthlyRent || property.salePrice || property.pricePerNight || 0;
                 const imageUrl =
@@ -95,8 +114,8 @@ export class GlobalSearchComponent implements OnInit {
     if ((this.selectedCategory === 'all' || this.selectedCategory === 'users') && this.isAdmin()) {
       return new Promise((resolve) => {
         this.userService.searchUsers(query, 1, 5).subscribe({
-          next: (response: any) => {
-            response.items.forEach((user: any) => {
+          next: (response: UserSearchResult) => {
+            response.items.forEach((user: User) => {
               results.push({
                 type: 'user',
                 id: user.id,
@@ -118,16 +137,16 @@ export class GlobalSearchComponent implements OnInit {
     if (this.selectedCategory === 'all' || this.selectedCategory === 'announcements') {
       return new Promise((resolve) => {
         this.announcementService.getAnnouncements(1, 5).subscribe({
-          next: (response: any) => {
-            const items: any[] = response.items || [];
+          next: (response: AnnouncementSearchResult) => {
+            const items: Announcement[] = response.items || [];
             const lowerQuery = query.toLowerCase();
             items
               .filter(
-                (a: any) =>
+                (a: Announcement) =>
                   a.title?.toLowerCase().includes(lowerQuery) ||
                   a.content?.toLowerCase().includes(lowerQuery),
               )
-              .forEach((announcement: any) => {
+              .forEach((announcement: Announcement) => {
                 results.push({
                   type: 'announcement',
                   id: announcement.id,

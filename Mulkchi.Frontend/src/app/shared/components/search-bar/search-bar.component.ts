@@ -52,10 +52,10 @@ interface SearchParams {
   maxPrice: number;
 }
 
+type PropertyType = 'all' | 'apartment' | 'house' | 'commercial' | 'land';
+
 interface PropertyTypeOption {
-  value: string;
+  value: PropertyType;
   label: string;
   icon: string;
 }
-
-type PropertyType = 'all' | 'apartment' | 'house' | 'commercial' | 'land';

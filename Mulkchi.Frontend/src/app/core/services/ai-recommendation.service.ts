@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { Property } from '../models/property.model';
+import { Property, PropertyImage } from '../models/property.model';
 import { AuthService } from './auth.service';
 import { LoggingService } from './logging.service';
 import { PropertyService } from './property.service';
@@ -306,7 +306,7 @@ export class AiRecommendationService {
           roomsCount: property.numberOfBedrooms,
           bathroomsCount: property.numberOfBathrooms,
           imageUrl,
-          images: Array.isArray(property.images) ? property.images.map((i: any) => i.url) : [],
+          images: Array.isArray(property.images) ? property.images.map((i: PropertyImage) => i.url).filter((url): url is string => !!url) : [],
           hostId: property.ownerId,
           hostName: '',
           rating: Number(property.averageRating || 0),

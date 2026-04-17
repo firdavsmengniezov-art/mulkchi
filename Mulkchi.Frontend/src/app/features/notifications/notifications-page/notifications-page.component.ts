@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
@@ -44,6 +44,7 @@ import { NavbarComponent } from '../../../shared/components/navbar/navbar.compon
   ],
   templateUrl: './notifications-page.component.html',
   styleUrls: ['./notifications-page.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NotificationsPageComponent implements OnInit, OnDestroy {
   notifications: Notification[] = [];

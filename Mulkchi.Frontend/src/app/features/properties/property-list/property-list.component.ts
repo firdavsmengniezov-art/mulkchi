@@ -1,12 +1,12 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Component, HostListener, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, computed, HostListener, inject, Inject, OnDestroy, OnInit, PLATFORM_ID, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
 import { PropertyCardComponent } from '../../../shared/components/property-card/property-card.component';
+import { Property } from '../../../core/models/property.model';
 
 // Angular Material
 import { MatButtonModule } from '@angular/material/button';
@@ -39,38 +39,62 @@ import { MatSliderModule } from '@angular/material/slider';
   ],
   templateUrl: './property-list.component.html',
   styleUrls: ['./property-list.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PropertyListComponent implements OnInit, OnDestroy {
-  properties: any[] = [];
-  loading = true;
-  totalCount = 0;
-  totalPages = 0;
-  currentPage = 1;
-  pageSize = 9;
-  private destroy$ = new Subject<void>();
+  // ============ DEPENDENCY INJECTION ============
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  @Inject(PLATFORM_ID) private platformId!: Object;
 
-  // UI State
-  viewMode: 'grid' | 'list' = 'grid';
-  showMobileFilters = false;
-  isBrowser = false;
-  windowWidth = 1024;
+  // ============ SIGNAL STATE ============
+  readonly properties = signal<Property[]>([]);
+  readonly loading = signal<boolean>(true);
+  readonly totalCount = signal<number>(0);
+  readonly totalPages = computed(() => Math.ceil(this.totalCount() / this.pageSize()));
+  readonly currentPage = signal<number>(1);
+  readonly pageSize = signal<number>(9);
 
-  // Filters
-  filterRegion = '';
-  filterType = '';
-  filterListing = '';
-  filterMinPrice: number | null = null;
-  filterMaxPrice: number | null = null;
-  filterBedrooms = '';
-  sortBy = 'newest';
+  // UI State Signals
+  readonly viewMode = signal<'grid' | 'list'>('grid');
+  readonly showMobileFilters = signal<boolean>(false);
+  readonly isBrowser = signal<boolean>(false);
+  readonly windowWidth = signal<number>(1024);
 
-  // New location filters
-  filterMetro = false;
-  filterMarket = false;
-  filterSchool = false;
-  filterHospital = false;
+  // Filter Signals
+  readonly filterRegion = signal<string>('');
+  readonly filterType = signal<string>('');
+  readonly filterListing = signal<string>('');
+  readonly filterMinPrice = signal<number | null>(null);
+  readonly filterMaxPrice = signal<number | null>(null);
+  readonly filterBedrooms = signal<string>('');
+  readonly sortBy = signal<string>('newest');
 
-  regions = [
+  // Location filter signals
+  readonly filterMetro = signal<boolean>(false);
+  readonly filterMarket = signal<boolean>(false);
+  readonly filterSchool = signal<boolean>(false);
+  readonly filterHospital = signal<boolean>(false);
+
+  // ============ COMPUTED VALUES ============
+  readonly activeFiltersCount = computed(() => {
+    let count = 0;
+    if (this.filterRegion()) count++;
+    if (this.filterType()) count++;
+    if (this.filterListing()) count++;
+    if (this.filterMinPrice() || this.filterMaxPrice()) count++;
+    if (this.filterBedrooms()) count++;
+    if (this.filterMetro()) count++;
+    if (this.filterMarket()) count++;
+    if (this.filterSchool()) count++;
+    if (this.filterHospital()) count++;
+    return count;
+  });
+
+  readonly hasNextPage = computed(() => this.currentPage() < this.totalPages());
+  readonly hasPreviousPage = computed(() => this.currentPage() > 1);
+
+  readonly regions = [
     'Toshkent',
     'Samarqand',
     'Buxoro',
@@ -86,193 +110,244 @@ export class PropertyListComponent implements OnInit, OnDestroy {
     'Qoraqalpog‘iston',
   ];
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    @Inject(PLATFORM_ID) private platformId: Object,
-  ) {
-    this.isBrowser = isPlatformBrowser(this.platformId);
-    if (this.isBrowser) {
-      this.windowWidth = window.innerWidth;
+  constructor() {
+    this.isBrowser.set(isPlatformBrowser(this.platformId));
+    if (this.isBrowser()) {
+      this.windowWidth.set(window.innerWidth);
     }
   }
 
   @HostListener('window:resize')
   onResize() {
-    if (this.isBrowser) {
-      this.windowWidth = window.innerWidth;
+    if (this.isBrowser()) {
+      this.windowWidth.set(window.innerWidth);
     }
   }
 
+  // Query params signal from route
+  queryParams = toSignal(this.route.queryParams, { initialValue: {} });
+
   ngOnInit() {
-    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe((params) => {
-      if (params['region']) this.filterRegion = params['region'];
-      if (params['type']) this.filterType = params['type'];
-      if (params['listingType']) this.filterListing = params['listingType'];
-      if (params['minPrice']) this.filterMinPrice = params['minPrice'];
-      if (params['maxPrice']) this.filterMaxPrice = params['maxPrice'];
-      if (params['rooms']) this.filterBedrooms = params['rooms'];
-      this.loadProperties();
-    });
+    // React to query params changes via signal
+    const params = this.queryParams() as Record<string, string | undefined>;
+    if (params['region']) this.filterRegion.set(params['region']);
+    if (params['type']) this.filterType.set(params['type']);
+    if (params['listingType']) this.filterListing.set(params['listingType']);
+    if (params['minPrice']) this.filterMinPrice.set(Number(params['minPrice']));
+    if (params['maxPrice']) this.filterMaxPrice.set(Number(params['maxPrice']));
+    if (params['rooms']) this.filterBedrooms.set(params['rooms']);
+    this.loadProperties();
   }
 
   ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
+    // Cleanup if needed
   }
 
-  get activeFiltersCount(): number {
-    let count = 0;
-    if (this.filterRegion) count++;
-    if (this.filterType) count++;
-    if (this.filterListing) count++;
-    if (this.filterMinPrice || this.filterMaxPrice) count++;
-    if (this.filterBedrooms) count++;
-    if (this.filterMetro) count++;
-    if (this.filterMarket) count++;
-    if (this.filterSchool) count++;
-    if (this.filterHospital) count++;
-    return count;
-  }
-
-  removeFilter(filterName: string) {
-    if (
-      filterName.startsWith('filterM') ||
-      filterName.startsWith('filterS') ||
-      filterName.startsWith('filterH')
-    ) {
-      if (typeof (this as any)[filterName] === 'boolean') {
-        (this as any)[filterName] = false;
-      } else {
-        (this as any)[filterName] = filterName.includes('Price') ? null : '';
-      }
-    } else {
-      (this as any)[filterName] = filterName.includes('Price') ? null : '';
+  removeFilter(filterName: keyof this & string) {
+    switch (filterName) {
+      case 'filterRegion':
+        this.filterRegion.set('');
+        break;
+      case 'filterType':
+        this.filterType.set('');
+        break;
+      case 'filterListing':
+        this.filterListing.set('');
+        break;
+      case 'filterMinPrice':
+      case 'filterMaxPrice':
+        this.filterMinPrice.set(null);
+        this.filterMaxPrice.set(null);
+        break;
+      case 'filterBedrooms':
+        this.filterBedrooms.set('');
+        break;
+      case 'filterMetro':
+        this.filterMetro.set(false);
+        break;
+      case 'filterMarket':
+        this.filterMarket.set(false);
+        break;
+      case 'filterSchool':
+        this.filterSchool.set(false);
+        break;
+      case 'filterHospital':
+        this.filterHospital.set(false);
+        break;
     }
     this.applyFilters();
   }
 
   toggleMobileFilters() {
-    this.showMobileFilters = !this.showMobileFilters;
-    if (this.isBrowser) {
-      document.body.style.overflow = this.showMobileFilters ? 'hidden' : '';
+    this.showMobileFilters.update(v => !v);
+    if (this.isBrowser()) {
+      document.body.style.overflow = this.showMobileFilters() ? 'hidden' : '';
     }
   }
 
-  loadProperties() {
-    this.loading = true;
+  setViewMode(mode: 'grid' | 'list') {
+    this.viewMode.set(mode);
+  }
 
-    // Simulate API call - replace with actual service call
+  loadProperties() {
+    this.loading.set(true);
+
+    // Simulate API call - replace with PropertyAgent
     setTimeout(() => {
-      this.properties = [
+      const mockProperties: Property[] = [
         {
           id: '1',
           title: 'Modern Apartment in Tashkent',
-          titleUzAscii: 'Toshkentda zamonaviy kvartira',
+          description: 'Toshkentda zamonaviy kvartira',
+          address: 'Yunusobod tumani, Amir Temur ko\'chasi',
           city: 'Toshkent',
-          district: 'Yunusobod',
-          propertyType: 'Apartment',
-          listingType: 'Rent',
+          region: 'Toshkent',
+          type: 'Apartment' as any,
+          listingType: 'Rent' as any,
+          status: 'Available' as any,
           monthlyRent: 500,
           area: 85,
           numberOfBedrooms: 2,
           numberOfBathrooms: 1,
           averageRating: 4.5,
           viewsCount: 120,
-          createdAt: new Date().toISOString(),
-          images: [{ url: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600' }],
+          hostId: '1',
+          ownerId: '1',
+          isActive: true,
+          images: [{ id: '1', url: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600', isMain: true }],
+          createdDate: new Date().toISOString(),
+          updatedDate: new Date().toISOString(),
+          currency: 'UZS' as any,
+          exchangeRate: 1,
+          maxGuests: 4,
+          isFeatured: false,
+          isVerified: true,
+          isVacant: true,
+          isInstantBook: false,
+          hasMetroNearby: true,
+          hasBusStop: true,
+          hasMarketNearby: true,
+          hasSchoolNearby: true,
+          hasHospitalNearby: false,
+          hasWifi: true,
+          hasParking: true,
+          hasPool: false,
+          petsAllowed: false,
+          hasElevator: true,
+          hasSecurity: true,
+          hasGenerator: false,
+          hasGas: true,
+          hasFurniture: true,
+          isRenovated: true,
+          hasAirConditioning: true,
+          hasHeating: true,
+          hasWasher: true,
+          hasKitchen: true,
+          hasTV: true,
+          hasWorkspace: false,
+          isSelfCheckIn: false,
+          isChildFriendly: true,
+          isAccessible: false,
+          favoritesCount: 15,
+          reviewsCount: 8,
         },
         {
           id: '2',
           title: 'Cozy House in Bodomzor',
-          titleUzAscii: 'Bodomzorda shinam sharqona hovli',
+          description: 'Bodomzorda shinam sharqona hovli',
+          address: 'Bodomzor mahallasi, 45-uy',
           city: 'Samarqand',
-          district: 'Bodomzor',
-          propertyType: 'House',
-          listingType: 'Sale',
+          region: 'Samarqand',
+          type: 'House' as any,
+          listingType: 'Sale' as any,
+          status: 'Available' as any,
           salePrice: 150000,
           area: 120,
           numberOfBedrooms: 3,
           numberOfBathrooms: 2,
           averageRating: 4.8,
           viewsCount: 89,
-          createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-          images: [{ url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600' }],
-        },
-        {
-          id: '3',
-          title: 'Office Space in Center',
-          titleUzAscii: 'Markazda biznes ofis',
-          city: 'Toshkent',
-          district: 'Mirobod',
-          propertyType: 'Office',
-          listingType: 'Rent',
-          monthlyRent: 800,
-          area: 60,
-          numberOfBedrooms: 0,
-          numberOfBathrooms: 1,
-          averageRating: 4.2,
-          viewsCount: 67,
-          createdAt: new Date().toISOString(),
-          images: [{ url: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=600' }],
-        },
-        {
-          id: '4',
-          title: 'Luxury Villa with Pool',
-          titleUzAscii: 'Hovuzli hashamatli villa',
-          city: 'Toshkent',
-          district: 'Qibray',
-          propertyType: 'House',
-          listingType: 'Sale',
-          salePrice: 450000,
-          area: 450,
-          numberOfBedrooms: 5,
-          numberOfBathrooms: 4,
-          averageRating: 5.0,
-          viewsCount: 340,
-          createdAt: new Date().toISOString(),
-          images: [{ url: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600' }],
+          hostId: '2',
+          ownerId: '2',
+          isActive: true,
+          images: [{ id: '1', url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600', isMain: true }],
+          createdDate: new Date(Date.now() - 86400000 * 2).toISOString(),
+          updatedDate: new Date().toISOString(),
+          currency: 'UZS' as any,
+          exchangeRate: 1,
+          maxGuests: 6,
+          isFeatured: true,
+          isVerified: true,
+          isVacant: true,
+          isInstantBook: true,
+          hasMetroNearby: false,
+          hasBusStop: true,
+          hasMarketNearby: true,
+          hasSchoolNearby: true,
+          hasHospitalNearby: true,
+          hasWifi: true,
+          hasParking: true,
+          hasPool: true,
+          petsAllowed: true,
+          hasElevator: false,
+          hasSecurity: true,
+          hasGenerator: true,
+          hasGas: true,
+          hasFurniture: true,
+          isRenovated: true,
+          hasAirConditioning: true,
+          hasHeating: true,
+          hasWasher: true,
+          hasKitchen: true,
+          hasTV: true,
+          hasWorkspace: true,
+          isSelfCheckIn: true,
+          isChildFriendly: true,
+          isAccessible: false,
+          favoritesCount: 25,
+          reviewsCount: 12,
         },
       ];
-      this.totalCount = this.properties.length;
-      this.totalPages = Math.ceil(this.totalCount / this.pageSize);
-      this.loading = false;
+
+      this.properties.set(mockProperties);
+      this.totalCount.set(mockProperties.length);
+      this.loading.set(false);
     }, 800);
   }
 
   applyFilters() {
-    this.currentPage = 1;
+    this.currentPage.set(1);
     this.router.navigate(['/properties'], {
       queryParams: {
-        region: this.filterRegion || undefined,
-        type: this.filterType || undefined,
-        listingType: this.filterListing || undefined,
-        minPrice: this.filterMinPrice || undefined,
-        maxPrice: this.filterMaxPrice || undefined,
-        rooms: this.filterBedrooms || undefined,
+        region: this.filterRegion() || undefined,
+        type: this.filterType() || undefined,
+        listingType: this.filterListing() || undefined,
+        minPrice: this.filterMinPrice() || undefined,
+        maxPrice: this.filterMaxPrice() || undefined,
+        rooms: this.filterBedrooms() || undefined,
       },
     });
-    if (this.showMobileFilters) {
+    if (this.showMobileFilters()) {
       this.toggleMobileFilters();
     }
   }
 
   clearFilters() {
-    this.filterRegion = '';
-    this.filterType = '';
-    this.filterListing = '';
-    this.filterMinPrice = null;
-    this.filterMaxPrice = null;
-    this.filterBedrooms = '';
+    this.filterRegion.set('');
+    this.filterType.set('');
+    this.filterListing.set('');
+    this.filterMinPrice.set(null);
+    this.filterMaxPrice.set(null);
+    this.filterBedrooms.set('');
     this.applyFilters();
   }
 
   goToPage(page: number) {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-      this.loading = true;
+    if (page >= 1 && page <= this.totalPages()) {
+      this.currentPage.set(page);
+      this.loading.set(true);
       this.loadProperties();
-      if (this.isBrowser) window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (this.isBrowser()) window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 }

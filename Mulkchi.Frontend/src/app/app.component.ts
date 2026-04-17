@@ -6,11 +6,14 @@ import { FavoriteService } from './core/services/favorite.service';
 import { LanguageService } from './core/services/language.service';
 import { LoggingService } from './core/services/logging.service';
 import { NotificationService } from './core/services/notification.service';
+import { NavbarComponent } from './shared/components/navbar/navbar.component';
+import { FooterComponent } from './shared/components/footer/footer.component';
+import { ProgressBarComponent } from './shared/components/progress-bar/progress-bar.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet],
+  imports: [CommonModule, RouterOutlet, NavbarComponent, FooterComponent, ProgressBarComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })

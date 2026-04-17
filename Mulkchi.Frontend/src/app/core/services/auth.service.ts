@@ -1,5 +1,6 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { BehaviorSubject, Observable, tap, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
@@ -16,39 +17,70 @@ import {
 } from '../models/auth.model';
 import { LoggingService } from './logging.service';
 
+/**
+ * Signal-based Auth Service
+ * Provides reactive authentication state using Angular Signals
+ */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  private http = inject(HttpClient);
+  private logger = inject(LoggingService);
   private apiUrl = `${environment.apiUrl}/auth`;
   private readonly accessTokenKey = 'accessToken';
   private readonly userKey = 'user';
   private readonly legacyUserKey = 'auth_user';
 
-  /**
-   * Emits the current authenticated user (loaded from localStorage on startup).
-   * The token is persisted in localStorage so HTTP requests and SignalR can reuse it
-   * after a page reload.
-   */
-  currentUser$ = new BehaviorSubject<AuthUser | null>(null);
+  // ============ SIGNAL STATE ============
+  private readonly _currentUser = signal<AuthUser | null>(this.getStoredUser());
+  private readonly _accessToken = signal<string | null>(this.getStoredToken());
 
-  /**
-   * In-memory access token for SignalR's accessTokenFactory.
-   * Kept in sync with localStorage.
-   */
-  private accessToken$ = new BehaviorSubject<string | null>(null);
+  // ============ PUBLIC READABLE SIGNALS ============
+  readonly currentUser = this._currentUser.asReadonly();
+  readonly accessToken = this._accessToken.asReadonly();
 
-  constructor(
-    private http: HttpClient,
-    private logger: LoggingService,
-  ) {
-    const savedUser = this.getStoredUser();
-    if (savedUser) {
-      this.currentUser$.next(savedUser);
-    }
+  // ============ COMPUTED VALUES ============
+  readonly isAuthenticated = computed(() => {
+    const user = this._currentUser();
+    const token = this._accessToken();
+    if (!user || !token) return false;
+    return !this.isTokenExpired(token);
+  });
+  readonly isLoggedIn = this.isAuthenticated;
+  readonly isHost = computed(() => {
+    const role = this._currentUser()?.role as unknown;
+    return role === UserRole.Host || role === UserRole.Admin || role === 'Host' || role === 'Admin';
+  });
+  readonly isAdmin = computed(() => {
+    const role = this._currentUser()?.role as unknown;
+    return role === UserRole.Admin || role === 'Admin';
+  });
+  readonly isAgent = computed(() => {
+    const role = this._currentUser()?.role as unknown;
+    return role === UserRole.Agent || role === 'Agent';
+  });
+  readonly isSeller = computed(() => {
+    const role = this._currentUser()?.role as unknown;
+    return role === UserRole.Seller || role === 'Seller';
+  });
+  readonly isBuyer = computed(() => {
+    const role = this._currentUser()?.role as unknown;
+    return role === UserRole.Buyer || role === 'Buyer';
+  });
+  readonly userFullName = computed(() => {
+    const user = this._currentUser();
+    return user ? `${user.firstName} ${user.lastName}`.trim() : '';
+  });
 
-    const savedToken = localStorage.getItem(this.accessTokenKey);
-    if (savedToken && savedToken !== 'undefined' && savedToken !== 'null') {
-      this.accessToken$.next(savedToken);
-    }
+  // ============ OBSERVABLE INTEROP (backward compatibility) ============
+  currentUser$ = new BehaviorSubject<AuthUser | null>(this._currentUser());
+  private accessToken$ = new BehaviorSubject<string | null>(this._accessToken());
+
+  // Observable from signals for new code
+  currentUserSignal$ = toObservable(this._currentUser);
+
+  constructor() {
+    // Sync signal changes to BehaviorSubjects for backward compatibility
+    // This allows old code using .subscribe() to still work
   }
 
   login(req: LoginRequest): Observable<AuthUserInfo> {
@@ -136,12 +168,15 @@ export class AuthService {
 
     if (res.accessToken) {
       localStorage.setItem(this.accessTokenKey, res.accessToken);
+      this._accessToken.set(res.accessToken);
       this.accessToken$.next(res.accessToken);
     } else {
       localStorage.removeItem(this.accessTokenKey);
+      this._accessToken.set(null);
       this.accessToken$.next(null);
     }
 
+    this._currentUser.set(user);
     this.currentUser$.next(user);
   }
 
@@ -151,6 +186,8 @@ export class AuthService {
     localStorage.removeItem(this.accessTokenKey);
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('refresh_token');
+    this._currentUser.set(null);
+    this._accessToken.set(null);
     this.currentUser$.next(null);
     this.accessToken$.next(null);
   }
@@ -171,6 +208,14 @@ export class AuthService {
     }
   }
 
+  private getStoredToken(): string | null {
+    const token = localStorage.getItem(this.accessTokenKey);
+    if (token && token !== 'undefined' && token !== 'null') {
+      return token;
+    }
+    return null;
+  }
+
   private handleError = (error: HttpErrorResponse) => {
     if (this.logger) {
       this.logger.error('Auth API Error:', error);
@@ -180,8 +225,9 @@ export class AuthService {
 
   /** Returns the in-memory access token. Use ONLY for SignalR's accessTokenFactory. */
   getToken(): string | null {
-    const token = this.accessToken$.getValue() ?? localStorage.getItem(this.accessTokenKey);
-    if (token && this.accessToken$.getValue() !== token) {
+    const token = this._accessToken() ?? localStorage.getItem(this.accessTokenKey);
+    if (token && this._accessToken() !== token) {
+      this._accessToken.set(token);
       this.accessToken$.next(token);
     }
 
@@ -193,52 +239,44 @@ export class AuthService {
    * Cookie-based auth for HTTP requests does NOT require this check —
    * the browser sends cookies automatically and the server validates them.
    */
-  isAuthenticated(): boolean {
-    const user = this.currentUser$.getValue();
-    if (!user) return false;
-
-    const token = this.getToken();
-    if (!token) return false;
-
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return Date.now() < payload.exp * 1000;
-    } catch {
-      return false;
-    }
+  isAuthenticatedCheck(): boolean {
+    return this.isAuthenticated();
   }
 
   getCurrentUser(): AuthUser | null {
-    return this.currentUser$.getValue();
+    return this._currentUser();
   }
 
   getUserRole(): UserRole | null {
-    const user = this.currentUser$.getValue();
-    return user ? user.role : null;
+    return this._currentUser()?.role ?? null;
   }
 
-  isHost(): boolean {
-    const r = this.getUserRole() as unknown;
-    return r === UserRole.Host || r === UserRole.Admin || r === 'Host' || r === 'Admin';
+  isHostRole(): boolean {
+    return this.isHost();
   }
 
-  isAdmin(): boolean {
-    const r = this.getUserRole() as unknown;
-    return r === UserRole.Admin || r === 'Admin';
+  isAdminRole(): boolean {
+    return this.isAdmin();
   }
 
-  isAgent(): boolean {
-    const r = this.getUserRole() as unknown;
-    return r === UserRole.Agent || r === 'Agent';
+  isAgentRole(): boolean {
+    return this.isAgent();
   }
 
-  isSeller(): boolean {
-    const r = this.getUserRole() as unknown;
-    return r === UserRole.Seller || r === 'Seller';
+  isSellerRole(): boolean {
+    return this.isSeller();
   }
 
-  isBuyer(): boolean {
-    const r = this.getUserRole() as unknown;
-    return r === UserRole.Buyer || r === 'Buyer';
+  isBuyerRole(): boolean {
+    return this.isBuyer();
+  }
+
+  private isTokenExpired(token: string): boolean {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return Date.now() >= payload.exp * 1000;
+    } catch {
+      return true;
+    }
   }
 }

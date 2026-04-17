@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { Property } from '../../../../core/models/property.model';
 
@@ -9,6 +9,7 @@ import { Property } from '../../../../core/models/property.model';
   imports: [CommonModule, RouterModule],
   templateUrl: './property-card.component.html',
   styleUrls: ['./property-card.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PropertyCardComponent {
   @Input() property!: Property;
@@ -18,9 +19,12 @@ export class PropertyCardComponent {
   isFavorited = false;
 
   get images(): string[] {
-    return this.property.images?.length
-      ? this.property.images.map((image) => image.url)
-      : ['/assets/images/property-placeholder.jpg'];
+    if (!this.property.images?.length) {
+      return ['/assets/images/property-placeholder.jpg'];
+    }
+    return this.property.images
+      .map((image) => image.url || image.imageUrl)
+      .filter((url): url is string => typeof url === 'string' && url.length > 0);
   }
 
   nextImage(e: Event) {

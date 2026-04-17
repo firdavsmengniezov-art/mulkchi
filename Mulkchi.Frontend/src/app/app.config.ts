@@ -8,6 +8,7 @@ import { Observable } from 'rxjs';
 import { routes } from './app.routes';
 import { errorToastInterceptor } from './core/interceptors/error-toast.interceptor';
 import { jwtInterceptor } from './core/interceptors/jwt.interceptor';
+import { successToastInterceptor } from './core/interceptors/success-toast.interceptor';
 
 // Custom loader that loads translations from assets
 class CustomTranslateLoader implements TranslateLoader {
@@ -25,12 +26,12 @@ export function HttpLoaderFactory(http: HttpClient) {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
-    provideHttpClient(withInterceptors([jwtInterceptor, errorToastInterceptor])),
+    provideHttpClient(withInterceptors([jwtInterceptor, successToastInterceptor, errorToastInterceptor])),
     provideAnimations(),
     importProvidersFrom(
       MatSnackBarModule,
       TranslateModule.forRoot({
-        defaultLanguage: 'uz',
+        fallbackLang: 'uz',
         loader: {
           provide: TranslateLoader,
           useFactory: HttpLoaderFactory,

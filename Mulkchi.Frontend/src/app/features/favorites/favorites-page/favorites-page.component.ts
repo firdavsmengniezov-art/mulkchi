@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -34,6 +34,7 @@ import { NavbarComponent } from '../../../shared/components/navbar/navbar.compon
   ],
   templateUrl: './favorites-page.component.html',
   styleUrls: ['./favorites-page.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FavoritesPageComponent implements OnInit, OnDestroy {
   favorites: Favorite[] = [];

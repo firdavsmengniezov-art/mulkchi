@@ -686,3 +686,18 @@ a:hover {
   border-radius: var(--radius-lg) !important;
   box-shadow: var(--shadow-subtle) !important;
 }
+
+/* ============================================
+   LAYOUT FIX - App Shell
+   ============================================ */
+/* Navbar 64px sticky, main content undan pastda boshlanadi */
+main {
+  min-height: calc(100vh - 64px);
+}
+
+/* Filter sidebar overlap fix */
+.filters-sidebar {
+  /* Desktop da kartochkalar ustiga chiqmasligi uchun */
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+}

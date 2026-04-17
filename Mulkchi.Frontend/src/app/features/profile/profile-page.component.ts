@@ -1,25 +1,22 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { UserResponse, UserUpdateDto } from '../../core/models/user.model';
 import { UserService } from '../../core/services/user.service';
-import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { AvatarUploadComponent } from './avatar-upload.component';
 import { ProfileEditComponent } from './profile-edit.component';
 
 @Component({
   selector: 'app-profile-page',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     RouterModule,
-    NavbarComponent,
     AvatarUploadComponent,
     ProfileEditComponent,
   ],
   template: `
-    <app-navbar></app-navbar>
-
     <div class="min-h-screen bg-[var(--mulk-bg)]">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div *ngIf="loading" class="flex justify-center items-center py-20">

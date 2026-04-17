@@ -26,7 +26,7 @@ export interface RecommendationProperty {
   area: number;
   roomsCount: number;
   bathroomsCount: number;
-  imageUrl: string;
+  imageUrl?: string;
   images: string[];
   hostId: string;
   hostName: string;
@@ -51,7 +51,7 @@ export interface HybridRecommendationPropertyResponse {
   area: number;
   roomsCount: number;
   bathroomsCount: number;
-  imageUrl: string;
+  imageUrl?: string;
   images: string[];
   hostId: string;
   hostName: string;

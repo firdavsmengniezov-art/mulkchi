@@ -1,10 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, inject, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { map, Observable } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
+import { ChatAgent } from '../../../core/services/chat-agent.service';
 import { LanguageService } from '../../../core/services/language.service';
+import { NotificationAgent } from '../../../core/services/notification-agent.service';
 import { SignalRService } from '../../../core/services/signalr.service';
 import { ThemeService } from '../../../core/services/theme.service';
 import { NotificationBellComponent } from '../notifications/notification-bell/notification-bell.component';
@@ -12,6 +14,7 @@ import { NotificationBellComponent } from '../notifications/notification-bell/no
 @Component({
   selector: 'app-navbar',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule, NotificationBellComponent, TranslateModule],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.scss',
@@ -39,6 +42,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
   private languageService = inject(LanguageService);
   private themeService = inject(ThemeService);
 
+  // Signal-based agents for real-time updates
+  private notificationAgent = inject(NotificationAgent);
+  private chatAgent = inject(ChatAgent);
+
   constructor() {
     this.isLoggedIn$ = this.authService.currentUser$.pipe(map((u) => !!u));
     this.currentUser$ = this.authService.currentUser$;
@@ -60,6 +67,44 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.statusInterval = setInterval(() => {
       this.isSignalRConnected = this.signalRService.getConnectionStatus();
     }, 1000);
+
+    // Start SignalR connections for real-time updates
+    this.startSignalRConnections();
+  }
+
+  // ============ SIGNALR CONNECTION ============
+
+  private async startSignalRConnections(): Promise<void> {
+    if (this.authService.isAuthenticated()) {
+      await this.notificationAgent.startConnection();
+      await this.chatAgent.startConnection();
+    }
+  }
+
+  // ============ REAL-TIME BADGE SIGNALS ============
+
+  /** Real-time notification unread count from SignalR */
+  get unreadNotificationCount(): number {
+    return this.notificationAgent.unreadCount();
+  }
+
+  /** Real-time chat unread count from SignalR */
+  get unreadChatCount(): number {
+    return this.chatAgent.totalUnreadCount();
+  }
+
+  /** Combined unread count for badge */
+  get totalUnreadCount(): number {
+    return this.unreadNotificationCount + this.unreadChatCount;
+  }
+
+  /** Whether to show the badge */
+  get hasUnreadNotifications(): boolean {
+    return this.notificationAgent.hasUnreadNotifications();
+  }
+
+  get hasUnreadMessages(): boolean {
+    return this.chatAgent.hasUnreadMessages();
   }
 
   get isLoggedIn(): boolean {

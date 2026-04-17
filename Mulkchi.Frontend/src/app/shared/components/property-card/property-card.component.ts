@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { take } from 'rxjs/operators';
 import { Property } from '../../../core/models';
 import { FavoriteService } from '../../../core/services/favorite.service';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-property-card',
@@ -20,12 +21,8 @@ export class PropertyCardComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['property']?.currentValue?.id) {
-      this.favoriteService
-        .isFavorited(this.property.id)
-        .pipe(take(1))
-        .subscribe((favorited) => {
-          this.isFavorite = favorited;
-        });
+      // Signal-based API - isFavorited returns boolean directly
+      this.isFavorite = this.favoriteService.isFavorited(this.property.id);
     }
   }
 
@@ -52,7 +49,7 @@ export class PropertyCardComponent implements OnChanges {
   }
 
   getImage(): string {
-    if (this.property.images?.length) {
+    if (this.property.images?.length && this.property.images[0].url) {
       return this.property.images[0].url;
     }
     // Unsplash placeholder by property type

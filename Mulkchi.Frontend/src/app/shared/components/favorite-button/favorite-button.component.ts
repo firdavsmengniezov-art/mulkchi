@@ -78,10 +78,7 @@ export class FavoriteButtonComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.favoritesService.isFavorited(this.propertyId)
-      .subscribe(isFavorited => {
-        this.isFavorited = isFavorited;
-      });
+    this.isFavorited = this.favoritesService.isFavorited(this.propertyId);
   }
 
   onToggle(event: Event): void {

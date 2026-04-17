@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -10,6 +10,7 @@ import { ReviewsListComponent } from '../../../features/reviews/reviews-list/rev
 @Component({
   selector: 'app-property-detail',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule, RouterModule, FavoriteButtonComponent, ReviewsListComponent, TranslateModule],
   templateUrl: './property-detail.component.html',
   styleUrls: ['./property-detail.component.scss']

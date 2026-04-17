@@ -1,4 +1,4 @@
-const backendTarget = process.env.API_PROXY_TARGET || 'http://localhost:5000';
+const backendTarget = process.env.API_PROXY_TARGET || 'http://localhost:5009';
 
 module.exports = {
   '/api': {

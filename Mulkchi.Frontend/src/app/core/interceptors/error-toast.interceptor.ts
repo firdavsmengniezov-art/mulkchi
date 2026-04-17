@@ -10,23 +10,35 @@ function toMessage(error: HttpErrorResponse): string {
     return apiMessage;
   }
 
-  if (error.status === 0) {
-    return 'Server bilan ulanishda muammo. Internet yoki backend holatini tekshiring.';
+  switch (error.status) {
+    case 0:
+      return 'Server bilan aloqa yo\'q. Internet ulanganligini tekshiring.';
+    case 400:
+      return 'So\'rov noto\'g\'ri formatda. Iltimos, ma\'lumotlarni tekshiring.';
+    case 401:
+      return 'Sessiya muddati tugagan. Iltimos, qayta kiring.';
+    case 403:
+      return 'Bu amalni bajarish uchun huquqingiz yetarli emas.';
+    case 404:
+      return 'So\'ralgan ma\'lumot topilmadi.';
+    case 409:
+      return 'Bu amalni bajarish mumkin emas. Ma\'lumotlar to\'qnashuvi.';
+    case 422:
+      return 'Kiritilgan ma\'lumotlar noto\'g\'ri. Iltimos, tekshiring.';
+    case 429:
+      return 'Juda ko\'p so\'rov yuborildi. Iltimos, biroz kuting.';
+    case 500:
+      return 'Serverda xatolik yuz berdi. Iltimos, keyinroq qayta urinib ko\'ring.';
+    case 502:
+      return 'Server vaqtinchalik ishlamayapti. Iltimos, keyinroq urinib ko\'ring.';
+    case 503:
+      return 'Xizmat vaqtinchalik mavjud emas. Iltimos, keyinroq urinib ko\'ring.';
+    default:
+      if (error.status >= 500) {
+        return 'Serverda kutilmagan xatolik yuz berdi. Iltimos, keyinroq qayta urinib ko\'ring.';
+      }
+      return 'Kutilmagan xatolik yuz berdi. Iltimos, qayta urinib ko\'ring.';
   }
-
-  if (error.status >= 500) {
-    return "Serverda xatolik yuz berdi. Keyinroq qayta urinib ko'ring.";
-  }
-
-  if (error.status === 404) {
-    return "So'ralgan resurs topilmadi.";
-  }
-
-  if (error.status === 403) {
-    return "Bu amal uchun ruxsat yo'q.";
-  }
-
-  return "So'rovni bajarishda xatolik yuz berdi.";
 }
 
 export const errorToastInterceptor: HttpInterceptorFn = (req, next) => {

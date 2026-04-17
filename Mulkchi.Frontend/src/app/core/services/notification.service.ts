@@ -4,6 +4,7 @@ import { BehaviorSubject, Observable, Subject, takeUntil } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { LoggingService } from './logging.service';
 import { Notification, NotificationType, PagedResult } from '../models/notification.models';
+import { SignalRAnnouncement, SignalRNotificationRead } from '../models/api-response.model';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { AuthService } from './auth.service';
@@ -40,18 +41,20 @@ export class NotificationService implements OnDestroy {
       this.showSnackBarNotification(notification);
     });
 
-    this.hubConnection.on('ReceiveAnnouncement', (announcement: any) => {
+    this.hubConnection.on('ReceiveAnnouncement', (announcement: SignalRAnnouncement) => {
       const notification: Notification = {
-        ...announcement,
+        id: announcement.id,
+        userId: 'system', // System announcements don't have a specific user
         titleUz: announcement.titleUz,
-        titleRu: announcement.titleRu,
-        titleEn: announcement.titleEn,
+        titleRu: announcement.titleRu ?? announcement.titleUz,
+        titleEn: announcement.titleEn ?? announcement.titleUz,
         bodyUz: announcement.bodyUz,
-        bodyRu: announcement.bodyRu,
-        bodyEn: announcement.bodyEn,
+        bodyRu: announcement.bodyRu ?? announcement.bodyUz,
+        bodyEn: announcement.bodyEn ?? announcement.bodyUz,
         type: NotificationType.SystemAlert,
         isRead: false,
-        createdDate: announcement.createdDate
+        createdDate: announcement.createdDate,
+        updatedDate: announcement.createdDate
       };
       
       const current = this.notifications$.value;
@@ -60,7 +63,7 @@ export class NotificationService implements OnDestroy {
       this.showSnackBarNotification(notification);
     });
 
-    this.hubConnection.on('NotificationRead', (data: any) => {
+    this.hubConnection.on('NotificationRead', (data: SignalRNotificationRead) => {
       const current = this.notifications$.value;
       const updated = current.map(n => 
         n.id === data.id ? { ...n, isRead: true, readAt: data.readAt } : n
