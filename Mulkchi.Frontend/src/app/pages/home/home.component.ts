@@ -1,11 +1,12 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, signal, computed, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { FooterComponent } from '../../shared/components/footer/footer.component';
 import { SearchBarComponent } from '../../shared/components/search-bar/search-bar.component';
 import { PropertyCardComponent } from '../../shared/components/property-card/property-card.component';
 import { Property, PropertyType, ListingType, PropertyStatus } from '../../core/models/property.model';
+import { animate, style, transition, trigger, query, stagger } from '@angular/animations';
 
 @Component({
   selector: 'app-home',
@@ -20,10 +21,50 @@ import { Property, PropertyType, ListingType, PropertyStatus } from '../../core/
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  animations: [
+    trigger('fadeInUp', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(30px)' }),
+        animate('600ms cubic-bezier(0.35, 0, 0.25, 1)', 
+          style({ opacity: 1, transform: 'translateY(0)' }))
+      ])
+    ]),
+    trigger('staggerFadeIn', [
+      transition(':enter', [
+        query('.animate-item', [
+          style({ opacity: 0, transform: 'translateY(20px)' }),
+          stagger(100, [
+            animate('500ms cubic-bezier(0.35, 0, 0.25, 1)', 
+              style({ opacity: 1, transform: 'translateY(0)' }))
+          ])
+        ], { optional: true })
+      ])
+    ]),
+    trigger('countUp', [
+      transition(':enter', [
+        animate('2000ms ease-out', style({ opacity: 1 }))
+      ])
+    ])
+  ]
 })
 export class HomeComponent implements OnInit {
-  stats = {
+  private router = inject(Router);
+  
+  // Signals for reactive state
+  readonly isLoading = signal(true);
+  readonly activeTab = signal<'sale' | 'rent'>('sale');
+  readonly hoveredProperty = signal<string | null>(null);
+  
+  // Animated stats with signals
+  readonly stats = signal({
+    totalListings: 0,
+    cities: 0,
+    users: 0
+  });
+  
+  // Target stats for animation
+  private readonly targetStats = {
     totalListings: 15432,
     cities: 45,
     users: 89345
@@ -369,22 +410,78 @@ export class HomeComponent implements OnInit {
     } as Property
   ];
 
+  // Filtered properties based on active tab
+  readonly filteredProperties = computed(() => {
+    const tab = this.activeTab();
+    return this.featuredProperties.filter(p => 
+      tab === 'sale' ? p.listingType === ListingType.Sale : p.listingType === ListingType.Rent
+    );
+  });
+
   ngOnInit(): void {
-    // Animate stats on load
-    this.animateStats();
+    // Simulate loading and animate stats
+    setTimeout(() => {
+      this.isLoading.set(false);
+      this.animateStats();
+    }, 800);
   }
 
   onSearch(params: SearchParams): void {
-    console.log('Search params:', params);
-    // Navigate to listings with search params
+    // Navigate to properties with search query params
+    const queryParams: any = {};
+    if (params.location) queryParams.city = params.location;
+    if (params.propertyType) queryParams.type = params.propertyType;
+    if (params.minPrice) queryParams.minPrice = params.minPrice;
+    if (params.maxPrice) queryParams.maxPrice = params.maxPrice;
+    
+    this.router.navigate(['/properties'], { queryParams });
+  }
+
+  setActiveTab(tab: 'sale' | 'rent'): void {
+    this.activeTab.set(tab);
+  }
+
+  onPropertyHover(id: string | null): void {
+    this.hoveredProperty.set(id);
   }
 
   private animateStats(): void {
-    // Stats animation logic could go here
+    const duration = 2000;
+    const steps = 60;
+    const interval = duration / steps;
+    let currentStep = 0;
+
+    const timer = setInterval(() => {
+      currentStep++;
+      const progress = currentStep / steps;
+      const easeOut = 1 - Math.pow(1 - progress, 3); // Ease out cubic
+
+      this.stats.set({
+        totalListings: Math.floor(this.targetStats.totalListings * easeOut),
+        cities: Math.floor(this.targetStats.cities * easeOut),
+        users: Math.floor(this.targetStats.users * easeOut)
+      });
+
+      if (currentStep >= steps) {
+        clearInterval(timer);
+        this.stats.set(this.targetStats);
+      }
+    }, interval);
   }
 
   formatNumber(num: number): string {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + 'M';
+    }
+    if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'K';
+    }
     return num.toLocaleString('uz-UZ');
+  }
+
+  scrollToProperties(): void {
+    const element = document.querySelector('.featured-section');
+    element?.scrollIntoView({ behavior: 'smooth' });
   }
 }
 
