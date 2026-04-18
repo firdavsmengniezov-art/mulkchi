@@ -367,10 +367,10 @@ public partial class PropertyService : IPropertyService
             CreatedDate = p.CreatedDate,
             UpdatedDate = p.UpdatedDate,
             DeletedDate = p.DeletedDate,
-            MonthlyRentUSD = p.MonthlyRent.HasValue ? p.MonthlyRent.Value / p.ExchangeRate : null,
-            SalePriceUSD = p.SalePrice.HasValue ? p.SalePrice.Value / p.ExchangeRate : null,
-            PricePerNightUSD = p.PricePerNight.HasValue ? p.PricePerNight.Value / p.ExchangeRate : null,
-            SecurityDepositUSD = p.SecurityDeposit.HasValue ? p.SecurityDeposit.Value / p.ExchangeRate : null
+            MonthlyRentUSD = (p.MonthlyRent.HasValue && p.ExchangeRate > 0) ? p.MonthlyRent.Value / p.ExchangeRate : null,
+            SalePriceUSD = (p.SalePrice.HasValue && p.ExchangeRate > 0) ? p.SalePrice.Value / p.ExchangeRate : null,
+            PricePerNightUSD = (p.PricePerNight.HasValue && p.ExchangeRate > 0) ? p.PricePerNight.Value / p.ExchangeRate : null,
+            SecurityDepositUSD = (p.SecurityDeposit.HasValue && p.ExchangeRate > 0) ? p.SecurityDeposit.Value / p.ExchangeRate : null
         };
     }
 

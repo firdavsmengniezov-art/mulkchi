@@ -335,6 +335,65 @@ public class AnalyticsController : ControllerBase
         }
     }
 
+    [HttpGet("by-district")]
+    [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any, NoStore = false)]
+    public async Task<ActionResult> GetAnalyticsByDistrict()
+    {
+        try
+        {
+            var districtData = await this.analyticsService.GetAnalyticsByDistrictAsync();
+            return Ok(districtData);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Internal server error." });
+        }
+    }
+
+    [HttpGet("district-price-ranges")]
+    [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any, NoStore = false)]
+    public async Task<ActionResult> GetDistrictPriceRanges()
+    {
+        try
+        {
+            var priceRanges = await this.analyticsService.GetDistrictPriceRangesAsync();
+            return Ok(priceRanges);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Internal server error." });
+        }
+    }
+
+    [HttpGet("ai-recommendation-accuracy")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult> GetAiRecommendationAccuracy()
+    {
+        try
+        {
+            var accuracy = await this.analyticsService.GetAiRecommendationAccuracyAsync();
+            return Ok(accuracy);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Internal server error." });
+        }
+    }
+
+    [HttpGet("price-heatmap")]
+    public async Task<ActionResult> GetPropertyPriceHeatmap()
+    {
+        try
+        {
+            var heatmap = await this.analyticsService.GetPropertyPriceHeatmapAsync();
+            return Ok(heatmap);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Internal server error." });
+        }
+    }
+
     [HttpPost("predict-price")]
     public async Task<ActionResult<PriceRecommendationResponse>> PredictPrice(PriceRecommendationRequest request)
     {
