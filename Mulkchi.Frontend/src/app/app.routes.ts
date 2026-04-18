@@ -4,21 +4,7 @@ import { adminGuard } from './core/guards/admin.guard';
 import { hostGuard } from './core/guards/host.guard';
 
 export const routes: Routes = [
-  // Public routes
-  {
-    path: '',
-    loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent)
-  },
-  {
-    path: 'properties',
-    loadComponent: () => import('./features/properties/property-list/property-list.component').then(m => m.PropertyListComponent)
-  },
-  {
-    path: 'properties/:id',
-    loadComponent: () => import('./features/properties/property-detail/property-detail.component').then(m => m.PropertyDetailComponent)
-  },
-  
-  // Auth routes
+  // Auth routes (without layout)
   {
     path: 'auth',
     children: [
@@ -37,52 +23,73 @@ export const routes: Routes = [
     ]
   },
   
-  // Protected routes (Guest)
+  // Main layout routes
   {
-    path: 'profile',
-    canActivate: [authGuard],
-    loadComponent: () => import('./features/profile/profile.component').then(m => m.ProfileComponent)
-  },
-  {
-    path: 'bookings',
-    canActivate: [authGuard],
-    loadComponent: () => import('./features/bookings/booking-list/booking-list.component').then(m => m.BookingListComponent)
-  },
-  {
-    path: 'favorites',
-    canActivate: [authGuard],
-    loadComponent: () => import('./features/favorites/favorites.component').then(m => m.FavoritesComponent)
-  },
-  
-  // Protected routes (Host)
-  {
-    path: 'host',
-    canActivate: [authGuard, hostGuard],
+    path: '',
+    loadComponent: () => import('./core/layout/layout/layout.component').then(m => m.LayoutComponent),
     children: [
+      // Public routes
+      {
+        path: '',
+        loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent)
+      },
       {
         path: 'properties',
-        loadComponent: () => import('./features/host/host-properties/host-properties.component').then(m => m.HostPropertiesComponent)
+        loadComponent: () => import('./features/properties/property-list/property-list.component').then(m => m.PropertyListComponent)
       },
       {
-        path: 'properties/create',
-        loadComponent: () => import('./features/properties/property-form/property-form.component').then(m => m.PropertyFormComponent)
+        path: 'properties/:id',
+        loadComponent: () => import('./features/properties/property-detail/property-detail.component').then(m => m.PropertyDetailComponent)
       },
+      
+      // Protected routes (Guest)
       {
-        path: 'properties/edit/:id',
-        loadComponent: () => import('./features/properties/property-form/property-form.component').then(m => m.PropertyFormComponent)
+        path: 'profile',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/profile/profile.component').then(m => m.ProfileComponent)
       },
       {
         path: 'bookings',
-        loadComponent: () => import('./features/host/host-bookings/host-bookings.component').then(m => m.HostBookingsComponent)
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/bookings/booking-list/booking-list.component').then(m => m.BookingListComponent)
+      },
+      {
+        path: 'favorites',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/favorites/favorites.component').then(m => m.FavoritesComponent)
+      },
+      
+      // Protected routes (Host)
+      {
+        path: 'host',
+        canActivate: [authGuard, hostGuard],
+        children: [
+          {
+            path: 'properties',
+            loadComponent: () => import('./features/host/host-properties/host-properties.component').then(m => m.HostPropertiesComponent)
+          },
+          {
+            path: 'properties/create',
+            loadComponent: () => import('./features/properties/property-form/property-form.component').then(m => m.PropertyFormComponent)
+          },
+          {
+            path: 'properties/edit/:id',
+            loadComponent: () => import('./features/properties/property-form/property-form.component').then(m => m.PropertyFormComponent)
+          },
+          {
+            path: 'bookings',
+            loadComponent: () => import('./features/host/host-bookings/host-bookings.component').then(m => m.HostBookingsComponent)
+          }
+        ]
+      },
+      
+      // Admin routes
+      {
+        path: 'admin',
+        canActivate: [authGuard, adminGuard],
+        loadComponent: () => import('./features/admin/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent)
       }
     ]
-  },
-  
-  // Admin routes
-  {
-    path: 'admin',
-    canActivate: [authGuard, adminGuard],
-    loadComponent: () => import('./features/admin/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent)
   },
   
   // 404
