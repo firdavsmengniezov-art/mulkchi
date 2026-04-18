@@ -17,16 +17,106 @@ html {
   ));
 }
 
+// ==========================================
+// CSS Variables for Theming
+// ==========================================
+:root {
+  // Primary colors
+  --primary-color: #667eea;
+  --primary-light: #7c8ae8;
+  --primary-dark: #5a67d8;
+  --primary-rgb: 102, 126, 234;
+  
+  // Background colors (light theme default)
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --bg-tertiary: #e8e8e8;
+  --bg-card: #ffffff;
+  
+  // Text colors
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-tertiary: #999999;
+  --text-muted: #cccccc;
+  
+  // Border colors
+  --border-color: #e0e0e0;
+  --border-color-light: #f0f0f0;
+  
+  // Shadows
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  
+  // Overlay
+  --overlay-color: rgba(0, 0, 0, 0.5);
+  
+  // Status colors
+  --success-color: #38a169;
+  --warning-color: #d69e2e;
+  --error-color: #e53e3e;
+  --info-color: #3182ce;
+  
+  // Spacing
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  
+  // Border radius
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  
+  // Transitions
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 350ms ease;
+}
+
+// ==========================================
+// Dark Theme Variables
+// ==========================================
+.dark-theme {
+  --bg-primary: #1a1a2e;
+  --bg-secondary: #16213e;
+  --bg-tertiary: #0f3460;
+  --bg-card: #1e2a4a;
+  
+  --text-primary: #ffffff;
+  --text-secondary: #a0aec0;
+  --text-tertiary: #718096;
+  --text-muted: #4a5568;
+  
+  --border-color: #2d3748;
+  --border-color-light: #1a202c;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  
+  --overlay-color: rgba(0, 0, 0, 0.7);
+  
+  --success-color: #48bb78;
+  --warning-color: #ed8936;
+  --error-color: #f56565;
+  --info-color: #4299e1;
+}
+
 body {
   // Default the application to a light color theme. This can be changed to
   // `dark` to enable the dark color theme, or to `light dark` to defer to the
   // user's system settings.
-  color-scheme: light;
+  color-scheme: light dark;
 
   // Set a default background, font and text colors for the application using
   // Angular Material's system-level CSS variables. Learn more about these
   // variables at https://material.angular.dev/guide/system-variables
-  background-color: var(--mat-sys-surface);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  transition: background-color var(--transition-normal), color var(--transition-normal);
 }
 
 // Typography
