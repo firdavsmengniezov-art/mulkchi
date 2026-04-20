@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Mulkchi.Api.Models.Foundations.AIs;
+using Mulkchi.Api.Models.Foundations.AI;
 using Mulkchi.Api.Models.Foundations.AIs.Exceptions;
 using Mulkchi.Api.Models.Foundations.Common;
 using Mulkchi.Api.Services.Foundations.AiRecommendations;
+using Mulkchi.Api.Services.Foundations.AI;
 using System.Security.Claims;
 
 namespace Mulkchi.Api.Controllers;
@@ -243,5 +245,200 @@ public class AiRecommendationsController : ControllerBase
         {
             return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
         }
+    }
+
+    // Simple price prediction endpoint for frontend
+    public class PricePredictionRequest
+    {
+        public string Region { get; set; } = string.Empty;
+        public string PropertyType { get; set; } = string.Empty;
+        public string ListingType { get; set; } = string.Empty;
+        public decimal Area { get; set; }
+        public int Rooms { get; set; }
+        public int Floor { get; set; }
+        public int TotalFloors { get; set; }
+        public int BuildingAge { get; set; }
+        public bool HasFurniture { get; set; }
+        public bool HasParking { get; set; }
+        public bool HasElevator { get; set; }
+        public bool HasAirConditioning { get; set; }
+        public bool HasWifi { get; set; }
+        public bool HasSecurity { get; set; }
+        public bool IsRenovated { get; set; }
+        public bool HasMetroNearby { get; set; }
+        public bool HasPool { get; set; }
+    }
+
+    public class PricePredictionResponse
+    {
+        public decimal MinPrice { get; set; }
+        public decimal MaxPrice { get; set; }
+        public decimal RecommendedPrice { get; set; }
+        public decimal PricePerSqm { get; set; }
+        public string Currency { get; set; } = "USD";
+        public string PriceLevel { get; set; } = string.Empty;
+        public string MarketComment { get; set; } = string.Empty;
+        public Dictionary<string, decimal> FactorBreakdown { get; set; } = new();
+    }
+
+    [HttpPost("predict-price")]
+    [Authorize]
+    public IActionResult PredictPriceAsync([FromBody] PricePredictionRequest request)
+    {
+        if (request == null || request.Area <= 0)
+            return BadRequest("Noto'g'ri ma'lumotlar kiritildi");
+
+        // === VILOYAT BO'YICHA BAZAVIY NARX (USD/m²) ===
+        // Haqiqiy O'zbekiston bozori narxlari asosida
+        decimal basePricePerSqm = request.Region switch
+        {
+            "Toshkent"            => 1200m,  // Toshkent shahar — eng qimmat
+            "ToshkentViloyat"     => 550m,   // Toshkent viloyat
+            "Samarqand"           => 500m,   // Samarqand
+            "Buxoro"              => 420m,   // Buxoro
+            "Namangan"            => 400m,   // Namangan
+            "Andijon"             => 420m,   // Andijon
+            "Fargona"             => 410m,   // Farg'ona
+            "Qashqadaryo"         => 380m,   // Qarshi
+            "Surxondaryo"         => 340m,   // Termiz
+            "Xorazm"              => 360m,   // Urganch
+            "Navoiy"              => 390m,   // Navoiy
+            "Jizzax"              => 360m,   // Jizzax
+            "Sirdaryo"            => 355m,   // Guliston
+            "Qoraqalpogiston"     => 320m,   // Nukus
+            _                     => 450m
+        };
+
+        // === MULK TURI KOEFFITSIENTI ===
+        decimal typeMultiplier = request.PropertyType switch
+        {
+            "Apartment" => 1.00m,
+            "House"     => 1.30m,
+            "Villa"     => 2.20m,
+            "Office"    => 1.40m,
+            "Land"      => 0.30m,
+            "Studio"    => 1.10m,
+            _           => 1.00m
+        };
+
+        // === XONALAR SONI KOEFFITSIENTI ===
+        // Kichik xonalar m² ga ko'ra qimmatroq
+        decimal roomMultiplier = request.Rooms switch
+        {
+            1 => 1.20m,   // 1 xonali — eng qimmat m² da
+            2 => 1.08m,   // 2 xonali
+            3 => 1.00m,   // 3 xonali — baza
+            4 => 0.94m,   // 4 xonali
+            5 => 0.90m,   // 5 xonali
+            _ => 0.86m    // 5+ xonali
+        };
+
+        // === QAVAT KOEFFITSIENTI ===
+        decimal floorMultiplier = 1.0m;
+        if (request.TotalFloors > 0)
+        {
+            double floorRatio = (double)request.Floor / request.TotalFloors;
+            floorMultiplier = floorRatio switch
+            {
+                <= 0.15 => 0.93m,  // 1-qavat — past narx
+                <= 0.85 => 1.03m,  // O'rta qavatlar — eng yaxshi
+                _       => 0.97m   // Oxirgi qavat
+            };
+        }
+
+        // === BINO YOSHI KOEFFITSIENTI ===
+        decimal ageMultiplier = request.BuildingAge switch
+        {
+            <= 0    => 1.15m,  // Yangi qurilish
+            <= 5    => 1.10m,  // 0-5 yil
+            <= 10   => 1.05m,  // 5-10 yil
+            <= 20   => 1.00m,  // 10-20 yil — baza
+            <= 35   => 0.92m,  // 20-35 yil — Sovet davri
+            _       => 0.82m   // 35+ yil — eski bino
+        };
+
+        // === QULAYLIKLAR BONUSLARI ===
+        var factors = new Dictionary<string, decimal>();
+
+        if (request.IsRenovated)     { factors["Ta'mirlangan"] = 0.12m; }
+        if (request.HasMetroNearby)  { factors["Metro yaqin"]  = 0.10m; }
+        if (request.HasFurniture)    { factors["Mebel"]        = 0.07m; }
+        if (request.HasParking)      { factors["Avtoturargoh"] = 0.06m; }
+        if (request.HasPool)         { factors["Hovuz"]        = 0.06m; }
+        if (request.HasSecurity)     { factors["Qo'riqlash"]   = 0.04m; }
+        if (request.HasAirConditioning) { factors["Konditsioner"] = 0.04m; }
+        if (request.HasElevator)     { factors["Lift"]         = 0.03m; }
+        if (request.HasWifi)         { factors["WiFi"]         = 0.02m; }
+
+        decimal totalBonus = factors.Values.Sum();
+
+        // === ASOSIY NARX HISOBLASH ===
+        decimal pricePerSqm = basePricePerSqm
+            * typeMultiplier
+            * roomMultiplier
+            * floorMultiplier
+            * ageMultiplier
+            * (1 + totalBonus);
+
+        decimal basePrice = pricePerSqm * request.Area;
+
+        // === IJARA UCHUN OYLIK NARX ===
+        if (request.ListingType == "Rent")
+        {
+            // Oylik ijara = sotish narxining 0.55-0.65%
+            basePrice    = Math.Round(basePrice * 0.006m, 0);
+            pricePerSqm  = Math.Round(pricePerSqm * 0.006m, 2);
+        }
+        else if (request.ListingType == "ShortTermRent")
+        {
+            // Kunlik ijara = oylik ijaraning 4-5%
+            basePrice    = Math.Round(basePrice * 0.006m * 0.045m, 1);
+            pricePerSqm  = Math.Round(pricePerSqm * 0.006m * 0.045m, 2);
+        }
+        else
+        {
+            basePrice    = Math.Round(basePrice, 0);
+            pricePerSqm  = Math.Round(pricePerSqm, 2);
+        }
+
+        // === NARX SEGMENTI ===
+        string priceLevel = request.ListingType == "Sale"
+            ? basePrice switch
+            {
+                < 30000  => "Arzon segment",
+                < 80000  => "O'rta segment",
+                < 200000 => "Biznes segment",
+                _        => "Premium segment"
+            }
+            : basePrice switch  // Ijara
+            {
+                < 300  => "Arzon segment",
+                < 700  => "O'rta segment",
+                < 1500 => "Biznes segment",
+                _      => "Premium segment"
+            };
+
+        // === BOZOR SHARHI ===
+        string comment = request.ListingType switch
+        {
+            "Rent"          => $"{request.Region} da {request.Rooms} xonali {request.Area}m² kvartira uchun oylik ijara narxi",
+            "ShortTermRent" => $"{request.Region} da {request.Rooms} xonali {request.Area}m² kvartira uchun kunlik ijara narxi",
+            _               => $"{request.Region} da {request.Rooms} xonali {request.Area}m² kvartira uchun sotish narxi"
+        };
+
+        return Ok(new PricePredictionResponse
+        {
+            MinPrice         = Math.Round(basePrice * 0.88m, 0),
+            MaxPrice         = Math.Round(basePrice * 1.12m, 0),
+            RecommendedPrice = basePrice,
+            PricePerSqm      = pricePerSqm,
+            Currency         = "USD",
+            PriceLevel       = priceLevel,
+            MarketComment    = comment,
+            FactorBreakdown  = factors.ToDictionary(
+                k => k.Key,
+                v => Math.Round(v.Value * 100, 0)  // foiz ko'rinishida
+            )
+        });
     }
 }

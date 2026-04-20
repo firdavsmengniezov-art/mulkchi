@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 
 export interface UploadedImage {
@@ -26,6 +27,7 @@ export interface UploadedImage {
     MatButtonModule,
     MatIconModule,
     MatProgressBarModule,
+    MatTooltipModule,
     DragDropModule
   ],
   template: `

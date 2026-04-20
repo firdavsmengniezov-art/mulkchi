@@ -8,10 +8,12 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { map } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../services/auth.service';
+import { ChatService } from '../../services/chat.service';
 import { UserRole } from '../../models';
 
 @Component({
@@ -27,7 +29,8 @@ import { UserRole } from '../../models';
     MatMenuModule,
     MatBadgeModule,
     MatSidenavModule,
-    MatListModule
+    MatListModule,
+    MatSnackBarModule
   ],
   template: `
     <mat-toolbar class="navbar" color="primary">
@@ -47,8 +50,12 @@ import { UserRole } from '../../models';
             <a mat-button routerLink="/properties" routerLinkActive="active">
               Mulk qidirish
             </a>
-            
-            @if (isHost()) {
+            <a mat-button routerLink="/ai-price" routerLinkActive="active">
+              <mat-icon>psychology</mat-icon>
+              AI Narx
+            </a>
+
+            @if (isInHostMode()) {
               <a mat-button routerLink="/host/properties" routerLinkActive="active">
                 <mat-icon>add_business</mat-icon>
                 Mening mulklarim
@@ -72,9 +79,17 @@ import { UserRole } from '../../models';
               <mat-icon>favorite</mat-icon>
             </button>
 
+            <!-- Messages -->
+            <button mat-icon-button routerLink="/messages" matTooltip="Xabarlar">
+              <mat-icon [matBadge]="chatService.totalUnreadCount() || null" 
+                        [matBadgeHidden]="chatService.totalUnreadCount() === 0"
+                        matBadgeColor="warn"
+                        aria-hidden="false">chat</mat-icon>
+            </button>
+
             <!-- Notifications -->
             <button mat-icon-button matTooltip="Bildirishnomalar">
-              <mat-icon [matBadge]="'0'" matBadgeColor="warn">notifications</mat-icon>
+              <mat-icon>notifications</mat-icon>
             </button>
 
             <!-- User Menu -->
@@ -101,7 +116,33 @@ import { UserRole } from '../../models';
                 <mat-icon>favorite</mat-icon>
                 <span>Sevimlilar</span>
               </a>
-              @if (isHost()) {
+              <!-- Single Identity: Mode Switcher -->
+              @if (canBeHost()) {
+                <mat-divider></mat-divider>
+                <div class="mode-switcher">
+                  <span class="mode-label">Rejim:</span>
+                  <div class="mode-buttons">
+                    <button 
+                      mat-button 
+                      [class.active-mode]="isInGuestMode()"
+                      (click)="switchMode('Guest')"
+                      [disabled]="isInGuestMode()">
+                      <mat-icon>person</mat-icon>
+                      Mehmon
+                    </button>
+                    <button 
+                      mat-button 
+                      [class.active-mode]="isInHostMode()"
+                      (click)="switchMode('Host')"
+                      [disabled]="isInHostMode()">
+                      <mat-icon>real_estate_agent</mat-icon>
+                      Host
+                    </button>
+                  </div>
+                </div>
+              }
+              
+              @if (isInHostMode()) {
                 <mat-divider></mat-divider>
                 <a mat-menu-item routerLink="/host/properties">
                   <mat-icon>business</mat-icon>
@@ -150,7 +191,11 @@ import { UserRole } from '../../models';
               <mat-icon matListItemIcon>search</mat-icon>
               <span matListItemTitle>Mulk qidirish</span>
             </a>
-            
+            <a mat-list-item routerLink="/ai-price" (click)="sidenav.close()">
+              <mat-icon matListItemIcon>psychology</mat-icon>
+              <span matListItemTitle>AI Narx</span>
+            </a>
+
             @if (isAuthenticated()) {
               <mat-divider></mat-divider>
               <a mat-list-item routerLink="/profile" (click)="sidenav.close()">
@@ -166,7 +211,27 @@ import { UserRole } from '../../models';
                 <span matListItemTitle>Sevimlilar</span>
               </a>
               
-              @if (isHost()) {
+              <!-- Single Identity: Mobile Mode Switcher -->
+              @if (canBeHost()) {
+                <mat-divider></mat-divider>
+                <div mat-subheader>Rejim o'zgartirish</div>
+                <button 
+                  mat-list-item 
+                  (click)="switchMode('Guest'); sidenav.close()"
+                  [class.active-mode]="isInGuestMode()">
+                  <mat-icon matListItemIcon>person</mat-icon>
+                  <span matListItemTitle>Mehmon rejimi</span>
+                </button>
+                <button 
+                  mat-list-item 
+                  (click)="switchMode('Host'); sidenav.close()"
+                  [class.active-mode]="isInHostMode()">
+                  <mat-icon matListItemIcon>real_estate_agent</mat-icon>
+                  <span matListItemTitle>Host rejimi</span>
+                </button>
+              }
+              
+              @if (isInHostMode()) {
                 <mat-divider></mat-divider>
                 <a mat-list-item routerLink="/host/properties" (click)="sidenav.close()">
                   <mat-icon matListItemIcon>business</mat-icon>
@@ -292,6 +357,58 @@ import { UserRole } from '../../models';
       width: 280px;
     }
 
+    /* Single Identity: Mode Switcher Styles */
+    .mode-switcher {
+      padding: 8px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .mode-label {
+      font-size: 12px;
+      color: rgba(0, 0, 0, 0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .mode-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .mode-buttons button {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 8px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .mode-buttons button mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+
+    .active-mode {
+      background-color: rgba(103, 58, 183, 0.1) !important;
+      color: #673ab7 !important;
+      font-weight: 500;
+    }
+
+    .active-mode:hover {
+      background-color: rgba(103, 58, 183, 0.2) !important;
+    }
+
+    button.mat-list-item.active-mode {
+      background-color: rgba(103, 58, 183, 0.1);
+      color: #673ab7;
+    }
+
     @media (max-width: 768px) {
       .navbar-container {
         padding: 0 16px;
@@ -309,10 +426,13 @@ import { UserRole } from '../../models';
 })
 export class NavbarComponent {
   private authService = inject(AuthService);
+  chatService = inject(ChatService);
   private breakpointObserver = inject(BreakpointObserver);
+  private snackBar = inject(MatSnackBar);
 
   isAuthenticated = this.authService.isAuthenticated;
   currentUser = this.authService.currentUser;
+  currentMode = this.authService.currentMode;
 
   isMobile = toSignal(
     this.breakpointObserver.observe('(max-width: 768px)').pipe(map(result => result.matches)),
@@ -320,6 +440,21 @@ export class NavbarComponent {
   );
 
   sidenavOpened = signal(false);
+
+  // Single Identity: Check if user is in Host mode
+  isInHostMode(): boolean {
+    return this.authService.isInHostMode();
+  }
+
+  // Single Identity: Check if user is in Guest mode
+  isInGuestMode(): boolean {
+    return this.authService.isInGuestMode();
+  }
+
+  // Check if user can be a Host (has Host role or is verified)
+  canBeHost(): boolean {
+    return this.authService.isHost() || this.currentUser()?.isVerified || false;
+  }
 
   isHost(): boolean {
     const user = this.currentUser();
@@ -329,6 +464,28 @@ export class NavbarComponent {
   isAdmin(): boolean {
     const user = this.currentUser();
     return user ? this.authService.isAdmin() : false;
+  }
+
+  // Single Identity: Switch between Guest and Host modes
+  switchMode(mode: 'Guest' | 'Host'): void {
+    const targetMode = mode === 'Host' ? UserRole.Host : UserRole.Guest;
+    
+    this.authService.switchMode({ targetMode }).subscribe({
+      next: () => {
+        this.snackBar.open(
+          mode === 'Host' ? 'Host rejimiga o\'tdingiz' : 'Mehmon rejimiga o\'tdingiz',
+          'Yopish',
+          { duration: 2000 }
+        );
+      },
+      error: (err) => {
+        this.snackBar.open(
+          err.error?.message || 'Rejim o\'zgartirishda xatolik',
+          'Yopish',
+          { duration: 5000 }
+        );
+      }
+    });
   }
 
   toggleSidenav(): void {

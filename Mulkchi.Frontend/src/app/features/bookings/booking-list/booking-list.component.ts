@@ -38,7 +38,7 @@ import { Booking, BookingStatus } from '../../../core/models';
           <mat-tab label="Barcha">
             @if (loading()) {
               <div class="loading-container">
-                <mat-spinner diameter="50"></mat-spinner>
+                <mat-progress-spinner diameter="50"></mat-progress-spinner>
                 <p>Yuklanmoqda...</p>
               </div>
             } @else if (bookings().length === 0) {
@@ -131,14 +131,14 @@ import { Booking, BookingStatus } from '../../../core/models';
           
           <mat-tab label="Kutilmoqda">
             <div class="tab-content">
-              @if (filteredByStatus('Pending').length === 0) {
+              @if (filteredByStatus(BookingStatus.Pending).length === 0) {
                 <div class="empty-state">
                   <mat-icon>schedule</mat-icon>
                   <p>Kutilayotgan bronlar yo'q</p>
                 </div>
               } @else {
                 <div class="bookings-list">
-                  @for (booking of filteredByStatus('Pending'); track booking.id) {
+                  @for (booking of filteredByStatus(BookingStatus.Pending); track booking.id) {
                     <ng-container *ngTemplateOutlet="bookingCard; context: { $implicit: booking }"></ng-container>
                   }
                 </div>
@@ -148,14 +148,14 @@ import { Booking, BookingStatus } from '../../../core/models';
           
           <mat-tab label="Tasdiqlangan">
             <div class="tab-content">
-              @if (filteredByStatus('Confirmed').length === 0) {
+              @if (filteredByStatus(BookingStatus.Confirmed).length === 0) {
                 <div class="empty-state">
                   <mat-icon>check_circle</mat-icon>
                   <p>Tasdiqlangan bronlar yo'q</p>
                 </div>
               } @else {
                 <div class="bookings-list">
-                  @for (booking of filteredByStatus('Confirmed'); track booking.id) {
+                  @for (booking of filteredByStatus(BookingStatus.Confirmed); track booking.id) {
                     <ng-container *ngTemplateOutlet="bookingCard; context: { $implicit: booking }"></ng-container>
                   }
                 </div>
@@ -165,14 +165,14 @@ import { Booking, BookingStatus } from '../../../core/models';
           
           <mat-tab label="Bekor qilingan">
             <div class="tab-content">
-              @if (filteredByStatus('Cancelled').length === 0) {
+              @if (filteredByStatus(BookingStatus.Cancelled).length === 0) {
                 <div class="empty-state">
                   <mat-icon>cancel</mat-icon>
                   <p>Bekor qilingan bronlar yo'q</p>
                 </div>
               } @else {
                 <div class="bookings-list">
-                  @for (booking of filteredByStatus('Cancelled'); track booking.id) {
+                  @for (booking of filteredByStatus(BookingStatus.Cancelled); track booking.id) {
                     <ng-container *ngTemplateOutlet="bookingCard; context: { $implicit: booking }"></ng-container>
                   }
                 </div>
@@ -521,6 +521,9 @@ export class BookingListComponent implements OnInit {
   private bookingService = inject(BookingService);
   private snackBar = inject(MatSnackBar);
 
+  // Expose enum to template
+  readonly BookingStatus = BookingStatus;
+
   bookings = this.bookingService.bookings;
   loading = this.bookingService.loading;
   totalCount = signal(0);
@@ -547,7 +550,11 @@ export class BookingListComponent implements OnInit {
   }
 
   filteredByStatus(status: BookingStatus) {
-    return this.bookings().filter(b => b.status === status);
+    const bookingsList = this.bookings();
+    if (!Array.isArray(bookingsList)) {
+      return [];
+    }
+    return bookingsList.filter(b => b.status === status);
   }
 
   onTabChange(index: number): void {
@@ -565,16 +572,16 @@ export class BookingListComponent implements OnInit {
 
   getStatusLabel(status: BookingStatus): string {
     switch (status) {
-      case 'Pending': return 'Kutilmoqda';
-      case 'Confirmed': return 'Tasdiqlangan';
-      case 'Cancelled': return 'Bekor qilingan';
-      case 'Completed': return 'Yakunlangan';
+      case BookingStatus.Pending: return 'Kutilmoqda';
+      case BookingStatus.Confirmed: return 'Tasdiqlangan';
+      case BookingStatus.Cancelled: return 'Bekor qilingan';
+      case BookingStatus.Completed: return 'Yakunlangan';
       default: return status;
     }
   }
 
   canCancel(status: BookingStatus): boolean {
-    return status === 'Pending' || status === 'Confirmed';
+    return status === BookingStatus.Pending || status === BookingStatus.Confirmed;
   }
 
   cancelBooking(id: string): void {

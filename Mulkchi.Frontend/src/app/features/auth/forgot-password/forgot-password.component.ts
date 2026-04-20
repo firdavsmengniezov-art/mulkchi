@@ -63,11 +63,13 @@ import { AuthService } from '../../../core/services/auth.service';
                 class="full-width submit-btn"
                 [disabled]="forgotForm.invalid || isLoading()">
                 @if (isLoading()) {
-                  <mat-spinner diameter="20" class="inline-spinner"></mat-spinner>
+                  <mat-progress-spinner diameter="20" class="inline-spinner"></mat-progress-spinner>
                   <span>Yuborilmoqda...</span>
                 } @else {
-                  <mat-icon>send</mat-icon>
-                  <span>Havolani yuborish</span>
+                  <ng-container>
+                    <mat-icon>send</mat-icon>
+                    <span>Havolani yuborish</span>
+                  </ng-container>
                 }
               </button>
             </form>

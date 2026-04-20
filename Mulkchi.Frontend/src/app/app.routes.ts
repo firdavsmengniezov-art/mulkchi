@@ -58,7 +58,17 @@ export const routes: Routes = [
         canActivate: [authGuard],
         loadComponent: () => import('./features/favorites/favorites.component').then(m => m.FavoritesComponent)
       },
-      
+      {
+        path: 'messages',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/messages/messages.component').then(m => m.MessagesComponent)
+      },
+      {
+        path: 'ai-price',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/ai-price/ai-price.component').then(m => m.AiPriceComponent)
+      },
+
       // Protected routes (Host)
       {
         path: 'host',

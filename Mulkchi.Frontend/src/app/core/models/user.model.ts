@@ -32,6 +32,7 @@ export interface User {
   isVerified: boolean;
   emailConfirmed: boolean;
   role: UserRole;
+  currentMode?: UserRole;  // For Single Identity: Guest/Host switch
   badge: HostBadge;
   rating: number;
   responseRate: number;
@@ -54,6 +55,7 @@ export interface AuthResponse {
   lastName: string;
   avatarUrl?: string;
   role: UserRole;
+  currentMode?: UserRole;  // Current active mode for Single Identity
 }
 
 export interface LoginRequest {
@@ -65,7 +67,16 @@ export interface RegisterRequest {
   firstName: string;
   lastName: string;
   email: string;
-  phone?: string;
+  phone: string; // Required for backend
   password: string;
-  confirmPassword: string;
+  confirmPassword: string; // Frontend validation only
+  role?: UserRole; // Optional - defaults to Guest on backend
+}
+
+export interface SwitchModeRequest {
+  targetMode: UserRole.Guest | UserRole.Host;
+}
+
+export interface GoogleLoginRequest {
+  idToken: string;
 }

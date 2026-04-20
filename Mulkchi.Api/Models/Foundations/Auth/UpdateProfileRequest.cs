@@ -27,4 +27,7 @@ public class UpdateProfileRequest
 
     [StringLength(255)]
     public string AvatarUrl { get; set; }
+
+    // Single Identity: Current active mode (Guest/Host)
+    public UserRole? CurrentMode { get; set; }
 }

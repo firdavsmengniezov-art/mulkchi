@@ -9,9 +9,11 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { PropertyService } from '../../../core/services/property.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Property, ListingType, UserRole } from '../../../core/models';
+import { BookingPanelComponent } from '../booking-panel/booking-panel.component';
 
 @Component({
   selector: 'app-property-detail',
@@ -24,13 +26,15 @@ import { Property, ListingType, UserRole } from '../../../core/models';
     MatIconModule,
     MatChipsModule,
     MatDividerModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatTooltipModule,
+    BookingPanelComponent
   ],
   template: `
     <div class="property-detail-container">
       @if (loading()) {
         <div class="loading-container">
-          <mat-spinner diameter="50"></mat-spinner>
+          <mat-progress-spinner diameter="50"></mat-progress-spinner>
           <p>Yuklanmoqda...</p>
         </div>
       } @else if (error()) {
@@ -235,7 +239,7 @@ import { Property, ListingType, UserRole } from '../../../core/models';
                     mat-icon-button 
                     [color]="isFavorite() ? 'warn' : ''" 
                     (click)="toggleFavorite()"
-                    [matTooltip]="isFavorite() ? 'Sevimlilardan olib tashlash' : 'Sevimlilarga qo\'shish'">
+                    [matTooltip]="getFavoriteTooltip()">
                     <mat-icon>{{ isFavorite() ? 'favorite' : 'favorite_border' }}</mat-icon>
                   </button>
                 } @else {
@@ -259,6 +263,11 @@ import { Property, ListingType, UserRole } from '../../../core/models';
                 </div>
               }
             </div>
+
+            <!-- Booking Panel -->
+            @if (isAuthenticated() && !isOwner() && property()?.listingType === ListingType.ShortTermRent) {
+              <app-booking-panel [property]="property()!"></app-booking-panel>
+            }
           </div>
         </div>
       }
@@ -752,9 +761,8 @@ export class PropertyDetailComponent implements OnInit {
     this.error.set(null);
     
     this.propertyService.getPropertyById(id).subscribe({
-      error: (err) => {
+      error: () => {
         this.error.set('Mulk ma\'lumotlarini yuklashda xatolik yuz berdi');
-        console.error('Error loading property:', err);
       }
     });
   }
@@ -787,9 +795,11 @@ export class PropertyDetailComponent implements OnInit {
       return;
     }
     
-    this.snackBar.open('Bron qilish funksiyasi tez orada qo\'shiladi', 'Yopish', {
-      duration: 3000
-    });
+    // Scroll to booking panel
+    const bookingPanel = document.querySelector('app-booking-panel');
+    if (bookingPanel) {
+      bookingPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
   }
 
   contactHost(): void {
@@ -818,6 +828,10 @@ export class PropertyDetailComponent implements OnInit {
       'Yopish',
       { duration: 2000 }
     );
+  }
+
+  getFavoriteTooltip(): string {
+    return this.isFavorite() ? 'Sevimlilardan olib tashlash' : "Sevimlilarga qo'shish";
   }
 
   deleteProperty(): void {

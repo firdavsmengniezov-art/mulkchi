@@ -28,9 +28,12 @@ using Mulkchi.Api.Services.Foundations.DiscountUsages;
 using Mulkchi.Api.Services.Foundations.Announcements;
 using Mulkchi.Api.Services.Foundations.Auth;
 using Mulkchi.Api.Services.Foundations.Bookings;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Mulkchi.Api.Services.Foundations.AI;
 using Mulkchi.Api.Services.Foundations.Analytics;
 using Mulkchi.Api.Services.RateLimiting;
+using Mulkchi.Api.Validators;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
@@ -65,6 +68,11 @@ public class Startup
         services.AddResponseCaching();
         services.AddMemoryCache();
         
+        // Add FluentValidation
+        services.AddFluentValidationAutoValidation();
+        services.AddFluentValidationClientsideAdapters();
+        services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
+
         AddSwagger(services);
         AddJwtAuthentication(services);
         AddDbContext(services);
@@ -339,12 +347,7 @@ public class Startup
                 policy
                     .WithOrigins(
                         "http://localhost:4200",
-                        "http://localhost:4201",
-                        "http://localhost:4202",
                         "http://127.0.0.1:4200",
-                        "http://127.0.0.1:4201",
-                        "http://127.0.0.1:3194",
-                        "http://127.0.0.1:1033",
                         "http://localhost:3000"
                     )
                     .AllowAnyHeader()

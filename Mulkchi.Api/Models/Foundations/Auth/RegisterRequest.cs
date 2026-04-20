@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Mulkchi.Api.Models.Foundations.Users;
 
 #nullable disable
 
@@ -30,4 +31,6 @@ public class RegisterRequest
     public string Password { get; set; }
     
     public string PreferredLanguage { get; set; } = "uz";
+    
+    public UserRole Role { get; set; } = UserRole.Guest;
 }

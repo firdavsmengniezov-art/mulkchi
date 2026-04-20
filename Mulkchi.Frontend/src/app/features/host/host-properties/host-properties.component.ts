@@ -43,7 +43,7 @@ import { Property, PropertyStatus, ListingType } from '../../../core/models';
 
         @if (loading()) {
           <div class="loading-container">
-            <mat-spinner diameter="50"></mat-spinner>
+            <mat-progress-spinner diameter="50"></mat-progress-spinner>
             <p>Yuklanmoqda...</p>
           </div>
         } @else if (properties().length === 0) {

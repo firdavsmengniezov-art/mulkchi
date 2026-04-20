@@ -129,12 +129,18 @@ export interface Property {
   
   // Navigation
   images?: PropertyImage[];
+  
+  // Additional image properties for API responses
+  imageUrl?: string;
+  mainImageUrl?: string;
+  thumbnailUrl?: string;
 }
 
 export interface PropertyImage {
   id: string;
   propertyId: string;
   imageUrl: string;
+  url?: string; // Alternative property for image URL
   caption?: string;
   sortOrder: number;
   isMain: boolean;

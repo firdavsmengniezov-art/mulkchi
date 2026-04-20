@@ -14,7 +14,7 @@ import { BreakpointObserver } from '@angular/cdk/layout';
 import { map, Observable } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../core/services/auth.service';
-import { UserRole } from '../../../core/models';
+import { GoogleLoginComponent } from '../../../shared/components/google-login/google-login.component';
 
 @Component({
   selector: 'app-register',
@@ -29,7 +29,8 @@ import { UserRole } from '../../../core/models';
     MatIconModule,
     MatProgressSpinnerModule,
     MatSelectModule,
-    MatStepperModule
+    MatStepperModule,
+    GoogleLoginComponent
   ],
   template: `
     <div class="register-container">
@@ -40,7 +41,15 @@ import { UserRole } from '../../../core/models';
         </mat-card-header>
 
         <mat-card-content>
-          <mat-stepper [orientation]="stepperOrientation()" linear #stepper>
+          <!-- Google Quick Register -->
+          <div class="google-register-section">
+            <app-google-login></app-google-login>
+            <div class="divider">
+              <span>yoki</span>
+            </div>
+          </div>
+
+          <mat-stepper [orientation]="stepperOrientationSignal()" linear #stepper>
             <!-- Step 1: Personal Info -->
             <mat-step [stepControl]="personalInfoForm" label="Shaxsiy ma'lumotlar">
               <form [formGroup]="personalInfoForm">
@@ -109,7 +118,9 @@ import { UserRole } from '../../../core/models';
                       @if (accountInfoForm.get('password')?.hasError('required')) {
                         Parol kiritilishi shart
                       } @else if (accountInfoForm.get('password')?.hasError('minlength')) {
-                        Parol kamida 6 ta belgidan iborat bo'lishi kerak
+                        Parol kamida 8 ta belgidan iborat bo'lishi kerak
+                      } @else if (accountInfoForm.get('password')?.hasError('pattern')) {
+                        Parol katta harf, kichik harf, raqam va maxsus belgi bo'lishi kerak
                       }
                     </mat-error>
                   }
@@ -128,15 +139,6 @@ import { UserRole } from '../../../core/models';
                       }
                     </mat-error>
                   }
-                </mat-form-field>
-
-                <mat-form-field appearance="outline" class="full-width">
-                  <mat-label>Foydalanuvchi turi</mat-label>
-                  <mat-select formControlName="role">
-                    <mat-option [value]="'Guest'">Mehmon (ijaraga olish)</mat-option>
-                    <mat-option [value]="'Host'">Host (mulk beruvchi)</mat-option>
-                  </mat-select>
-                  <mat-icon matPrefix>account_circle</mat-icon>
                 </mat-form-field>
 
                 @if (accountInfoForm.hasError('passwordMismatch') && accountInfoForm.touched) {
@@ -177,11 +179,6 @@ import { UserRole } from '../../../core/models';
                   <span class="label">Telefon:</span>
                   <span class="value">{{ personalInfoForm.value.phone || 'Kiritilmagan' }}</span>
                 </div>
-                <div class="confirmation-item">
-                  <span class="label">Foydalanuvchi turi:</span>
-                  <span class="value">{{ accountInfoForm.value.role === 'Host' ? 'Host' : 'Mehmon' }}</span>
-                </div>
-
                 @if (errorMessage()) {
                   <div class="error-alert">
                     <mat-icon color="warn">error</mat-icon>
@@ -198,7 +195,7 @@ import { UserRole } from '../../../core/models';
                     (click)="onSubmit()"
                     [disabled]="isLoading()">
                     @if (isLoading()) {
-                      <mat-spinner diameter="20" class="inline-spinner"></mat-spinner>
+                      <mat-progress-spinner diameter="20" class="inline-spinner"></mat-progress-spinner>
                       <span>Ro'yxatdan o'tish...</span>
                     } @else {
                       <span>Ro'yxatdan o'tish</span>
@@ -329,6 +326,29 @@ import { UserRole } from '../../../core/models';
       color: #666;
     }
 
+    .google-register-section {
+      margin-bottom: 24px;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 20px 0;
+      color: #666;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .divider span {
+      padding: 0 16px;
+    }
+
     @media (max-width: 600px) {
       .register-card {
         padding: 16px;
@@ -374,13 +394,17 @@ export class RegisterComponent {
     firstName: ['', Validators.required],
     lastName: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
-    phone: ['']
+    phone: ['', Validators.required]
   });
 
   accountInfoForm = this.fb.group({
-    password: ['', [Validators.required, Validators.minLength(6)]],
-    confirmPassword: ['', Validators.required],
-    role: ['Guest' as UserRole, Validators.required]
+    password: ['', [
+      Validators.required, 
+      Validators.minLength(8),
+      Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/)
+    ]],
+    confirmPassword: ['', Validators.required]
+    // Single Identity: No role selection - defaults to Guest on backend
   }, { validators: this.passwordMatchValidator });
 
   isLoading = signal(false);
@@ -419,10 +443,10 @@ export class RegisterComponent {
       firstName: this.personalInfoForm.value.firstName!,
       lastName: this.personalInfoForm.value.lastName!,
       email: this.personalInfoForm.value.email!,
-      phone: this.personalInfoForm.value.phone || undefined,
+      phone: this.personalInfoForm.value.phone!,
       password: this.accountInfoForm.value.password!,
-      confirmPassword: this.accountInfoForm.value.confirmPassword!,
-      role: this.accountInfoForm.value.role as UserRole
+      confirmPassword: this.accountInfoForm.value.confirmPassword!
+      // Single Identity: No role sent - defaults to Guest on backend
     };
 
     this.authService.register(registerData).subscribe({

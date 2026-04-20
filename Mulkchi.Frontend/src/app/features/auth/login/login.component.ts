@@ -10,6 +10,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../../../core/services/auth.service';
+import { GoogleLoginComponent } from '../../../shared/components/google-login/google-login.component';
 
 @Component({
   selector: 'app-login',
@@ -23,7 +24,8 @@ import { AuthService } from '../../../core/services/auth.service';
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    GoogleLoginComponent
   ],
   template: `
     <div class="login-container">
@@ -85,12 +87,19 @@ import { AuthService } from '../../../core/services/auth.service';
               class="full-width submit-btn"
               [disabled]="loginForm.invalid || isLoading()">
               @if (isLoading()) {
-                <mat-spinner diameter="20" class="inline-spinner"></mat-spinner>
+                <mat-progress-spinner diameter="20" class="inline-spinner"></mat-progress-spinner>
                 <span>Kirish...</span>
               } @else {
                 <span>Kirish</span>
               }
             </button>
+
+            <!-- Google Login -->
+            <div class="divider">
+              <span>yoki</span>
+            </div>
+            
+            <app-google-login></app-google-login>
           </form>
         </mat-card-content>
 
@@ -182,6 +191,25 @@ import { AuthService } from '../../../core/services/auth.service';
     .login-actions p {
       margin: 0;
       color: #666;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 20px 0;
+      color: #666;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .divider span {
+      padding: 0 16px;
     }
 
     @media (max-width: 480px) {

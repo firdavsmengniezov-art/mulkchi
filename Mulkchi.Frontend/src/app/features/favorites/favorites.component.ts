@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -29,25 +29,26 @@ import { Property } from '../../core/models';
 
         @if (loading()) {
           <div class="loading-container">
-            <mat-spinner diameter="50"></mat-spinner>
+            <mat-progress-spinner diameter="50"></mat-progress-spinner>
             <p>Yuklanmoqda...</p>
           </div>
         } @else if (favorites().length === 0) {
           <div class="empty-container">
-            <mat-icon>favorite_border</mat-icon>
-            <h3>Sevimlilar bo'sh</h3>
-            <p>Siz hali hech qanday mulkni sevimlilarga qo'shmagansiz</p>
+            <mat-icon class="empty-icon">favorite_border</mat-icon>
+            <h3>Hali sevimli yo'q</h3>
+            <p>Siz hali hech qanday mulkni sevimlilarga qo'shmagansiz. Mulk qidiring va yoqqanlarini saqlang!</p>
             <button mat-raised-button color="primary" routerLink="/properties">
+              <mat-icon>search</mat-icon>
               Mulk qidirish
             </button>
           </div>
         } @else {
           <div class="favorites-grid">
             @for (property of favorites(); track property.id) {
-              <mat-card class="property-card">
-                <div class="property-image" [routerLink]="['/properties', property.id]">
+              <mat-card class="property-card" (click)="navigateToProperty(property.id)">
+                <div class="property-image">
                   @if (property.images && property.images.length > 0) {
-                    <img [src]="property.images[0].imageUrl" [alt]="property.title">
+                    <img [src]="getImageUrl(property)" [alt]="property.title" (error)="onImgError($event)">
                   } @else {
                     <div class="no-image">
                       <mat-icon>image_not_supported</mat-icon>
@@ -132,12 +133,25 @@ import { Property } from '../../core/models';
       padding: 60px 20px;
     }
 
-    .empty-container mat-icon {
-      font-size: 64px;
-      width: 64px;
-      height: 64px;
-      color: #ccc;
-      margin-bottom: 16px;
+    .empty-container .empty-icon {
+      font-size: 80px;
+      width: 80px;
+      height: 80px;
+      color: #cbd5e1;
+      margin-bottom: 24px;
+    }
+
+    .empty-container h3 {
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .empty-container p {
+      color: #666;
+      margin-bottom: 24px;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .favorites-grid {
@@ -148,6 +162,17 @@ import { Property } from '../../core/models';
 
     .property-card {
       overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .property-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+    }
+
+    .property-card:active {
+      transform: translateY(0);
     }
 
     .property-image {
@@ -259,6 +284,7 @@ import { Property } from '../../core/models';
 })
 export class FavoritesComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
+  private router = inject(Router);
 
   favorites = signal<Property[]>([]);
   loading = signal(true);
@@ -277,7 +303,10 @@ export class FavoritesComponent implements OnInit {
 
   removeFavorite(id: string): void {
     this.favorites.update(favs => favs.filter(p => p.id !== id));
-    this.snackBar.open('Sevimlilardan olib tashlandi', 'Yopish', { duration: 2000 });
+    this.snackBar.open('Sevimlilardan olib tashlandi', 'Yopish', {
+      duration: 3000,
+      panelClass: 'success-snackbar'
+    });
   }
 
   getListingTypeLabel(type: string): string {
@@ -287,5 +316,47 @@ export class FavoritesComponent implements OnInit {
       case 'ShortTermRent': return 'Qisqa muddatli';
       default: return type;
     }
+  }
+
+  // Get image URL from property (handles multiple image formats)
+  getImageUrl(property: any): string {
+    // Check for direct imageUrl property on property
+    if (property.imageUrl) {
+      return property.imageUrl;
+    }
+    if (property.mainImageUrl) {
+      return property.mainImageUrl;
+    }
+    if (property.thumbnailUrl) {
+      return property.thumbnailUrl;
+    }
+    
+    // Check for images array
+    if (property.images && Array.isArray(property.images) && property.images.length > 0) {
+      const firstImage = property.images[0];
+      
+      // Handle different image structures
+      if (firstImage.imageUrl) {
+        return firstImage.imageUrl;
+      }
+      if (firstImage.url) {
+        return firstImage.url;
+      }
+      if (typeof firstImage === 'string') {
+        return firstImage;
+      }
+    }
+    
+    return '/assets/placeholder.svg';
+  }
+
+  // Handle image load error
+  onImgError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = '/assets/placeholder.svg';
+  }
+
+  navigateToProperty(id: string): void {
+    this.router.navigate(['/properties', id]);
   }
 }

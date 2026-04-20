@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -11,6 +11,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../../core/services/auth.service';
 import { Gender, UserRole, User, HostBadge } from '../../core/models';
@@ -21,7 +22,6 @@ import { Gender, UserRole, User, HostBadge } from '../../core/models';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterLink,
     MatCardModule,
     MatButtonModule,
     MatIconModule,
@@ -30,7 +30,8 @@ import { Gender, UserRole, User, HostBadge } from '../../core/models';
     MatDatepickerModule,
     MatNativeDateModule,
     MatTabsModule,
-    MatDividerModule
+    MatDividerModule,
+    MatProgressSpinnerModule
   ],
   template: `
     <div class="profile-container">
@@ -121,14 +122,18 @@ import { Gender, UserRole, User, HostBadge } from '../../core/models';
                           (click)="isEditing() ? saveProfile() : toggleEdit()"
                           [disabled]="isSaving()">
                           @if (isSaving()) {
-                            <mat-spinner diameter="20" class="inline-spinner"></mat-spinner>
+                            <mat-progress-spinner diameter="20" class="inline-spinner"></mat-progress-spinner>
                             <span>Saqlanmoqda...</span>
                           } @else if (isEditing()) {
-                            <mat-icon>save</mat-icon>
-                            <span>Saqlash</span>
+                            <ng-container>
+                              <mat-icon>save</mat-icon>
+                              <span>Saqlash</span>
+                            </ng-container>
                           } @else {
-                            <mat-icon>edit</mat-icon>
-                            <span>Tahrirlash</span>
+                            <ng-container>
+                              <mat-icon>edit</mat-icon>
+                              <span>Tahrirlash</span>
+                            </ng-container>
                           }
                         </button>
                       </div>
@@ -226,7 +231,7 @@ import { Gender, UserRole, User, HostBadge } from '../../core/models';
                           type="submit"
                           [disabled]="passwordForm.invalid || isChangingPassword()">
                           @if (isChangingPassword()) {
-                            <mat-spinner diameter="20" class="inline-spinner"></mat-spinner>
+                            <mat-progress-spinner diameter="20" class="inline-spinner"></mat-progress-spinner>
                             <span>O'zgartirilmoqda...</span>
                           } @else {
                             <span>Parolni o'zgartirish</span>
@@ -249,6 +254,42 @@ import { Gender, UserRole, User, HostBadge } from '../../core/models';
                           <mat-option value="en">English</mat-option>
                         </mat-select>
                       </mat-form-field>
+
+                      <mat-divider class="section-divider"></mat-divider>
+
+                      <h3>Foydalanuvchi rejimi</h3>
+                      
+                      <div class="mode-switch-section">
+                        <p class="mode-description">
+                          Hozirgi rejim: <strong>{{ getCurrentModeLabel() }}</strong>
+                        </p>
+                        @if (currentUser()?.role === 'Guest') {
+                          <button 
+                            mat-raised-button 
+                            color="accent"
+                            (click)="switchToHostMode()"
+                            [disabled]="isSwitchingMode()">
+                            @if (isSwitchingMode()) {
+                              <mat-progress-spinner diameter="20" class="inline-spinner"></mat-progress-spinner>
+                              <span>O'tilmoqda...</span>
+                            } @else {
+                              <ng-container>
+                                <mat-icon>switch_account</mat-icon>
+                                <span>Host rejimga o'tish</span>
+                              </ng-container>
+                            }
+                          </button>
+                          <p class="mode-hint">E'lon joylashtirish uchun Host rejimga o'ting</p>
+                        }
+                        @if (currentUser()?.role === 'Host') {
+                          <button 
+                            mat-stroked-button
+                            (click)="navigateToHostDashboard()">
+                            <mat-icon>dashboard</mat-icon>
+                            <span>Host boshqaruv paneli</span>
+                          </button>
+                        }
+                      </div>
 
                       <mat-divider class="section-divider"></mat-divider>
 
@@ -287,7 +328,7 @@ import { Gender, UserRole, User, HostBadge } from '../../core/models';
           </div>
         } @else {
           <div class="loading-container">
-            <mat-spinner diameter="50"></mat-spinner>
+            <mat-progress-spinner diameter="50"></mat-progress-spinner>
             <p>Yuklanmoqda...</p>
           </div>
         }
@@ -569,17 +610,38 @@ import { Gender, UserRole, User, HostBadge } from '../../core/models';
         align-items: stretch;
       }
     }
+
+    .mode-switch-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 16px 0;
+    }
+
+    .mode-description {
+      font-size: 1rem;
+      color: #333;
+      margin: 0;
+    }
+
+    .mode-hint {
+      font-size: 0.875rem;
+      color: #666;
+      margin: 8px 0 0 0;
+    }
   `]
 })
 export class ProfileComponent implements OnInit {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
+  private router = inject(Router);
 
   currentUser = this.authService.currentUser;
   isEditing = signal(false);
   isSaving = signal(false);
   isChangingPassword = signal(false);
+  isSwitchingMode = signal(false);
   selectedLanguage = signal(this.currentUser()?.preferredLanguage || 'uz');
 
   Gender = Gender;
@@ -695,14 +757,58 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  getBadgeLabel(badge?: HostBadge): string {
-    switch (badge) {
-      case 'New': return 'Yangi host';
-      case 'Rising': return "O'sishda";
-      case 'Super': return 'Super host';
-      case 'Legend': return 'Afsona';
-      default: return 'Host';
-    }
+  getBadgeLabel(badge: HostBadge | undefined): string {
+    if (!badge) return '';
+    const labels: Record<HostBadge, string> = {
+      [HostBadge.New]: 'Yangi',
+      [HostBadge.Rising]: 'Rivojlanayotgan',
+      [HostBadge.Super]: 'Super',
+      [HostBadge.Legend]: 'Afsona'
+    };
+    return labels[badge] || badge;
+  }
+
+  getCurrentModeLabel(): string {
+    const role = this.currentUser()?.role;
+    const labels: Record<string, string> = {
+      'Guest': 'Mehmon (Guest)',
+      'Host': 'Uy egasi (Host)',
+      'Admin': 'Administrator'
+    };
+    return labels[role || ''] || role || 'Noma\'lum';
+  }
+
+  switchToHostMode(): void {
+    this.isSwitchingMode.set(true);
+    
+    this.authService.switchMode({ targetMode: UserRole.Host }).subscribe({
+      next: (response) => {
+        this.isSwitchingMode.set(false);
+        this.snackBar.open('Host rejimga muvaffaqiyatli o\'tdingiz!', 'Yopish', {
+          duration: 3000,
+          horizontalPosition: 'center',
+          verticalPosition: 'bottom'
+        });
+        // Reload page to refresh role state
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      },
+      error: (error) => {
+        this.isSwitchingMode.set(false);
+        const errorMsg = error?.error?.message || 'Rejim almashtirishda xatolik';
+        this.snackBar.open(errorMsg, 'Yopish', {
+          duration: 5000,
+          horizontalPosition: 'center',
+          verticalPosition: 'bottom',
+          panelClass: 'error-snackbar'
+        });
+      }
+    });
+  }
+
+  navigateToHostDashboard(): void {
+    this.router.navigate(['/host']);
   }
 
   passwordMatchValidator(formGroup: any): { [key: string]: boolean } | null {

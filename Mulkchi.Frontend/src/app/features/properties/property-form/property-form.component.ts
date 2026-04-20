@@ -42,7 +42,7 @@ import { Property, PropertyType, PropertyCategory, ListingType, UzbekistanRegion
 
         @if (loading()) {
           <div class="loading-container">
-            <mat-spinner diameter="50"></mat-spinner>
+            <mat-progress-spinner diameter="50"></mat-progress-spinner>
             <p>Yuklanmoqda...</p>
           </div>
         } @else {
@@ -271,7 +271,7 @@ import { Property, PropertyType, PropertyCategory, ListingType, UzbekistanRegion
                       (click)="submitForm()"
                       [disabled]="isSubmitting()">
                       @if (isSubmitting()) {
-                        <mat-spinner diameter="20" class="inline-spinner"></mat-spinner>
+                        <mat-progress-spinner diameter="20" class="inline-spinner"></mat-progress-spinner>
                         <span>Saqlanmoqda...</span>
                       } @else {
                         <span>{{ isEditMode() ? 'Yangilash' : 'E\'lon qilish' }}</span>

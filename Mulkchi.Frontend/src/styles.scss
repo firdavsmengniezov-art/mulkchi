@@ -21,41 +21,50 @@ html {
 // CSS Variables for Theming
 // ==========================================
 :root {
-  // Primary colors
-  --primary-color: #667eea;
-  --primary-light: #7c8ae8;
-  --primary-dark: #5a67d8;
-  --primary-rgb: 102, 126, 234;
+  // New Navy/Gold Color Scheme
+  --primary: #0f172a; /* Navy — asosiy fon */
+  --primary-light: #1e293b; /* Ochroq navy */
+  --accent: #D4A017; /* Oltin — accent */
+  --accent-light: #f59e0b; /* Ochroq oltin */
+  --success: #22c55e; /* Yashil */
+  --text-primary: #f8fafc; /* Oq matn */
+  --text-secondary: #94a3b8; /* Kulrang matn */
+  --card-bg: #1e293b; /* Card foni */
+  --border: rgba(255,255,255,0.08); /* Border */
   
-  // Background colors (light theme default)
-  --bg-primary: #ffffff;
-  --bg-secondary: #f5f5f5;
-  --bg-tertiary: #e8e8e8;
-  --bg-card: #ffffff;
+  // Primary colors (legacy compatibility)
+  --primary-color: #0f172a;
+  --primary-light: #1e293b;
+  --primary-dark: #0a0f1d;
+  --primary-rgb: 15, 23, 42;
+  
+  // Background colors
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --bg-card: #1e293b;
   
   // Text colors
-  --text-primary: #333333;
-  --text-secondary: #666666;
-  --text-tertiary: #999999;
-  --text-muted: #cccccc;
+  --text-tertiary: #64748b;
+  --text-muted: #475569;
   
   // Border colors
-  --border-color: #e0e0e0;
-  --border-color-light: #f0f0f0;
+  --border-color: rgba(255,255,255,0.08);
+  --border-color-light: rgba(255,255,255,0.05);
   
   // Shadows
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
   
   // Overlay
-  --overlay-color: rgba(0, 0, 0, 0.5);
+  --overlay-color: rgba(15, 23, 42, 0.7);
   
   // Status colors
-  --success-color: #38a169;
-  --warning-color: #d69e2e;
-  --error-color: #e53e3e;
-  --info-color: #3182ce;
+  --success-color: #22c55e;
+  --warning-color: #f59e0b;
+  --error-color: #ef4444;
+  --info-color: #3b82f6;
   
   // Spacing
   --spacing-xs: 4px;
@@ -175,6 +184,33 @@ a {
 
 .mat-mdc-form-field {
   width: 100%;
+}
+
+// Snackbar Styles
+.mat-mdc-snack-bar-container {
+  &.success-snackbar {
+    --mdc-snackbar-container-color: #10b981;
+    --mat-mdc-snack-bar-button-color: white;
+    --mdc-snackbar-supporting-text-color: white;
+  }
+
+  &.error-snackbar {
+    --mdc-snackbar-container-color: #ef4444;
+    --mat-mdc-snack-bar-button-color: white;
+    --mdc-snackbar-supporting-text-color: white;
+  }
+
+  &.warning-snackbar {
+    --mdc-snackbar-container-color: #f59e0b;
+    --mat-mdc-snack-bar-button-color: white;
+    --mdc-snackbar-supporting-text-color: white;
+  }
+
+  &.info-snackbar {
+    --mdc-snackbar-container-color: #3b82f6;
+    --mat-mdc-snack-bar-button-color: white;
+    --mdc-snackbar-supporting-text-color: white;
+  }
 }
 
 // Loading States

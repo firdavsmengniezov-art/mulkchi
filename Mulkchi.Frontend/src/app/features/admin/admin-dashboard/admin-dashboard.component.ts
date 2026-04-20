@@ -81,7 +81,7 @@ import { User, Property } from '../../../core/models';
             <mat-card class="table-card">
               @if (loading()) {
                 <div class="loading-container">
-                  <mat-spinner diameter="40"></mat-spinner>
+                  <mat-progress-spinner diameter="40"></mat-progress-spinner>
                 </div>
               } @else {
                 <table mat-table [dataSource]="users()">
@@ -167,7 +167,7 @@ import { User, Property } from '../../../core/models';
             <mat-card class="table-card">
               @if (loading()) {
                 <div class="loading-container">
-                  <mat-spinner diameter="40"></mat-spinner>
+                  <mat-progress-spinner diameter="40"></mat-progress-spinner>
                 </div>
               } @else {
                 <table mat-table [dataSource]="properties()">

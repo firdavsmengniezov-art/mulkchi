@@ -95,7 +95,6 @@ export class NotificationsService implements OnDestroy {
     
     const token = localStorage.getItem('token');
     if (!token) {
-      console.warn('Cannot start SignalR connection: No auth token');
       return;
     }
     
@@ -115,28 +114,23 @@ export class NotificationsService implements OnDestroy {
     this.hubConnection
       .start()
       .then(() => {
-        console.log('SignalR Connected');
         this.isConnected.set(true);
       })
-      .catch(err => {
-        console.error('SignalR Connection Error:', err);
+      .catch(() => {
         this.isConnected.set(false);
       });
     
     // Handle reconnection events
     this.hubConnection.onreconnecting(() => {
-      console.log('SignalR Reconnecting...');
       this.isConnected.set(false);
     });
     
     this.hubConnection.onreconnected(() => {
-      console.log('SignalR Reconnected');
       this.isConnected.set(true);
       this.loadNotifications(); // Reload notifications after reconnection
     });
     
     this.hubConnection.onclose(() => {
-      console.log('SignalR Disconnected');
       this.isConnected.set(false);
     });
   }
@@ -210,8 +204,7 @@ export class NotificationsService implements OnDestroy {
         this.notifications.set(parsedNotifications);
         this.unreadCount.set(parsedNotifications.filter(n => !n.isRead).length);
       }),
-      catchError(error => {
-        console.error('Failed to load notifications:', error);
+      catchError(() => {
         return of([]);
       })
     );

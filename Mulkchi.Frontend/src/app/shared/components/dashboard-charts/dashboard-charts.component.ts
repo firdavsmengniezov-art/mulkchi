@@ -515,10 +515,9 @@ export class DashboardChartsComponent implements OnInit {
     }]
   };
   
-  doughnutChartOptions: ChartConfiguration['options'] = {
+  doughnutChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    cutout: '65%',
     plugins: {
       legend: {
         display: false

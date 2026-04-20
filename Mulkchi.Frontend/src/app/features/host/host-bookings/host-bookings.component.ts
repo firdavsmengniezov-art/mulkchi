@@ -1,6 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -18,7 +17,6 @@ import { Booking, BookingStatus } from '../../../core/models';
   standalone: true,
   imports: [
     CommonModule,
-    RouterLink,
     MatCardModule,
     MatButtonModule,
     MatIconModule,
@@ -80,7 +78,7 @@ import { Booking, BookingStatus } from '../../../core/models';
 
         @if (loading()) {
           <div class="loading-container">
-            <mat-spinner diameter="50"></mat-spinner>
+            <mat-progress-spinner diameter="50"></mat-progress-spinner>
             <p>Yuklanmoqda...</p>
           </div>
         } @else if (bookings().length === 0) {
@@ -494,9 +492,9 @@ export class HostBookingsComponent implements OnInit {
     this.loading.set(true);
 
     this.bookingService.getHostBookings().subscribe({
-      next: (bookings) => {
-        this.bookings.set(bookings);
-        this.calculateStats(bookings);
+      next: (result) => {
+        this.bookings.set(result.items);
+        this.calculateStats(result.items);
         this.loading.set(false);
       },
       error: () => {
