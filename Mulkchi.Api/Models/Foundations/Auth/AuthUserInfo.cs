@@ -19,6 +19,7 @@ public class AuthUserInfo
     public string LastName { get; set; }
     public string AvatarUrl { get; set; }
     public UserRole Role { get; set; }
+    public UserRole CurrentMode { get; set; }  // Current active mode for Single Identity
     public DateTimeOffset ExpiresAt { get; set; }
 
     /// <summary>
@@ -37,6 +38,7 @@ public class AuthUserInfo
         LastName = response.LastName;
         AvatarUrl = response.AvatarUrl;
         Role = response.Role;
+        CurrentMode = response.CurrentMode;
         ExpiresAt = response.ExpiresAt;
         AccessToken = response.Token;
     }

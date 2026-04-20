@@ -1182,6 +1182,9 @@ namespace Mulkchi.Api.Migrations
                     b.Property<DateTimeOffset>("CreatedDate")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<int>("CurrentMode")
+                        .HasColumnType("int");
+
                     b.Property<DateTimeOffset?>("DateOfBirth")
                         .HasColumnType("datetimeoffset");
 
@@ -1208,6 +1211,9 @@ namespace Mulkchi.Api.Migrations
 
                     b.Property<string>("LastName")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("ModeSwitchedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
@@ -1236,6 +1242,9 @@ namespace Mulkchi.Api.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("TotalListings")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalPropertiesListed")
                         .HasColumnType("int");
 
                     b.Property<DateTimeOffset>("UpdatedDate")

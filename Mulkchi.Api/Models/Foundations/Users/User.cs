@@ -21,13 +21,16 @@ public class User
     public bool IsVerified { get; set; }
     public bool EmailConfirmed { get; set; }
     public UserRole Role { get; set; }
+    public UserRole CurrentMode { get; set; }  // For Single Identity: Guest/Host switch
     public HostBadge Badge { get; set; }
     public decimal Rating { get; set; }
     public decimal ResponseRate { get; set; }
     public int ResponseTimeMinutes { get; set; }
     public int TotalListings { get; set; }
     public int TotalBookings { get; set; }
+    public int TotalPropertiesListed { get; set; }  // Track host activity
     public DateTimeOffset? HostSince { get; set; }
+    public DateTimeOffset? ModeSwitchedAt { get; set; }  // Last mode switch timestamp
     public string PreferredLanguage { get; set; } // "uz", "ru", "en"
     public DateTimeOffset CreatedDate { get; set; }
     public DateTimeOffset UpdatedDate { get; set; }

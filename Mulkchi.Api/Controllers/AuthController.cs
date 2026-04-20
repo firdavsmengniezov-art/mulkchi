@@ -406,6 +406,86 @@ public class AuthController : ControllerBase
         }
     }
 
+    // ─── Single Identity: Role Switching ─────────────────────────────────────
+
+    [HttpPost("switch-role")]
+    [Authorize]
+    [ProducesResponseType(typeof(AuthUserInfo), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async ValueTask<ActionResult<AuthUserInfo>> SwitchRoleAsync([FromBody] SwitchRoleRequest request)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim is null || !Guid.TryParse(userIdClaim, out Guid currentUserId))
+            return Unauthorized();
+
+        try
+        {
+            // Validate requested role
+            if (request.TargetMode != UserRole.Guest && request.TargetMode != UserRole.Host)
+                return BadRequest(new { message = "Faqat Guest yoki Host rejimga o'tish mumkin." });
+
+            // Get current user
+            var user = await this.authService.RetrieveUserByIdAsync(currentUserId);
+            
+            // Check if user can switch to Host mode
+            if (request.TargetMode == UserRole.Host)
+            {
+                // Allow switch if:
+                // 1. User is already a Host role, OR
+                // 2. User has verified email, OR
+                // 3. User is Admin/SuperAdmin
+                bool canBecomeHost = user.Role == UserRole.Host 
+                    || user.Role == UserRole.Admin 
+                    || user.Role == UserRole.SuperAdmin
+                    || user.Role == UserRole.Agent
+                    || (user.EmailConfirmed && user.IsVerified);
+
+                if (!canBecomeHost)
+                    return BadRequest(new { message = "Host rejimga o'tish uchun hisobingizni tasdiqlang yoki moderator bilan bog'laning." });
+
+                // If this is first time becoming host, update HostSince
+                if (user.HostSince == null && user.Role != UserRole.Host)
+                {
+                    user.HostSince = DateTimeOffset.UtcNow;
+                }
+            }
+
+            // Update current mode
+            user.CurrentMode = request.TargetMode;
+            user.ModeSwitchedAt = DateTimeOffset.UtcNow;
+            user.UpdatedDate = DateTimeOffset.UtcNow;
+
+            // Save changes through profile update
+            await this.authService.ModifyUserProfileAsync(currentUserId, new UpdateProfileRequest
+            {
+                CurrentMode = request.TargetMode
+            });
+
+            // Generate new tokens with updated mode
+            AuthResponse response = await this.authService.RefreshTokenAsync(
+                Request.Cookies[RefreshTokenCookie] ?? string.Empty);
+            
+            // Override the current mode in response
+            response.CurrentMode = request.TargetMode;
+
+            SetAuthCookies(response);
+            return Ok(new AuthUserInfo(response));
+        }
+        catch (AuthValidationException authValidationException)
+        {
+            return BadRequest(new { message = authValidationException.InnerException?.Message ?? "An error occurred." });
+        }
+        catch (AuthDependencyException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+        catch (AuthServiceException)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error." });
+        }
+    }
+
     // ─── Cookie helpers ──────────────────────────────────────────────────────
 
     private void SetAuthCookies(AuthResponse response)

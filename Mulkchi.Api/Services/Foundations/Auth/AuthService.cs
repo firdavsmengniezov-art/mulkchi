@@ -96,7 +96,7 @@ public partial class AuthService : IAuthService
                 Phone = request.Phone,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
                 PreferredLanguage = request.PreferredLanguage,
-                Role = UserRole.Guest,
+                Role = request.Role,
                 CreatedDate = now,
                 UpdatedDate = now
             };
