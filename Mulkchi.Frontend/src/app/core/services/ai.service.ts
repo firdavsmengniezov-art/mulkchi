@@ -59,7 +59,7 @@ export class AIService {
       listingType: request.listingType
     };
 
-    return this.http.post<AIPriceResponse>(`${this.apiUrl}/ai-recommendations/predict-price`, backendRequest).pipe(
+    return this.http.post<AIPriceResponse>(`${this.apiUrl}/predict-price`, backendRequest).pipe(
       tap(result => {
         this._priceResult.set(result);
         this._loading.set(false);
